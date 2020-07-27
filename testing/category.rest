@@ -1,0 +1,13 @@
+###
+
+POST http://localhost:8080/api/categories
+Content-Type: application/json
+
+{
+    "name": "Fruits/Vegatables"
+}
+
+###
+
+GET http://localhost:8080/api/categories
+Content-Type: application/json
