@@ -10,16 +10,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Category represents a category database entity.
-type Category struct {
-	ID   string `json:"id" bson:"_id,omitempty"`
-	Name string `json:"name"`
-	Path string `json:"path"`
-}
-
 // CategoryRepository represents a struct to access categories MongoDB collection.
 type CategoryRepository struct {
 	db *mongo.Database
+}
+
+// CategoryRepoInterface defines a contract to persist categories in the database.
+type CategoryRepoInterface interface {
+	GetAll(ctx context.Context) ([]models.Category, error)
+	GetOne(ctx context.Context, id string) (*models.Category, error)
+	Save(ctx context.Context, category *models.Category) (string, error)
 }
 
 // ProvideCategoryRepository returns a CategoryRepository.
@@ -56,8 +56,8 @@ func (repo *CategoryRepository) GetAll(ctx context.Context) ([]models.Category, 
 }
 
 // GetOne returns a single category from the database.
-func (repo *CategoryRepository) GetOne(ctx context.Context, id string) (*Category, error) {
-	category := Category{}
+func (repo *CategoryRepository) GetOne(ctx context.Context, id string) (*models.Category, error) {
+	category := models.Category{}
 
 	objID, objError := primitive.ObjectIDFromHex(id)
 	if objError != nil {

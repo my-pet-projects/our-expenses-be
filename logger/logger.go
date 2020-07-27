@@ -18,6 +18,13 @@ type AppLogger struct {
 	*logrus.Logger
 }
 
+// AppLoggerInterface defines a contract to log event.
+type AppLoggerInterface interface {
+	Error(errMessage string, err error, fields map[string]interface{})
+	Fatal(errMessage string, err error, fields map[string]interface{})
+	Info(msg string, fields map[string]interface{})
+}
+
 // Fields is a struct that describes log entry fields.
 type Fields map[string]interface{}
 
