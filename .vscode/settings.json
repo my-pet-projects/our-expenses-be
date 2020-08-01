@@ -8,6 +8,7 @@
         "uncoveredGutterStyle": "blockred"
     },
     "go.coverOnSingleTest": true,
+    "go.buildOnSave":"workspace",
     "cSpell.words": [
         "Infof",
         "donec",

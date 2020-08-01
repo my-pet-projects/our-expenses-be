@@ -1,6 +1,6 @@
 //+build wireinject
 
-package main
+package container
 
 import (
 	"our-expenses-server/config"
@@ -16,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func createServer(database *mongo.Database) (*server.Server, error) {
+func CreateServer(database *mongo.Database) (*server.Server, error) {
 	wire.Build(
 		logger.ProvideLogger,
 		config.ProvideConfiguration,
@@ -29,7 +29,7 @@ func createServer(database *mongo.Database) (*server.Server, error) {
 	return &server.Server{}, nil
 }
 
-func initDatabase() (*mongo.Database, error) {
+func InitDatabase() (*mongo.Database, error) {
 	wire.Build(config.ProvideConfiguration, logger.ProvideLogger, db.CreateMongoDBPool)
 
 	return &mongo.Database{}, nil

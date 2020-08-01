@@ -3,7 +3,7 @@
 //go:generate wire
 //+build !wireinject
 
-package main
+package container
 
 import (
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,7 +19,7 @@ import (
 
 // Injectors from container.go:
 
-func createServer(database *mongo.Database) (*server.Server, error) {
+func CreateServer(database *mongo.Database) (*server.Server, error) {
 	configConfig, err := config.ProvideConfiguration()
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func createServer(database *mongo.Database) (*server.Server, error) {
 	return serverServer, nil
 }
 
-func initDatabase() (*mongo.Database, error) {
+func InitDatabase() (*mongo.Database, error) {
 	configConfig, err := config.ProvideConfiguration()
 	if err != nil {
 		return nil, err
