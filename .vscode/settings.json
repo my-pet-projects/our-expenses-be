@@ -11,6 +11,7 @@
     "go.buildOnSave":"workspace",
     "cSpell.words": [
         "Infof",
+        "Upserted",
         "donec",
         "godotenv",
         "healthz",

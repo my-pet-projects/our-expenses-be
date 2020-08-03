@@ -12,5 +12,5 @@ require (
 	github.com/mattn/go-colorable v0.1.7
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.6.1
-	go.mongodb.org/mongo-driver v1.3.5
+	go.mongodb.org/mongo-driver v1.4.0
 )

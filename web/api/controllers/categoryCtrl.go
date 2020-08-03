@@ -34,11 +34,17 @@ func (ctrl *CategoryController) GetAllCategories(w http.ResponseWriter, req *htt
 	w.Header().Set("Content-Type", "application/json")
 
 	ctx := req.Context()
-	loggerTags := logger.Fields{"api/categories": "getall"}
+	parentParam := req.URL.Query().Get("parent")
+	loggerTags := logger.Fields{"api/categories": "getAll", "query": req.URL.Query()}
+	ctrl.logger.Info("Http request", loggerTags)
 
-	categories, categoriesError := ctrl.repo.GetAll(ctx)
+	filter := models.CategoryFilter{
+		Parent: parentParam,
+	}
+
+	categories, categoriesError := ctrl.repo.GetAll(ctx, filter)
 	if categoriesError != nil {
-		ctrl.logger.Error("Failed to load categories from database", categoriesError, loggerTags)
+		ctrl.logger.Error("Failed to load categories from the database", categoriesError, loggerTags)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -76,9 +82,9 @@ func (ctrl *CategoryController) CreateCategory(w http.ResponseWriter, req *http.
 		Path: request.Path,
 	}
 
-	categoryID, saveError := ctrl.repo.Save(ctx, category)
+	categoryID, saveError := ctrl.repo.Insert(ctx, category)
 	if saveError != nil {
-		ctrl.logger.Error("Failed to save category", saveError, loggerTags)
+		ctrl.logger.Error("Failed to insert a category", saveError, loggerTags)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

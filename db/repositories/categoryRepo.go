@@ -7,7 +7,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // CategoryRepository represents a struct to access categories MongoDB collection.
@@ -17,9 +16,11 @@ type CategoryRepository struct {
 
 // CategoryRepoInterface defines a contract to persist categories in the database.
 type CategoryRepoInterface interface {
-	GetAll(ctx context.Context) ([]models.Category, error)
+	GetAll(ctx context.Context, filter models.CategoryFilter) ([]models.Category, error)
 	GetOne(ctx context.Context, id string) (*models.Category, error)
-	Save(ctx context.Context, category *models.Category) (string, error)
+	Insert(ctx context.Context, category *models.Category) (string, error)
+	Update(ctx context.Context, category *models.Category) (string, error)
+	DeleteAll(ctx context.Context) (int64, error)
 }
 
 // ProvideCategoryRepository returns a CategoryRepository.
@@ -37,12 +38,11 @@ func (repo *CategoryRepository) collection() *mongo.Collection {
 	return repo.db.Collection(repo.collectionName())
 }
 
-// GetAll returns all categories from the database.
-func (repo *CategoryRepository) GetAll(ctx context.Context) ([]models.Category, error) {
+// GetAll returns all categories from the database that matches the filter.
+func (repo *CategoryRepository) GetAll(ctx context.Context, filter models.CategoryFilter) ([]models.Category, error) {
 	categories := []models.Category{}
 
-	findOpts := options.Find()
-	cursor, findError := repo.collection().Find(ctx, findOpts)
+	cursor, findError := repo.collection().Find(ctx, filter)
 	if findError != nil {
 		return nil, findError
 	}
@@ -73,8 +73,8 @@ func (repo *CategoryRepository) GetOne(ctx context.Context, id string) (*models.
 	return &category, nil
 }
 
-// Save inserts a category to the database.
-func (repo *CategoryRepository) Save(ctx context.Context, category *models.Category) (string, error) {
+// Insert inserts a category to the database.
+func (repo *CategoryRepository) Insert(ctx context.Context, category *models.Category) (string, error) {
 	insertResult, insertError := repo.collection().InsertOne(ctx, category)
 	if insertError != nil {
 		return "", insertError
@@ -83,4 +83,28 @@ func (repo *CategoryRepository) Save(ctx context.Context, category *models.Categ
 	id, _ := insertResult.InsertedID.(primitive.ObjectID)
 
 	return id.Hex(), nil
+}
+
+// Update updates a category in the database.
+func (repo *CategoryRepository) Update(ctx context.Context, category *models.Category) (string, error) {
+	updateResult, updateError := repo.collection().UpdateOne(ctx, bson.M{"_id": category.ID}, category)
+	if updateError != nil {
+		return "", updateError
+	}
+
+	id, _ := updateResult.UpsertedID.(primitive.ObjectID)
+
+	return id.Hex(), nil
+}
+
+// DeleteAll deletes all categories in the database.
+func (repo *CategoryRepository) DeleteAll(ctx context.Context) (int64, error) {
+	deleteResult, deleteError := repo.collection().DeleteMany(ctx, bson.M{})
+	if deleteError != nil {
+		return 0, deleteError
+	}
+
+	deletedDocuments := deleteResult.DeletedCount
+
+	return deletedDocuments, nil
 }

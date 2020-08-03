@@ -34,7 +34,7 @@ func CreateMongoDBPool(config *config.Config, appLogger *logger.AppLogger) (*mon
 		return nil, connectError
 	}
 
-	pingCtx, pingCancel := context.WithTimeout(context.Background(), 2*time.Second)
+	pingCtx, pingCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer pingCancel()
 	if pingError := client.Ping(pingCtx, readpref.Primary()); pingError != nil {
 		appLogger.Fatal("MongoDB ping error", pingError, logger.Fields{})

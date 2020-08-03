@@ -56,7 +56,15 @@ func TestGetAllCategories_ReturnsCategoriesFromDatabase(t *testing.T) {
 		},
 	}
 
-	repo.On("GetAll", mock.MatchedBy(func(ctx context.Context) bool { return ctx == request.Context() })).Return(categories, nil)
+	matchCtxFn := func(ctx context.Context) bool {
+		return ctx == request.Context()
+	}
+	matchFilterFn := func(filter models.CategoryFilter) bool {
+		return filter.Parent == "" && filter.Path == ""
+	}
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	repo.On("GetAll", mock.MatchedBy(matchCtxFn), mock.MatchedBy(matchFilterFn)).Return(categories, nil)
 
 	ctrl.GetAllCategories(response, request)
 
@@ -87,8 +95,16 @@ func TestGetAllCategories_Throws500ErrorOnDatabaseError(t *testing.T) {
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
 
+	matchCtxFn := func(ctx context.Context) bool {
+		return ctx == request.Context()
+	}
+	matchFilterFn := func(filter models.CategoryFilter) bool {
+		return filter.Parent == "" && filter.Path == ""
+	}
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
-	repo.On("GetAll", mock.MatchedBy(func(ctx context.Context) bool { return ctx == request.Context() })).Return(nil, errors.New("error"))
+	repo.On("GetAll", mock.MatchedBy(matchCtxFn), mock.MatchedBy(matchFilterFn)).Return(nil, errors.New("error"))
 
 	ctrl.GetAllCategories(response, request)
 
@@ -120,7 +136,7 @@ func TestCreateCategory_SavesCategoryInDatabase(t *testing.T) {
 	request, _ := http.NewRequest("POST", "/categories", bytes.NewBuffer(jsonCategory))
 
 	validator.On("ValidateStruct", mock.Anything).Return(nil)
-	repo.On("Save", mock.MatchedBy(func(ctx context.Context) bool {
+	repo.On("Insert", mock.MatchedBy(func(ctx context.Context) bool {
 		return ctx == request.Context()
 	}), mock.Anything).Return(newID, nil)
 
@@ -240,7 +256,7 @@ func TestCreateCategory_Returns500_WhenDatabaseFailed(t *testing.T) {
 
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
 	validator.On("ValidateStruct", mock.Anything).Return(nil)
-	repo.On("Save", mock.MatchedBy(func(ctx context.Context) bool {
+	repo.On("Insert", mock.MatchedBy(func(ctx context.Context) bool {
 		return ctx == request.Context()
 	}), mock.Anything).Return("", errors.New("database error"))
 
