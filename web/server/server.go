@@ -27,7 +27,7 @@ func ProvideServer(config *config.Config, logger *logger.AppLogger, router *api.
 	loggedRouter := handlers.LoggingHandler(logger.Writer(), routers)
 
 	server := &http.Server{
-		Addr:         ":" + fmt.Sprint(config.Port),
+		Addr:         "localhost:" + fmt.Sprint(config.Port),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,
