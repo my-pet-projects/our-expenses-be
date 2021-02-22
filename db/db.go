@@ -2,10 +2,12 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"our-expenses-server/config"
 	"our-expenses-server/logger"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
@@ -51,6 +53,10 @@ func CreateMongoDBPool(config *config.Config, appLogger *logger.AppLogger) (*mon
 	// }()
 
 	database := client.Database(config.Mongo.Database)
+	collections, _ := database.ListCollectionNames(context.Background(), bson.M{})
+
+	appLogger.Info(fmt.Sprintf("MongoDB database: %s", database.Name()), logger.Fields{})
+	appLogger.Info(fmt.Sprintf("Available collections: %s", collections), logger.Fields{})
 
 	return database, nil
 }
