@@ -12,11 +12,13 @@
     "cSpell.words": [
         "Infof",
         "Upserted",
+        "bson",
         "donec",
         "godotenv",
         "healthz",
         "joho",
         "mattn",
+        "mongodb",
         "stretchr"
     ]
 }
