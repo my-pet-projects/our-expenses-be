@@ -18,6 +18,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestProvideCategoryController_ReturnsController(t *testing.T) {
@@ -43,14 +44,16 @@ func TestGetAllCategories_ReturnsCategoriesFromDatabase(t *testing.T) {
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
 
+	category1ID := primitive.NewObjectID()
+	category2ID := primitive.NewObjectID()
 	categories := []models.Category{
 		{
-			ID:   "1",
+			ID:   &category1ID,
 			Name: "category 1",
 			Path: "/path/to/category/1",
 		},
 		{
-			ID:   "2",
+			ID:   &category2ID,
 			Name: "category 2",
 			Path: "/path/to/category/2",
 		},
@@ -60,7 +63,7 @@ func TestGetAllCategories_ReturnsCategoriesFromDatabase(t *testing.T) {
 		return ctx == request.Context()
 	}
 	matchFilterFn := func(filter models.CategoryFilter) bool {
-		return filter.Parent == "" && filter.Path == ""
+		return filter.ParentID == ""
 	}
 
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
@@ -99,7 +102,7 @@ func TestGetAllCategories_Throws500ErrorOnDatabaseError(t *testing.T) {
 		return ctx == request.Context()
 	}
 	matchFilterFn := func(filter models.CategoryFilter) bool {
-		return filter.Parent == "" && filter.Path == ""
+		return filter.ParentID == ""
 	}
 
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()

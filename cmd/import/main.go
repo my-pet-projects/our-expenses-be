@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -53,18 +54,20 @@ func getCategories() []models.Category {
 
 	var categories []models.Category
 	for _, jsonCategory := range jsonCategories {
+		rootCategoryID := primitive.NewObjectID()
 		rootCategory := models.Category{
-			Name:   jsonCategory.Name,
-			Parent: "/",
-			Path:   fmt.Sprintf("/%s", jsonCategory.Name),
+			ID:       &rootCategoryID,
+			Name:     jsonCategory.Name,
+			ParentID: &primitive.ObjectID{},
+			Path:     fmt.Sprintf("/%s", jsonCategory.Name),
 		}
 		categories = append(categories, rootCategory)
 
 		for _, jsonSubcategory := range jsonCategory.Subcategories {
 			childCategory := models.Category{
-				Name:   jsonSubcategory.Name,
-				Parent: strings.ToLower(fmt.Sprintf("/%s", rootCategory.Name)),
-				Path:   strings.ToLower(fmt.Sprintf("/%s/%s", rootCategory.Name, jsonSubcategory.Name)),
+				Name:     jsonSubcategory.Name,
+				ParentID: rootCategory.ID,
+				Path:     strings.ToLower(fmt.Sprintf("/%s/%s", rootCategory.Name, jsonSubcategory.Name)),
 			}
 			categories = append(categories, childCategory)
 		}

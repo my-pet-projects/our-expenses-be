@@ -18,7 +18,7 @@ type CategoryRepository struct {
 type CategoryRepoInterface interface {
 	GetAll(ctx context.Context, filter models.CategoryFilter) ([]models.Category, error)
 	GetOne(ctx context.Context, id string) (*models.Category, error)
-	Insert(ctx context.Context, category *models.Category) (string, error)
+	Insert(ctx context.Context, category *models.Category) (*models.Category, error)
 	Update(ctx context.Context, category *models.Category) (string, error)
 	DeleteAll(ctx context.Context) (int64, error)
 }
@@ -42,7 +42,15 @@ func (repo *CategoryRepository) collection() *mongo.Collection {
 func (repo *CategoryRepository) GetAll(ctx context.Context, filter models.CategoryFilter) ([]models.Category, error) {
 	categories := []models.Category{}
 
-	cursor, findError := repo.collection().Find(ctx, filter)
+	query := bson.M{}
+	if filter.ParentID == "" {
+		query["parentId"] = bson.M{"$exists": false}
+	} else {
+		parentID, _ := primitive.ObjectIDFromHex(filter.ParentID)
+		query["parentId"] = parentID
+	}
+
+	cursor, findError := repo.collection().Find(ctx, query)
 	if findError != nil {
 		return nil, findError
 	}
@@ -74,15 +82,17 @@ func (repo *CategoryRepository) GetOne(ctx context.Context, id string) (*models.
 }
 
 // Insert inserts a category to the database.
-func (repo *CategoryRepository) Insert(ctx context.Context, category *models.Category) (string, error) {
+func (repo *CategoryRepository) Insert(ctx context.Context, category *models.Category) (*models.Category, error) {
 	insertResult, insertError := repo.collection().InsertOne(ctx, category)
 	if insertError != nil {
-		return "", insertError
+		return nil, insertError
 	}
 
 	id, _ := insertResult.InsertedID.(primitive.ObjectID)
 
-	return id.Hex(), nil
+	category.ID = &id
+
+	return category, nil
 }
 
 // Update updates a category in the database.

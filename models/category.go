@@ -1,9 +1,11 @@
 package models
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 // Category struct represents a category.
 type Category struct {
-	ID     string `json:"id,omitempty" bson:"_id,omitempty"`
-	Name   string `json:"name"`
-	Parent string `json:"parent"`
-	Path   string `json:"path"`
+	ID       *primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Name     string              `json:"name"`
+	ParentID *primitive.ObjectID `json:"parentId,omitempty" bson:"parentId,omitempty"`
+	Path     string              `json:"path"`
 }
