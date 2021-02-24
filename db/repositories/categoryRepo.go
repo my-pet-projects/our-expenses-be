@@ -21,6 +21,7 @@ type CategoryRepoInterface interface {
 	Insert(ctx context.Context, category *models.Category) (*models.Category, error)
 	Update(ctx context.Context, category *models.Category) (string, error)
 	DeleteAll(ctx context.Context) (int64, error)
+	DeleteOne(ctx context.Context, id string) (int64, error)
 }
 
 // ProvideCategoryRepository returns a CategoryRepository.
@@ -67,14 +68,14 @@ func (repo *CategoryRepository) GetAll(ctx context.Context, filter models.Catego
 func (repo *CategoryRepository) GetOne(ctx context.Context, id string) (*models.Category, error) {
 	category := models.Category{}
 
-	objID, objError := primitive.ObjectIDFromHex(id)
-	if objError != nil {
-		return nil, objError
-	}
+	objID, _ := primitive.ObjectIDFromHex(id)
 
 	filter := bson.M{"_id": objID}
 	findError := repo.collection().FindOne(ctx, filter).Decode(&category)
 	if findError != nil {
+		if findError == mongo.ErrNoDocuments {
+			return nil, nil
+		}
 		return nil, findError
 	}
 
@@ -97,7 +98,11 @@ func (repo *CategoryRepository) Insert(ctx context.Context, category *models.Cat
 
 // Update updates a category in the database.
 func (repo *CategoryRepository) Update(ctx context.Context, category *models.Category) (string, error) {
-	updateResult, updateError := repo.collection().UpdateOne(ctx, bson.M{"_id": category.ID}, category)
+	filter := bson.M{"_id": category.ID}
+
+	updater := bson.M{"$set": category}
+
+	updateResult, updateError := repo.collection().UpdateOne(ctx, filter, updater)
 	if updateError != nil {
 		return "", updateError
 	}
@@ -105,6 +110,21 @@ func (repo *CategoryRepository) Update(ctx context.Context, category *models.Cat
 	id, _ := updateResult.UpsertedID.(primitive.ObjectID)
 
 	return id.Hex(), nil
+}
+
+// DeleteOne deletes a category in the database.
+func (repo *CategoryRepository) DeleteOne(ctx context.Context, id string) (int64, error) {
+	categoryID, _ := primitive.ObjectIDFromHex(id)
+	filter := bson.M{"_id": categoryID}
+
+	deleteResult, deleteError := repo.collection().DeleteOne(ctx, filter)
+	if deleteError != nil {
+		return 0, deleteError
+	}
+
+	deletedDocuments := deleteResult.DeletedCount
+
+	return deletedDocuments, nil
 }
 
 // DeleteAll deletes all categories in the database.

@@ -35,6 +35,27 @@ func (_m *CategoryRepoInterface) DeleteAll(ctx context.Context) (int64, error) {
 	return r0, r1
 }
 
+// DeleteOne provides a mock function with given fields: ctx, id
+func (_m *CategoryRepoInterface) DeleteOne(ctx context.Context, id string) (int64, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetAll provides a mock function with given fields: ctx, filter
 func (_m *CategoryRepoInterface) GetAll(ctx context.Context, filter models.CategoryFilter) ([]models.Category, error) {
 	ret := _m.Called(ctx, filter)
