@@ -9,6 +9,7 @@ import (
 	"our-expenses-server/config"
 	"our-expenses-server/logger"
 	"our-expenses-server/web/api"
+	"our-expenses-server/web/middleware"
 	"syscall"
 	"time"
 
@@ -25,13 +26,14 @@ type Server struct {
 func ProvideServer(config *config.Config, logger *logger.AppLogger, router *api.Router) (*Server, error) {
 	routers := router.InitializeRoutes()
 	loggedRouter := handlers.LoggingHandler(logger.Writer(), routers)
+	corsedRouter := middleware.CorsMiddleware(loggedRouter)
 
 	server := &http.Server{
 		Addr:         "localhost:" + fmt.Sprint(config.Port),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,
-		Handler:      loggedRouter,
+		Handler:      corsedRouter,
 	}
 	return &Server{server: server, logger: logger}, nil
 }

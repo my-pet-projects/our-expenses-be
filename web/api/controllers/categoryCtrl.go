@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"our-expenses-server/db/repositories"
 	"our-expenses-server/logger"
@@ -39,8 +40,6 @@ const loggerCategory = "api/categories"
 
 // GetAllCategories returns a list of all categories.
 func (ctrl *CategoryController) GetAllCategories(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	ctx := req.Context()
 	parentIDParam := req.URL.Query().Get("parentId")
 	loggerTags := logger.Fields{loggerCategory: "getAll", "query": req.URL.Query()}
@@ -63,8 +62,6 @@ func (ctrl *CategoryController) GetAllCategories(w http.ResponseWriter, req *htt
 
 // GetCategory returns a single category found by id.
 func (ctrl *CategoryController) GetCategory(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	ctx := req.Context()
 	vars := mux.Vars(req)
 	categoryID := vars["id"]
@@ -89,8 +86,6 @@ func (ctrl *CategoryController) GetCategory(w http.ResponseWriter, req *http.Req
 
 // DeleteCategory deletes a category found by id.
 func (ctrl *CategoryController) DeleteCategory(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	ctx := req.Context()
 	vars := mux.Vars(req)
 	categoryID := vars["id"]
@@ -115,8 +110,6 @@ func (ctrl *CategoryController) DeleteCategory(w http.ResponseWriter, req *http.
 
 // CreateCategory inserts a category into the database.
 func (ctrl *CategoryController) CreateCategory(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	ctx := req.Context()
 	request := &requests.CreateCategoryRequest{}
 	loggerTags := logger.Fields{loggerCategory: "create"}
@@ -139,7 +132,7 @@ func (ctrl *CategoryController) CreateCategory(w http.ResponseWriter, req *http.
 
 	category := &models.Category{
 		Name:     request.Name,
-		Path:     request.Path,
+		Path:     fmt.Sprintf("%s/%s", request.Path, request.Name),
 		ParentID: request.ParentID,
 	}
 
@@ -156,8 +149,6 @@ func (ctrl *CategoryController) CreateCategory(w http.ResponseWriter, req *http.
 
 // UpdateCategory updates a category in the database.
 func (ctrl *CategoryController) UpdateCategory(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	ctx := req.Context()
 	vars := mux.Vars(req)
 	categoryID := vars["id"]
