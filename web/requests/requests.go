@@ -7,6 +7,7 @@ type CreateCategoryRequest struct {
 	Name     string              `json:"name" validate:"required"`
 	ParentID *primitive.ObjectID `json:"parentId"`
 	Path     string              `json:"path" validate:"required"`
+	Level    int32               `json:"level" validate:"required,gt=0"`
 }
 
 // UpdateCategoryRequest provides the schema definition for update category API request body.

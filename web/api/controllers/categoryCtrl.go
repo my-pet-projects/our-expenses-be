@@ -130,10 +130,13 @@ func (ctrl *CategoryController) CreateCategory(w http.ResponseWriter, req *http.
 		return
 	}
 
+	categoryID := primitive.NewObjectID()
 	category := &models.Category{
+		ID:       &categoryID,
 		Name:     request.Name,
-		Path:     fmt.Sprintf("%s/%s", request.Path, request.Name),
+		Path:     fmt.Sprintf("%s|%s", request.Path, categoryID.Hex()),
 		ParentID: request.ParentID,
+		Level:    request.Level + 1,
 	}
 
 	savedCategory, saveError := ctrl.repo.Insert(ctx, category)

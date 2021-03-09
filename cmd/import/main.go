@@ -59,15 +59,19 @@ func getCategories() []models.Category {
 			ID:       &rootCategoryID,
 			Name:     jsonCategory.Name,
 			ParentID: &primitive.ObjectID{},
-			Path:     fmt.Sprintf("/%s", jsonCategory.Name),
+			Path:     fmt.Sprintf("|%s", rootCategoryID.Hex()),
+			Level:    1,
 		}
 		categories = append(categories, rootCategory)
 
 		for _, jsonSubcategory := range jsonCategory.Subcategories {
+			childCategoryID := primitive.NewObjectID()
 			childCategory := models.Category{
+				ID:       &childCategoryID,
 				Name:     jsonSubcategory.Name,
 				ParentID: rootCategory.ID,
-				Path:     strings.ToLower(fmt.Sprintf("/%s/%s", rootCategory.Name, jsonSubcategory.Name)),
+				Path:     strings.ToLower(fmt.Sprintf("|%s|%s", rootCategory.ID.Hex(), childCategoryID.Hex())),
+				Level:    2,
 			}
 			categories = append(categories, childCategory)
 		}
