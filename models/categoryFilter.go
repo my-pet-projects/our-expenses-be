@@ -2,6 +2,8 @@ package models
 
 // CategoryFilter struct represents a category filter.
 type CategoryFilter struct {
-	ParentID    string
-	CategoryIDs []string
+	CategoryID   string
+	ParentID     string
+	CategoryIDs  []string
+	FindChildren bool
 }

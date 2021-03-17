@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 	"our-expenses-server/models"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -62,6 +63,12 @@ func (repo *CategoryRepository) GetAll(ctx context.Context, filter models.Catego
 	if len(parantCategoriesIDs) != 0 {
 		query = bson.M{}
 		query["_id"] = bson.M{"$in": parantCategoriesIDs}
+	}
+
+	if filter.FindChildren {
+		query = bson.M{}
+		query["path"] = bson.D{primitive.E{Key: "$regex",
+			Value: primitive.Regex{Pattern: fmt.Sprintf(".*\\|%s\\|.*", filter.CategoryID), Options: "i"}}}
 	}
 
 	cursor, findError := repo.collection().Find(ctx, query)

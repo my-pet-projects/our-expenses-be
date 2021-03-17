@@ -30,6 +30,7 @@ type CategoryControllerInterface interface {
 	GetCategory(w http.ResponseWriter, req *http.Request)
 	UpdateCategory(w http.ResponseWriter, req *http.Request)
 	DeleteCategory(w http.ResponseWriter, req *http.Request)
+	GetCategoryUsages(w http.ResponseWriter, req *http.Request)
 }
 
 // ProvideCategoryController returns a CategoryController.
@@ -215,4 +216,28 @@ func (ctrl *CategoryController) UpdateCategory(w http.ResponseWriter, req *http.
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// GetCategoryUsages returns category usages.
+func (ctrl *CategoryController) GetCategoryUsages(w http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+	vars := mux.Vars(req)
+	categoryID := vars["id"]
+	loggerTags := logger.Fields{loggerCategory: "usages", "query": req.URL.Query()}
+	ctrl.logger.Info("Http request", loggerTags)
+
+	pathFilter := models.CategoryFilter{
+		CategoryID:   categoryID,
+		FindChildren: true,
+	}
+
+	categoryUsages, categoryUsagesError := ctrl.repo.GetAll(ctx, pathFilter)
+	if categoryUsagesError != nil {
+		ctrl.logger.Error("Failed to get category usages from the database", categoryUsagesError, loggerTags)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(categoryUsages)
 }

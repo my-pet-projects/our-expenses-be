@@ -775,3 +775,107 @@ func TestDeleteCategory_Returns500_WhenDatabaseThrowsError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
 	assert.Empty(t, response.Body.String(), "Should return empty body.")
 }
+
+func TestGetCategoryUsages_ReturnsCategoriesFromDatabase(t *testing.T) {
+	// Arrange
+	logger := new(mocks.AppLoggerInterface)
+	repo := new(mocks.CategoryRepoInterface)
+	validator := new(mocks.ValidatorInterface)
+	ctrl := &CategoryController{
+		repo:      repo,
+		logger:    logger,
+		validator: validator,
+	}
+
+	categoryID := primitive.NewObjectID()
+	category1ID := primitive.NewObjectID()
+	category2ID := primitive.NewObjectID()
+	categories := []models.Category{
+		{
+			ID:   &category1ID,
+			Name: "category 1",
+			Path: "/path/to/category/1",
+		},
+		{
+			ID:   &category2ID,
+			Name: "category 2",
+			Path: "/path/to/category/2",
+		},
+	}
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", fmt.Sprintf("/categories/%s/usages", categoryID.Hex()), nil)
+	vars := map[string]string{
+		"id": categoryID.Hex(),
+	}
+	request = mux.SetURLVars(request, vars)
+
+	matchCtxFn := func(ctx context.Context) bool {
+		return ctx == request.Context()
+	}
+	matchFilterFn := func(filter models.CategoryFilter) bool {
+		return filter.CategoryID == categoryID.Hex() && filter.FindChildren == true
+	}
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	repo.On("GetAll", mock.MatchedBy(matchCtxFn), mock.MatchedBy(matchFilterFn)).Return(categories, nil)
+
+	// Act
+	ctrl.GetCategoryUsages(response, request)
+
+	var responseCategories []models.Category
+	jsonErr := json.Unmarshal([]byte(response.Body.String()), &responseCategories)
+	if jsonErr != nil {
+		t.Errorf("Cannot convert to json: %v", jsonErr)
+	}
+
+	// Assert
+	repo.AssertExpectations(t)
+	validator.AssertExpectations(t)
+	logger.AssertExpectations(t)
+
+	assert.Equal(t, http.StatusOK, response.Code, "HTTP status should be 200.")
+	assert.Equal(t, categories, responseCategories, "Categories in the response should be the same")
+}
+
+func TestGetCategoryUsages_Throws500ErrorOnDatabaseError(t *testing.T) {
+	// Arrange
+	logger := new(mocks.AppLoggerInterface)
+	repo := new(mocks.CategoryRepoInterface)
+	validator := new(mocks.ValidatorInterface)
+	ctrl := &CategoryController{
+		repo:      repo,
+		logger:    logger,
+		validator: validator,
+	}
+
+	categoryID := primitive.NewObjectID()
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", fmt.Sprintf("/categories/%s/usages", categoryID.Hex()), nil)
+	vars := map[string]string{
+		"id": categoryID.Hex(),
+	}
+	request = mux.SetURLVars(request, vars)
+
+	matchCtxFn := func(ctx context.Context) bool {
+		return ctx == request.Context()
+	}
+	matchFilterFn := func(filter models.CategoryFilter) bool {
+		return filter.CategoryID == categoryID.Hex() && filter.FindChildren == true
+	}
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+	repo.On("GetAll", mock.MatchedBy(matchCtxFn), mock.MatchedBy(matchFilterFn)).Return(nil, errors.New("error"))
+
+	// Act
+	ctrl.GetCategoryUsages(response, request)
+
+	// Assert
+	repo.AssertExpectations(t)
+	validator.AssertExpectations(t)
+	logger.AssertExpectations(t)
+
+	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
+}
