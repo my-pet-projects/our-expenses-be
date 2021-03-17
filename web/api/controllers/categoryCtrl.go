@@ -10,6 +10,7 @@ import (
 	"our-expenses-server/validators"
 	"our-expenses-server/web/requests"
 	"our-expenses-server/web/responses"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -78,6 +79,29 @@ func (ctrl *CategoryController) GetCategory(w http.ResponseWriter, req *http.Req
 	if category == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
+	}
+
+	rawParentCategories := strings.Split(category.Path, "|")
+	var parentCategoryIDs []string
+	for _, str := range rawParentCategories {
+		if str != "" && str != category.ID.Hex() {
+			parentCategoryIDs = append(parentCategoryIDs, str)
+		}
+	}
+
+	if len(parentCategoryIDs) != 0 {
+		parentCategoriesFilter := models.CategoryFilter{
+			CategoryIDs: parentCategoryIDs,
+		}
+
+		parentCategories, parentCategoriesError := ctrl.repo.GetAll(ctx, parentCategoriesFilter)
+		if parentCategoriesError != nil {
+			ctrl.logger.Error("Failed to get parent categories from the database", parentCategoriesError, loggerTags)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		category.ParentCategories = parentCategories
 	}
 
 	w.WriteHeader(http.StatusOK)

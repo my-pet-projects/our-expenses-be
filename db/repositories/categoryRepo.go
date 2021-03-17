@@ -51,6 +51,19 @@ func (repo *CategoryRepository) GetAll(ctx context.Context, filter models.Catego
 		query["parentId"] = parentID
 	}
 
+	parantCategoriesIDs := make([]primitive.ObjectID, len(filter.CategoryIDs))
+	for index := range filter.CategoryIDs {
+		parantCategoriesID, err := primitive.ObjectIDFromHex(filter.CategoryIDs[index])
+		if err == nil {
+			parantCategoriesIDs[index] = parantCategoriesID
+		}
+	}
+
+	if len(parantCategoriesIDs) != 0 {
+		query = bson.M{}
+		query["_id"] = bson.M{"$in": parantCategoriesIDs}
+	}
+
 	cursor, findError := repo.collection().Find(ctx, query)
 	if findError != nil {
 		return nil, findError

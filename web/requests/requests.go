@@ -6,7 +6,7 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 type CreateCategoryRequest struct {
 	Name     string              `json:"name" validate:"required"`
 	ParentID *primitive.ObjectID `json:"parentId"`
-	Path     string              `json:"path" validate:"required"`
+	Path     string              `json:"path"`	// TODO: maybe require path, but not for the 1st level categories
 	Level    int32               `json:"level" validate:"required,gt=0"`
 }
 
