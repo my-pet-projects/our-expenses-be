@@ -60,3 +60,6 @@ func CreateMongoDBPool(config *config.Config, appLogger *logger.AppLogger) (*mon
 
 	return database, nil
 }
+
+// TODO: defer code execution
+// https://blog.codecentric.de/en/2020/04/golang-gin-mongodb-building-microservices-easily/
