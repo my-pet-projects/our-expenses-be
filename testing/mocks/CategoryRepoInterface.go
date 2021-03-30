@@ -14,20 +14,20 @@ type CategoryRepoInterface struct {
 	mock.Mock
 }
 
-// DeleteAll provides a mock function with given fields: ctx
-func (_m *CategoryRepoInterface) DeleteAll(ctx context.Context) (int64, error) {
-	ret := _m.Called(ctx)
+// DeleteAll provides a mock function with given fields: ctx, filter
+func (_m *CategoryRepoInterface) DeleteAll(ctx context.Context, filter models.CategoryFilter) (int64, error) {
+	ret := _m.Called(ctx, filter)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context) int64); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, models.CategoryFilter) int64); ok {
+		r0 = rf(ctx, filter)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, models.CategoryFilter) error); ok {
+		r1 = rf(ctx, filter)
 	} else {
 		r1 = ret.Error(1)
 	}

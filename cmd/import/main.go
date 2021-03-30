@@ -26,7 +26,7 @@ func main() {
 	categoryRepo := repositories.ProvideCategoryRepository(&db)
 	ctx := context.Background()
 
-	deleteCount, deleteErr := categoryRepo.DeleteAll(ctx)
+	deleteCount, deleteErr := categoryRepo.DeleteAll(ctx, models.CategoryFilter{})
 	if deleteErr != nil {
 		logrus.Fatalf("Failed to delete categories: '%s'", deleteErr)
 	}

@@ -21,7 +21,7 @@ type CategoryRepoInterface interface {
 	GetOne(ctx context.Context, id string) (*models.Category, error)
 	Insert(ctx context.Context, category *models.Category) (*models.Category, error)
 	Update(ctx context.Context, category *models.Category) (string, error)
-	DeleteAll(ctx context.Context) (int64, error)
+	DeleteAll(ctx context.Context, filter models.CategoryFilter) (int64, error)
 	DeleteOne(ctx context.Context, id string) (int64, error)
 }
 
@@ -148,8 +148,19 @@ func (repo *CategoryRepository) DeleteOne(ctx context.Context, id string) (int64
 }
 
 // DeleteAll deletes all categories in the database.
-func (repo *CategoryRepository) DeleteAll(ctx context.Context) (int64, error) {
-	deleteResult, deleteError := repo.collection().DeleteMany(ctx, bson.M{})
+func (repo *CategoryRepository) DeleteAll(ctx context.Context, filter models.CategoryFilter) (int64, error) {
+	query := bson.M{}
+
+	if len(filter.Path) != 0 && filter.FindChildren {
+		query["path"] = bson.M{
+			"$regex": primitive.Regex{
+				Pattern: fmt.Sprintf("^%s.*", strings.ReplaceAll(filter.Path, "|", "\\|")),
+				Options: "i",
+			},
+		}
+	}
+
+	deleteResult, deleteError := repo.collection().DeleteMany(ctx, query)
 	if deleteError != nil {
 		return 0, deleteError
 	}

@@ -117,7 +117,24 @@ func (ctrl *CategoryController) DeleteCategory(w http.ResponseWriter, req *http.
 	loggerTags := logger.Fields{loggerCategory: "delete", "query": req.URL.Query(), "routeVars": vars}
 	ctrl.logger.Info("Http request", loggerTags)
 
-	deleteResult, deleteError := ctrl.repo.DeleteOne(ctx, categoryID)
+	category, categoryError := ctrl.repo.GetOne(ctx, categoryID)
+	if categoryError != nil {
+		ctrl.logger.Error("Failed to get a category from the database for deletion", categoryError, loggerTags)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if category == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	categoryFilter := models.CategoryFilter{
+		Path:         category.Path,
+		FindChildren: true,
+	}
+
+	deleteResult, deleteError := ctrl.repo.DeleteAll(ctx, categoryFilter)
 	if deleteError != nil {
 		ctrl.logger.Error("Failed to delete a category from the database", deleteError, loggerTags)
 		w.WriteHeader(http.StatusInternalServerError)
