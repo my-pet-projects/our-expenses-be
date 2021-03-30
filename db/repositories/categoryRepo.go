@@ -67,8 +67,16 @@ func (repo *CategoryRepository) GetAll(ctx context.Context, filter models.Catego
 
 	if filter.FindChildren {
 		query = bson.M{}
-		query["path"] = bson.D{primitive.E{Key: "$regex",
-			Value: primitive.Regex{Pattern: fmt.Sprintf(".*\\|%s\\|.*", filter.CategoryID), Options: "i"}}}
+		query["path"] = bson.M{
+			"$regex": primitive.Regex{
+				Pattern: fmt.Sprintf(".*\\|%s\\|.*", filter.CategoryID),
+				Options: "i",
+			},
+		}
+	}
+
+	if filter.FindAll {
+		query = bson.M{}
 	}
 
 	cursor, findError := repo.collection().Find(ctx, query)
