@@ -185,7 +185,7 @@ func (ctrl *CategoryController) CreateCategory(w http.ResponseWriter, req *http.
 		Name:     request.Name,
 		Path:     fmt.Sprintf("%s|%s", request.Path, categoryID.Hex()),
 		ParentID: request.ParentID,
-		Level:    request.Level + 1,
+		Level:    request.Level,
 	}
 
 	savedCategory, saveError := ctrl.repo.Insert(ctx, category)
@@ -230,6 +230,7 @@ func (ctrl *CategoryController) UpdateCategory(w http.ResponseWriter, req *http.
 		Name:     request.Name,
 		Path:     request.Path,
 		ParentID: request.ParentID,
+		Level:    request.Level,
 	}
 
 	_, updateError := ctrl.repo.Update(ctx, category)
