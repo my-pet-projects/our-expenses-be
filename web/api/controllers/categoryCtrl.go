@@ -44,11 +44,18 @@ const loggerCategory = "api/categories"
 func (ctrl *CategoryController) GetAllCategories(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 	parentIDParam := req.URL.Query().Get("parentId")
+	allParam := req.URL.Query().Get("all")
 	loggerTags := logger.Fields{loggerCategory: "getAll", "query": req.URL.Query()}
 	ctrl.logger.Info("Http request", loggerTags)
 
+	isAll, isAllError := strconv.ParseBool(allParam)
+	if isAllError != nil {
+		isAll = false
+	}
+
 	filter := models.CategoryFilter{
 		ParentID: parentIDParam,
+		FindAll:  isAll,
 	}
 
 	categories, categoriesError := ctrl.repo.GetAll(ctx, filter)
