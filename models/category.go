@@ -9,5 +9,5 @@ type Category struct {
 	ParentID         *primitive.ObjectID `json:"parentId,omitempty" bson:"parentId,omitempty"`
 	Path             string              `json:"path"`
 	Level            int32               `json:"level"`
-	ParentCategories []Category          `json:"parents,omitempty"`
+	ParentCategories []Category          `json:"parents,omitempty" bson:"-"`
 }
