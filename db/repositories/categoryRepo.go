@@ -131,6 +131,14 @@ func (repo *CategoryRepository) Update(ctx context.Context, category *models.Cat
 
 	updater := bson.M{"$set": category}
 
+	if category.ParentID == nil {
+		updater["$unset"] = bson.M{
+			"parentId": "",
+		}
+	}
+
+	fmt.Print(updater)
+
 	updateResult, updateError := repo.collection().UpdateOne(ctx, filter, updater)
 	if updateError != nil {
 		return "", updateError

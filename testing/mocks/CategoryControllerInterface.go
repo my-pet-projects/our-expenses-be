@@ -38,6 +38,11 @@ func (_m *CategoryControllerInterface) GetCategoryUsages(w http.ResponseWriter, 
 	_m.Called(w, req)
 }
 
+// MoveCategory provides a mock function with given fields: w, req
+func (_m *CategoryControllerInterface) MoveCategory(w http.ResponseWriter, req *http.Request) {
+	_m.Called(w, req)
+}
+
 // UpdateCategory provides a mock function with given fields: w, req
 func (_m *CategoryControllerInterface) UpdateCategory(w http.ResponseWriter, req *http.Request) {
 	_m.Called(w, req)

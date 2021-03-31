@@ -10,6 +10,7 @@ import (
 	"our-expenses-server/validators"
 	"our-expenses-server/web/requests"
 	"our-expenses-server/web/responses"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -31,6 +32,7 @@ type CategoryControllerInterface interface {
 	UpdateCategory(w http.ResponseWriter, req *http.Request)
 	DeleteCategory(w http.ResponseWriter, req *http.Request)
 	GetCategoryUsages(w http.ResponseWriter, req *http.Request)
+	MoveCategory(w http.ResponseWriter, req *http.Request)
 }
 
 // ProvideCategoryController returns a CategoryController.
@@ -265,4 +267,103 @@ func (ctrl *CategoryController) GetCategoryUsages(w http.ResponseWriter, req *ht
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(categoryUsages)
+}
+
+// MoveCategory moves category.
+func (ctrl *CategoryController) MoveCategory(w http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+	vars := mux.Vars(req)
+	categoryID := vars["id"]
+	destinationID := req.URL.Query().Get("destinationId")
+	loggerTags := logger.Fields{loggerCategory: "move", "query": req.URL.Query()}
+	ctrl.logger.Info("Http request", loggerTags)
+
+	targetCategory, targetCategoryError := ctrl.repo.GetOne(ctx, categoryID)
+	if targetCategoryError != nil {
+		ctrl.logger.Error("Failed to get destination category from the database for move", targetCategoryError, loggerTags)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if targetCategory == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	fmt.Println(destinationID != "root")
+
+	var destinationCategory *models.Category
+	if destinationID != "root" {
+		var destinationCategoryError error
+		destinationCategory, destinationCategoryError = ctrl.repo.GetOne(ctx, destinationID)
+		if destinationCategoryError != nil {
+			ctrl.logger.Error("Failed to get destination category from the database for move", destinationCategoryError, loggerTags)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if destinationCategory == nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+	}
+
+	pathFilter := models.CategoryFilter{
+		CategoryID:   categoryID,
+		FindChildren: true,
+	}
+
+	categoryUsages, categoryUsagesError := ctrl.repo.GetAll(ctx, pathFilter)
+	if categoryUsagesError != nil {
+		ctrl.logger.Error("Failed to get category usages from the database", categoryUsagesError, loggerTags)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var targetPath string
+	var destinationPath string
+	var newPath string
+	var levelDiff int32
+	var parentID *primitive.ObjectID
+
+	parentID = nil
+	destinationPath = ""
+	levelDiff = -targetCategory.Level
+
+	if destinationCategory != nil {
+		fmt.Println("destinationCategory not nil")
+		parentID = destinationCategory.ID
+		destinationPath = destinationCategory.Path
+		levelDiff = destinationCategory.Level - targetCategory.Level
+	}
+
+	targetPath = targetCategory.Path
+	newPath = strings.Replace(targetCategory.Path, targetPath, destinationPath, -1) + "|" + targetCategory.ID.Hex()
+
+	targetCategory.Path = newPath
+	targetCategory.ParentID = parentID
+	targetCategory.Level = targetCategory.Level + levelDiff + 1
+	_, updateError := ctrl.repo.Update(ctx, targetCategory)
+	if updateError != nil {
+		ctrl.logger.Error("Failed to update a category from the database for move", updateError, loggerTags)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	for _, category := range categoryUsages {
+		newChildPath := strings.Replace(category.Path, targetPath, newPath, -1)
+		newChildLevel := category.Level + levelDiff + 1
+
+		category.Path = newChildPath
+		category.Level = newChildLevel
+		_, updateError := ctrl.repo.Update(ctx, &category)
+		if updateError != nil {
+			ctrl.logger.Error("Failed to update a category from the database for move", updateError, loggerTags)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(0)
 }

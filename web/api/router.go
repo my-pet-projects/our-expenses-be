@@ -22,6 +22,7 @@ func (router *Router) InitializeRoutes() *mux.Router {
 	apiRouter.HandleFunc("/categories/{id}", router.categoryCtrl.UpdateCategory).Methods(http.MethodPut)
 	apiRouter.HandleFunc("/categories/{id}", router.categoryCtrl.DeleteCategory).Methods(http.MethodDelete)
 	apiRouter.HandleFunc("/categories/{id}/usages", router.categoryCtrl.GetCategoryUsages).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/categories/{id}/move", router.categoryCtrl.MoveCategory).Methods(http.MethodPut)
 
 	return apiRouter
 }
