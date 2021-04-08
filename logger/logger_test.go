@@ -16,8 +16,8 @@ func TestInfo_DoNotThrowsException(t *testing.T) {
 
 	appLogger := &AppLogger{logrus.New()}
 
-	appLogger.Info(msg, Fields{})
-	appLogger.Info(msg, Fields{"key": "value"})
+	appLogger.Info(msg, FieldsSet{})
+	appLogger.Info(msg, FieldsSet{"key": "value"})
 }
 
 func TestError_DoNotThrowsException(t *testing.T) {
@@ -26,8 +26,8 @@ func TestError_DoNotThrowsException(t *testing.T) {
 
 	appLogger := &AppLogger{logrus.New()}
 
-	appLogger.Error(msg, error, Fields{})
-	appLogger.Error(msg, error, Fields{"key": "value"})
+	appLogger.Error(msg, error, FieldsSet{})
+	appLogger.Error(msg, error, FieldsSet{"key": "value"})
 }
 
 func TestFatal_DoNotThrowsException(t *testing.T) {
@@ -41,8 +41,8 @@ func TestFatal_DoNotThrowsException(t *testing.T) {
 	var fatal bool
 	appLogger.Logger.ExitFunc = func(int) { fatal = true }
 
-	appLogger.Fatal(msg, error, Fields{})
-	appLogger.Fatal(msg, error, Fields{"key": "value"})
+	appLogger.Fatal(msg, error, FieldsSet{})
+	appLogger.Fatal(msg, error, FieldsSet{"key": "value"})
 
 	assert.Equal(t, true, fatal)
 }

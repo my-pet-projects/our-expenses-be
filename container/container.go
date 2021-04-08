@@ -3,30 +3,33 @@
 package container
 
 import (
+	"our-expenses-server/api"
+	"our-expenses-server/api/handler"
+	"our-expenses-server/api/router"
 	"our-expenses-server/config"
-	"our-expenses-server/db"
-	"our-expenses-server/db/repositories"
+	"our-expenses-server/infrastructure/db"
+	"our-expenses-server/infrastructure/db/repository"
 	"our-expenses-server/logger"
-	"our-expenses-server/validators"
-	"our-expenses-server/web/api"
-	"our-expenses-server/web/api/controllers"
-	"our-expenses-server/web/server"
+	"our-expenses-server/service/category"
+	"our-expenses-server/validator"
 
 	"github.com/google/wire"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func CreateServer(database *mongo.Database) (*server.Server, error) {
+func CreateServer(database *mongo.Database) (*api.Server, error) {
 	wire.Build(
 		logger.ProvideLogger,
 		config.ProvideConfiguration,
-		server.ProvideServer,
-		api.ProvideRouter,
-		controllers.ProvideCategoryController,
-		repositories.ProvideCategoryRepository,
-		validators.ProvideValidator)
+		api.ProvideServer,
+		router.ProvideRouter,
+		validator.ProvideValidator,
+		handler.ProvideCategoryController,
+		category.ProvideCategoryService,
+		repository.ProvideCategoryRepo,
+	)
 
-	return &server.Server{}, nil
+	return &api.Server{}, nil
 }
 
 func InitDatabase() (*mongo.Database, error) {

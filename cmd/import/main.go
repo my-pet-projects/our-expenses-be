@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"our-expenses-server/config"
 	"our-expenses-server/container"
-	"our-expenses-server/db/repositories"
-	"our-expenses-server/models"
+	"our-expenses-server/entity"
+	"our-expenses-server/infrastructure/db/repository"
+	"our-expenses-server/logger"
 	"strconv"
 	"strings"
 
@@ -23,10 +25,14 @@ func main() {
 		logrus.Fatalf("Failed establish MongoDB connection: '%s'", mongoError)
 	}
 	var db mongo.Database = *mongoDb
-	categoryRepo := repositories.ProvideCategoryRepository(&db)
+
+	configConfig, _ := config.ProvideConfiguration()
+	appLogger, _ := logger.ProvideLogger(configConfig)
+	categoryRepo := repository.ProvideCategoryRepo(appLogger, &db)
+
 	ctx := context.Background()
 
-	deleteCount, deleteErr := categoryRepo.DeleteAll(ctx, models.CategoryFilter{})
+	deleteCount, deleteErr := categoryRepo.DeleteAll(ctx, entity.CategoryFilter{})
 	if deleteErr != nil {
 		logrus.Fatalf("Failed to delete categories: '%s'", deleteErr)
 	}
@@ -40,7 +46,7 @@ func main() {
 	os.Exit(0)
 }
 
-func getCategories() []models.Category {
+func getCategories() []entity.Category {
 	jsonFile, err := os.Open("cmd/import/categories.json")
 	if err != nil {
 		fmt.Println(err)
@@ -52,13 +58,13 @@ func getCategories() []models.Category {
 	var jsonCategories []category
 	_ = json.Unmarshal([]byte(byteValue), &jsonCategories)
 
-	var categories []models.Category
+	var categories []entity.Category
 	for _, jsonCategory := range jsonCategories {
 		rootCategoryID := primitive.NewObjectID()
-		rootCategory := models.Category{
-			ID:       &rootCategoryID,
+		rootCategory := entity.Category{
+			ID:       rootCategoryID,
 			Name:     jsonCategory.Name,
-			ParentID: &primitive.ObjectID{},
+			ParentID: primitive.ObjectID{},
 			Path:     fmt.Sprintf("|%s", rootCategoryID.Hex()),
 			Level:    1,
 		}
@@ -66,8 +72,8 @@ func getCategories() []models.Category {
 
 		for _, jsonSubcategory := range jsonCategory.Subcategories {
 			childCategoryID := primitive.NewObjectID()
-			childCategory := models.Category{
-				ID:       &childCategoryID,
+			childCategory := entity.Category{
+				ID:       childCategoryID,
 				Name:     jsonSubcategory.Name,
 				ParentID: rootCategory.ID,
 				Path:     strings.ToLower(fmt.Sprintf("|%s|%s", rootCategory.ID.Hex(), childCategoryID.Hex())),

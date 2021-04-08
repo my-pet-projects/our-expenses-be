@@ -1,4 +1,4 @@
-package models
+package entity
 
 // CategoryFilter struct represents a category filter.
 type CategoryFilter struct {
