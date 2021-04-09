@@ -2,9 +2,10 @@ package db
 
 import (
 	"context"
-	"our-expenses-server/config"
-	"our-expenses-server/logger"
 	"time"
+
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/config"
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

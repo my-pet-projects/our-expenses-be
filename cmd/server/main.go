@@ -2,7 +2,8 @@ package main
 
 import (
 	"os"
-	"our-expenses-server/container"
+
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/container"
 
 	"github.com/sirupsen/logrus"
 )

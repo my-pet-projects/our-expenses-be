@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"our-expenses-server/config"
-	"our-expenses-server/entity"
-	"our-expenses-server/utils"
 	"runtime"
 	"strings"
 	"time"
+
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/config"
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/entity"
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/utils"
 
 	"github.com/mattn/go-colorable"
 	"github.com/pkg/errors"

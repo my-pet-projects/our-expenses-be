@@ -3,10 +3,11 @@ package repository
 import (
 	"context"
 	"fmt"
-	"our-expenses-server/entity"
-	"our-expenses-server/logger"
 	"strings"
 	"time"
+
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/entity"
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/logger"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"

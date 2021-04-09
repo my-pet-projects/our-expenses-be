@@ -2,8 +2,9 @@ package category
 
 import (
 	"context"
-	"our-expenses-server/entity"
-	"our-expenses-server/infrastructure/db/repository"
+
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/entity"
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/infrastructure/db/repository"
 
 	"github.com/pkg/errors"
 )

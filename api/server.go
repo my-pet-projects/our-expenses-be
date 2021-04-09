@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"our-expenses-server/api/middleware"
-	"our-expenses-server/api/router"
-	"our-expenses-server/config"
-	"our-expenses-server/logger"
 	"syscall"
 	"time"
+
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/api/middleware"
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/api/router"
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/config"
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/logger"
 )
 
 // Server is a wrapper around an HTTP server.

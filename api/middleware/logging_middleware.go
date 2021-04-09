@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"net/http"
-	"our-expenses-server/logger"
 	"runtime/debug"
 	"time"
+
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/logger"
 )
 
 type responseWriter struct {

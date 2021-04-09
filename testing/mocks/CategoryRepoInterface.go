@@ -4,7 +4,7 @@ package mocks
 
 import (
 	context "context"
-	models "our-expenses-server/models"
+	models "dev.azure.com/filimonovga/ourexpenses/our-expenses-server/models"
 
 	mock "github.com/stretchr/testify/mock"
 )

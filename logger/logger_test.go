@@ -4,8 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"our-expenses-server/config"
 	"testing"
+
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/config"
 
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"

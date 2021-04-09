@@ -2,7 +2,8 @@ package router
 
 import (
 	"net/http"
-	"our-expenses-server/api/handler"
+
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/api/handler"
 
 	"github.com/gorilla/mux"
 )

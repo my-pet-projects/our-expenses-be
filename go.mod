@@ -1,4 +1,4 @@
-module our-expenses-server
+module dev.azure.com/filimonovga/ourexpenses/our-expenses-server
 
 go 1.14
 

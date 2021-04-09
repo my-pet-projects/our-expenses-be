@@ -3,7 +3,8 @@ package httperr
 import (
 	"encoding/json"
 	"net/http"
-	"our-expenses-server/entity"
+
+	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/entity"
 )
 
 type errorResponse struct {
