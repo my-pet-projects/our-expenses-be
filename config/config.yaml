@@ -1,0 +1,31 @@
+server:
+  name: our-expenses
+  host: 0.0.0.0
+  port: 8080
+  timeout:
+    shutdown: 10
+    read: 15
+    write: 10
+    idle: 5
+
+logger:
+  name: our-expenses
+  level: DEBUG
+  jsonFormat: true
+  writers:
+    file:
+      enabled: true
+      path: "storage/logs/app.log"
+
+database:
+  mongo:
+    name: our-expenses
+    uri: "#{mongo-uri}#"
+    user: "#{mongo-user}#"
+    pass: "#{mongo-pass}#"
+    database: "#{mongo-db}#"
+
+telemetry:
+  name: our-expenses
+  level: DEBUG
+  token: "#{telemetry-token}#"

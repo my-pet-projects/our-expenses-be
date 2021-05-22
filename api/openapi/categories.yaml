@@ -1,0 +1,74 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Our Expenses server
+  description: TODO
+servers:
+  - url: https://{hostname}/api
+    variables:
+      hostname:
+        default: localhost
+security:
+  # - bearerAuth: []
+paths:
+  /categories:
+    get:
+      operationId: getCategories
+      parameters:
+      responses:
+        '200':
+          description: todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Category:
+      type: object
+      required:
+        - id
+        - name
+        - parentId
+        - path
+        - level
+        - parents
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+        path:
+          type: string
+        level:
+          type: integer
+        parents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    Error:
+      type: object
+      required:
+        - status
+        - error
+      properties:
+        status:
+          type: string
+        error:
+          type: string

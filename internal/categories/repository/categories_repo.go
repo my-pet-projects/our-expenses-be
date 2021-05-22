@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/entity"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -18,18 +20,31 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// categoryModel defines category structure in MongoDB.
+type categoryModel struct {
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	Name      string             `bson:"name"`
+	ParentID  primitive.ObjectID `bson:"parentId,omitempty"`
+	Path      string             `bson:"path"`
+	Level     int                `bson:"level"`
+	CreatedAt time.Time          `bson:"createdAt"`
+	UpdatedAt time.Time          `bson:"updatedAt,omitempty"`
+}
+
 const collectionName string = "categories"
 const loggerCategory string = "repository/category"
 
 // CategoryRepository represents a struct to access categories MongoDB collection.
 type CategoryRepository struct {
-	logger logger.AppLoggerInterface
-	db     *mongo.Database
+	client *database.MongoClient
+	logger logger.LogInterface
 }
+
+var tracer trace.Tracer
 
 // CategoryRepoInterface defines a contract to persist categories in the database.
 type CategoryRepoInterface interface {
-	GetAll(ctx context.Context, filter entity.CategoryFilter) ([]entity.Category, error)
+	GetAll(ctx context.Context, filter entity.CategoryFilter) ([]domain.Category, error)
 	GetOne(ctx context.Context, id string) (*entity.Category, error)
 	Insert(ctx context.Context, category *entity.Category) (*entity.ID, error)
 	Update(ctx context.Context, category *entity.Category) (string, error)
@@ -37,27 +52,27 @@ type CategoryRepoInterface interface {
 	DeleteOne(ctx context.Context, id string) (int, error)
 }
 
-// ProvideCategoryRepository returns a CategoryRepository.
-func ProvideCategoryRepo(logger *logger.AppLogger, db *mongo.Database) *CategoryRepository {
+// NewCategoryRepo returns a CategoryRepository.
+func NewCategoryRepo(client *database.MongoClient, logger logger.LogInterface) *CategoryRepository {
+	tracer = otel.Tracer("categories repository")
 	return &CategoryRepository{
 		logger: logger,
-		db:     db,
+		client: client,
 	}
 }
 
 // collection returns collection handle.
-func (repo *CategoryRepository) collection() *mongo.Collection {
-	return repo.db.Collection(collectionName)
+func (r *CategoryRepository) collection() *mongo.Collection {
+	return r.client.Collection(collectionName)
 }
 
 // GetAll returns all categories from the database that matches the filter.
-func (repo *CategoryRepository) GetAll(ctx context.Context, filter entity.CategoryFilter) ([]entity.Category, error) {
-	tracer := otel.Tracer("category.repo.GetAll")
-	ctx, span := tracer.Start(ctx, "query database get all")
+func (r *CategoryRepository) GetAll(ctx context.Context, filter entity.CategoryFilter) ([]domain.Category, error) {
+	ctx, span := tracer.Start(ctx, "find categories in the database")
+	// span.SetAttributes(attribute.Any("from", from), attribute.Any("to", to))
 	defer span.End()
 
 	start := time.Now()
-	categories := []entity.Category{}
 
 	query := bson.M{}
 	if filter.ParentID == "" {
@@ -94,32 +109,41 @@ func (repo *CategoryRepository) GetAll(ctx context.Context, filter entity.Catego
 		query = bson.M{}
 	}
 
-	repo.logger.InfoWithFields(ctx, "Fetching categories from database ...", logger.FieldsSet{
+	r.logger.InfoWithFields(ctx, "Fetching categories from database ...", logger.FieldsSet{
 		"component": "db/start",
 		"payload":   fmt.Sprintf("%+v", query),
 	})
 
 	span.AddEvent("start query", trace.WithAttributes(attribute.Any("filter", query)))
 
-	cursor, findError := repo.collection().Find(ctx, query)
+	cursor, findError := r.collection().Find(ctx, query)
 	if findError != nil {
 		return nil, errors.Wrap(findError, "find command")
 	}
 
 	span.AddEvent("cursor iteration")
 
-	allError := cursor.All(ctx, &categories)
+	categoryModels := []categoryModel{}
+	allError := cursor.All(ctx, &categoryModels)
 	if allError != nil {
-		fmt.Printf("%+v", allError)
 		return nil, errors.Wrap(allError, "cursor iteration")
 	}
 
-	span.AddEvent("fetched finished", trace.WithAttributes(attribute.Any("items", len(categories))))
+	span.AddEvent("fetched finished", trace.WithAttributes(attribute.Any("items", len(categoryModels))))
 
-	repo.logger.InfoWithFields(ctx, fmt.Sprintf("Found %d items", len(categories)), logger.FieldsSet{
+	r.logger.InfoWithFields(ctx, fmt.Sprintf("Found %d items", len(categoryModels)), logger.FieldsSet{
 		"component": "db/end",
 		"duration":  time.Since(start),
 	})
+
+	categories := []domain.Category{}
+	for _, categoryModel := range categoryModels {
+		cat, catErr := r.unmarshalCategory(categoryModel)
+		if catErr != nil {
+			return nil, catErr
+		}
+		categories = append(categories, *cat)
+	}
 
 	return categories, nil
 }
@@ -226,4 +250,13 @@ func (repo *CategoryRepository) DeleteAll(ctx context.Context, filter entity.Cat
 	deletedDocuments := deleteResult.DeletedCount
 
 	return int(deletedDocuments), nil
+}
+
+func (r CategoryRepository) unmarshalCategory(categoryModel categoryModel) (*domain.Category, error) {
+	cat, catErr := domain.NewCategory(categoryModel.ID.Hex(), categoryModel.Name,
+		categoryModel.ParentID.Hex(), categoryModel.Path, categoryModel.Level)
+	if catErr != nil {
+		return nil, errors.Wrap(catErr, "unmarshal category")
+	}
+	return cat, nil
 }

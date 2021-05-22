@@ -5,7 +5,7 @@ import (
 	"runtime/debug"
 	"time"
 
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
 
 type responseWriter struct {
@@ -34,7 +34,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 	return
 }
 
-func LoggingMiddleware(log logger.AppLoggerInterface) func(http.Handler) http.Handler {
+func LoggingMiddleware(log logger.LogInterface) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			defer func() {

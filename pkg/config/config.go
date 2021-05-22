@@ -4,7 +4,7 @@ package config
 import (
 	"io/ioutil"
 
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )

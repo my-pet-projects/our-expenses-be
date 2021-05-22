@@ -1,42 +1,46 @@
 package main
 
 import (
+	"context"
+	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/container"
-
-	// "github.com/lightstep/otel-launcher-go/launcher"
-	"github.com/lightstep/otel-launcher-go/launcher"
-	"github.com/sirupsen/logrus"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/ports"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/server"
+	"github.com/labstack/echo/v4"
 )
 
 func main() {
-	// TODO: initialize logger and config here and pass as a dependency everywhere
-
-	otel := initLightstepTracing()
-	defer otel.Shutdown()
-
-	mongoDatabase, mongoError := container.InitDatabase()
-	if mongoError != nil {
-		logrus.Fatalf("Failed establish MongoDB connection: '%s'", mongoError)
+	ctx, cancel := context.WithCancel(context.Background())
+	app, appErr := app.NewApplication(ctx, cancel)
+	if appErr != nil {
+		log.Printf("Failed to instantiate application: %v", appErr)
+		os.Exit(1)
 	}
 
-	server, serverError := container.CreateServer(mongoDatabase)
-	if serverError != nil {
-		logrus.Fatalf("Failed to start web server: '%s'", serverError)
+	signChan := make(chan os.Signal, 1)
+	signal.Notify(signChan, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		signal := <-signChan
+		app.Logger.Warnf(ctx, "Received interuption signal: %s", signal)
+		cancel()
+	}()
+
+	server := server.NewServer(app.Logger, app.Config.Server,
+		func(router *echo.Echo) {
+			ports.RegisterHandlersWithBaseURL(router, ports.NewHTTPServer(app), "api")
+		})
+	if err := server.Start(ctx); err != nil {
+		app.Logger.Error(ctx, "Failed to start HTTP server", err)
+		os.Exit(1)
 	}
-	server.Start()
 
-	os.Exit(0)
-}
+	app.Tracer.Shutdown()
+	app.Logger.Info(ctx, "Application shutdown")
 
-func initLightstepTracing() launcher.Launcher {
-	launcher := launcher.ConfigureOpentelemetry(
-		launcher.WithLogLevel("debug"),
-		launcher.WithServiceName("our-expenses-server"),
-		launcher.WithAccessToken("vAb0nB0w2ib4fMEa6VdZ0X47ZpoUJCjmu1xvSB8mT9JIQe3oBdvOpB5hmhKa3M5RddRqwfbHwsJZX5LlvK2XiAKNP/eO9KSyFB+wJ6bM"),
-		// launcher.WithLogger(log),
-	)
-	logrus.Info("Initialized Lightstep OpenTelemetry launcher")
-	return launcher
+	defer os.Exit(0)
 }

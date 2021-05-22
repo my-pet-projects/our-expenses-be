@@ -3,13 +3,13 @@ package middleware
 import (
 	"net/http"
 
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/utils"
 
 	"github.com/google/uuid"
 )
 
-func CorrelationMiddleware(log logger.AppLoggerInterface) func(http.Handler) http.Handler {
+func CorrelationMiddleware(log logger.LogInterface) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			correlationIDHeader := utils.CorrelationIDHeader
