@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"strings"
 
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/config"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/container"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/entity"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/infrastructure/db/repository"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/config"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/container"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/entity"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/infrastructure/db/repository"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/logger"
 
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"

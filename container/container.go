@@ -3,15 +3,15 @@
 package container
 
 import (
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/api"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/api/handler"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/api/router"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/config"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/infrastructure/db"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/infrastructure/db/repository"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/logger"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/service/category"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/validator"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/api"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/api/handler"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/api/router"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/config"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/infrastructure/db"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/infrastructure/db/repository"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/service/category"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/validator"
 
 	"github.com/google/wire"
 	"go.mongodb.org/mongo-driver/mongo"

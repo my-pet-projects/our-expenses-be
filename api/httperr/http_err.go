@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/entity"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/entity"
 )
 
 type errorResponse struct {

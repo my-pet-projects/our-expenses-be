@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/config"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/config"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/logger"
+	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,7 +21,11 @@ func CreateMongoDBPool(config *config.Config, appLogger *logger.AppLogger) (*mon
 	ctx := context.Background()
 	appLogger.Info(ctx, "Initializing MongoDB connection ...")
 
-	clientOptions := options.Client().ApplyURI(config.Mongo.URI)
+	// TODO: user and pass
+	// https://github.com/noelchavezsimbron/otel-api-customers-go/blob/2752135b53bcec1bd7bf0a7799fdf8525bb0554b/helpers/mongodb_helper.go
+	clientOptions := options.Client()
+	clientOptions.Monitor = otelmongo.NewMonitor("our-expenses-server")
+	clientOptions.ApplyURI(config.Mongo.URI)
 	clientOptions.SetReadConcern(readconcern.Majority())
 	clientOptions.SetWriteConcern(writeconcern.New(writeconcern.WMajority()))
 

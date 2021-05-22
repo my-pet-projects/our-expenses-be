@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/config"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/entity"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/utils"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/config"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/entity"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/utils"
 
 	"github.com/mattn/go-colorable"
 	"github.com/pkg/errors"

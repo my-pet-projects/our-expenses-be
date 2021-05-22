@@ -27,3 +27,11 @@ If you want to learn more about creating good readme files then refer the follow
 
 export GOPRIVATE=_.concur.com,_.wdf.sap.corp,\*.tools.sap,dev.azure.com
 export GONOSUMDB=dev.azure.com
+
+
+
+# https://github.com/thethan/fdr-users/tree/master/pkg/users
+
+https://github.com/thanhnamit/shortenit/blob/master/api-shortenit-v1/internal/service.go
+
+https://github.com/storageos/api-manager/blob/569ba4e5bd15e9673c6556ff5c0d73dac519adcd/controllers/node-label/controller.go

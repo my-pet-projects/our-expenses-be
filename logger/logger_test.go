@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/config"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/config"
 
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"

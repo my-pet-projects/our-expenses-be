@@ -7,12 +7,14 @@ import (
 	"strconv"
 	"strings"
 
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/api/httperr"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/api/presenter"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/entity"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/logger"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/service/category"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/validator"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/api/httperr"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/api/presenter"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/entity"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/service/category"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/validator"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -50,7 +52,10 @@ func ProvideCategoryController(service *category.CategoryService, logger *logger
 
 // GetAllCategories returns a list of all categories.
 func (ctrl *CategoryController) GetAll(w http.ResponseWriter, req *http.Request) {
-	ctx := req.Context()
+	tracer := otel.Tracer("category.handler.getall")
+	ctx, span := tracer.Start(req.Context(), "handle category get all")
+	defer span.End()
+
 	parentIDParam := req.URL.Query().Get("parentId")
 	allParam := req.URL.Query().Get("all")
 	ctrl.logger.Info(ctx, "Handling HTTP request to get all categories")
@@ -67,6 +72,10 @@ func (ctrl *CategoryController) GetAll(w http.ResponseWriter, req *http.Request)
 
 	categories, categoriesErr := ctrl.service.GetAll(ctx, filter)
 	if categoriesErr != nil {
+
+		span.RecordError(categoriesErr)
+
+		span.SetStatus(codes.Error, "critical error")
 		ctrl.logger.Error(ctx, "Failed to fetch categories from database", categoriesErr)
 		httperr.RespondWithError(categoriesErr, w, req)
 		return
@@ -84,6 +93,8 @@ func (ctrl *CategoryController) GetAll(w http.ResponseWriter, req *http.Request)
 			UpdatedAt: c.UpdatedAt,
 		})
 	}
+
+	span.SetStatus(codes.Ok, "node labels applied to storageos")
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(toJson)

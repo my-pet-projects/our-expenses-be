@@ -9,10 +9,10 @@ import (
 	"syscall"
 	"time"
 
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/api/middleware"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/api/router"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/config"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/api/middleware"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/api/router"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/config"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/logger"
 )
 
 // Server is a wrapper around an HTTP server.

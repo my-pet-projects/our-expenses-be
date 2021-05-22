@@ -3,9 +3,10 @@ package router
 import (
 	"net/http"
 
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/api/handler"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/api/handler"
 
 	"github.com/gorilla/mux"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 )
 
 // Router defines available application controllers.
@@ -17,6 +18,7 @@ type Router struct {
 func (router *Router) InitializeRoutes() *mux.Router {
 	apiRouter := mux.NewRouter().StrictSlash(true).PathPrefix("/api").Subrouter()
 
+	apiRouter.Use(otelmux.Middleware("our-expenses-server"))
 	apiRouter.HandleFunc("/categories", router.category.Create).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/categories", router.category.GetAll).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/categories/{id}", router.category.GetOne).Methods(http.MethodGet)

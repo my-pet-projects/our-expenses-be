@@ -1,8 +1,8 @@
 package router
 
 // import (
-// 	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/testing/mocks"
-// 	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/web/api/controllers"
+// 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/testing/mocks"
+// 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/web/api/controllers"
 // 	"testing"
 
 // 	"github.com/stretchr/testify/assert"

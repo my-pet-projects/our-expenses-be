@@ -3,8 +3,9 @@ package category
 import (
 	"context"
 
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/entity"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/infrastructure/db/repository"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/entity"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/infrastructure/db/repository"
+	"go.opentelemetry.io/otel"
 
 	"github.com/pkg/errors"
 )
@@ -33,6 +34,10 @@ func ProvideCategoryService(repo *repository.CategoryRepository) *CategoryServic
 
 // GetAll fetches categories.
 func (s *CategoryService) GetAll(ctx context.Context, filter entity.CategoryFilter) ([]entity.Category, error) {
+	tracer := otel.Tracer("category.service.GetAll")
+	ctx, span := tracer.Start(ctx, "service get all")
+	defer span.End()
+
 	categories, categoriesErr := s.repo.GetAll(ctx, filter)
 	if categoriesErr != nil {
 		return nil, entity.NewAppDbError(errors.Wrap(categoriesErr, "fetch categories"))

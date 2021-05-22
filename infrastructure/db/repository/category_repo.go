@@ -6,8 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/entity"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/entity"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/logger"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -49,6 +52,10 @@ func (repo *CategoryRepository) collection() *mongo.Collection {
 
 // GetAll returns all categories from the database that matches the filter.
 func (repo *CategoryRepository) GetAll(ctx context.Context, filter entity.CategoryFilter) ([]entity.Category, error) {
+	tracer := otel.Tracer("category.repo.GetAll")
+	ctx, span := tracer.Start(ctx, "query database get all")
+	defer span.End()
+
 	start := time.Now()
 	categories := []entity.Category{}
 
@@ -92,16 +99,22 @@ func (repo *CategoryRepository) GetAll(ctx context.Context, filter entity.Catego
 		"payload":   fmt.Sprintf("%+v", query),
 	})
 
+	span.AddEvent("start query", trace.WithAttributes(attribute.Any("filter", query)))
+
 	cursor, findError := repo.collection().Find(ctx, query)
 	if findError != nil {
 		return nil, errors.Wrap(findError, "find command")
 	}
+
+	span.AddEvent("cursor iteration")
 
 	allError := cursor.All(ctx, &categories)
 	if allError != nil {
 		fmt.Printf("%+v", allError)
 		return nil, errors.Wrap(allError, "cursor iteration")
 	}
+
+	span.AddEvent("fetched finished", trace.WithAttributes(attribute.Any("items", len(categories))))
 
 	repo.logger.InfoWithFields(ctx, fmt.Sprintf("Found %d items", len(categories)), logger.FieldsSet{
 		"component": "db/end",

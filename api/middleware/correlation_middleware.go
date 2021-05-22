@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/logger"
-	"dev.azure.com/filimonovga/ourexpenses/our-expenses-server/utils"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/utils"
 
 	"github.com/google/uuid"
 )
