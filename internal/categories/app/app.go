@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/command"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/query"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
@@ -24,7 +25,7 @@ type Application struct {
 
 // Commands struct holds available application commands.
 type Commands struct {
-	// StoreLocation command.StoreLocationsHandlerInterface
+	AddCategory command.AddCategoryHandlerInterface
 }
 
 // Queries struct holds available application queries.
@@ -64,7 +65,7 @@ func NewApplication(ctx context.Context, cancel context.CancelFunc) (*Applicatio
 
 	return &Application{
 		Commands: Commands{
-			// StoreLocation: command.NewStoreLocationsHandler(locationsRepo, log),
+			AddCategory: command.NewAddCategoryHandler(categoryRepo, log),
 		},
 		Queries: Queries{
 			FindCategories: query.NewFindCategoriesHandler(categoryRepo, log),

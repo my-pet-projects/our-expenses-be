@@ -3,6 +3,8 @@ package domain
 import (
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 // Category represents a domain object.
@@ -14,19 +16,23 @@ type Category struct {
 	level     int
 	parents   []Category
 	createdAt time.Time
-	updatedAt time.Time
+	updatedAt *time.Time
 }
 
 // NewCategory creates a new category domain object.
-func NewCategory(id string, name string, parentID *string, path string, level int) (*Category, error) {
-
+func NewCategory(id string, name string, parentID *string, path string, level int,
+	createdAt time.Time, updatedAt *time.Time) (*Category, error) {
+	if name == "" {
+		return nil, errors.New("empty name")
+	}
 	return &Category{
 		id:        id,
 		name:      name,
 		parentID:  parentID,
 		path:      path,
 		level:     level,
-		createdAt: time.Now(),
+		createdAt: createdAt,
+		updatedAt: updatedAt,
 	}, nil
 }
 

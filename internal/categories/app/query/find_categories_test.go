@@ -80,5 +80,6 @@ func TestFindCategoriesHandle_RepoSuccess_ReturnsCategories(t *testing.T) {
 	// Assert
 	repo.AssertExpectations(t)
 	assert.NotNil(t, query, "Result should not be nil.")
+	assert.Equal(t, categories, query, "Should return categories.")
 	assert.Nil(t, err, "Error result should be nil.")
 }

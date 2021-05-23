@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -60,7 +61,7 @@ func TestFindCategoryHandle_RepoSuccess_CategoryHasNoPath_ReturnsCategory(t *tes
 	categoryId := "categoryId"
 	parentId1 := "parentId1"
 	path := ""
-	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, 1)
+	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, 1, time.Now(), nil)
 
 	matchIdFn := func(id string) bool {
 		return id == categoryId
@@ -77,6 +78,7 @@ func TestFindCategoryHandle_RepoSuccess_CategoryHasNoPath_ReturnsCategory(t *tes
 	// Assert
 	repo.AssertExpectations(t)
 	assert.NotNil(t, query, "Result should not be nil.")
+	assert.Equal(t, category, query, "Should return category.")
 	assert.Nil(t, err, "Error result should be nil.")
 }
 
@@ -89,9 +91,9 @@ func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoSuccess_Returns
 	parentId1 := "parentId1"
 	parentId2 := "parentId2"
 	path := fmt.Sprintf("|%s|%s", parentId1, parentId2)
-	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, 1)
-	parentCategory1, _ := domain.NewCategory(parentId1, "name1", nil, path, 1)
-	parentCategory2, _ := domain.NewCategory(parentId2, "name1", nil, path, 1)
+	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, 1, time.Now(), nil)
+	parentCategory1, _ := domain.NewCategory(parentId1, "name1", nil, path, 1, time.Now(), nil)
+	parentCategory2, _ := domain.NewCategory(parentId2, "name1", nil, path, 1, time.Now(), nil)
 	parentCategories := []domain.Category{*parentCategory1, *parentCategory2}
 	parentFilter := domain.CategoryFilter{CategoryIDs: []string{parentId1, parentId2}}
 
@@ -115,6 +117,7 @@ func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoSuccess_Returns
 	// Assert
 	repo.AssertExpectations(t)
 	assert.NotNil(t, query, "Result should not be nil.")
+	assert.Equal(t, category, query, "Should return category.")
 	assert.Equal(t, parentCategories, query.Parents(), "Parents should match.")
 	assert.Nil(t, err, "Error result should be nil.")
 }
@@ -128,7 +131,7 @@ func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoError_ThrowsErr
 	parentId1 := "parentId1"
 	parentId2 := "parentId2"
 	path := fmt.Sprintf("|%s|%s", parentId1, parentId2)
-	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, 1)
+	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, 1, time.Now(), nil)
 	parentFilter := domain.CategoryFilter{CategoryIDs: []string{parentId1, parentId2}}
 
 	matchIdFn := func(id string) bool {

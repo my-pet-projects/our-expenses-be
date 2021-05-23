@@ -5,12 +5,12 @@ package ports
 
 // Category defines model for Category.
 type Category struct {
-	Id       string      `json:"id"`
-	Level    int         `json:"level"`
-	Name     string      `json:"name"`
-	ParentId *string     `json:"parentId,omitempty"`
-	Parents  *[]Category `json:"parents,omitempty"`
-	Path     string      `json:"path"`
+	// Embedded struct due to allOf(#/components/schemas/NewCategory)
+	NewCategory `yaml:",inline"`
+	// Embedded fields due to inline allOf schema
+
+	// Unique id of the category
+	Id string `json:"id"`
 }
 
 // Error defines model for Error.
@@ -23,6 +23,17 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+// NewCategory defines model for NewCategory.
+type NewCategory struct {
+	Level int `json:"level"`
+
+	// Name of the category
+	Name     string      `json:"name"`
+	ParentId *string     `json:"parentId,omitempty"`
+	Parents  *[]Category `json:"parents,omitempty"`
+	Path     string      `json:"path"`
+}
+
 // FindCategoriesParams defines parameters for FindCategories.
 type FindCategoriesParams struct {
 
@@ -32,3 +43,9 @@ type FindCategoriesParams struct {
 	// include all category children
 	AllChildren *bool `json:"allChildren,omitempty"`
 }
+
+// AddCategoryJSONBody defines parameters for AddCategory.
+type AddCategoryJSONBody NewCategory
+
+// AddCategoryJSONRequestBody defines body for AddCategory for application/json ContentType.
+type AddCategoryJSONRequestBody AddCategoryJSONBody

@@ -44,6 +44,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Creates a new category
+      description: Creates a new category in the system.
+      operationId: addCategory
+      requestBody:
+        description: Category to add to the system
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCategory'
+      responses:
+        '200':
+          description: Category response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /categories/{id}:
     get:
       summary: Returns a category by ID
@@ -78,18 +103,25 @@ components:
       bearerFormat: JWT
   schemas:
     Category:
+      allOf:
+        - $ref: '#/components/schemas/NewCategory'
+        - required:
+          - id
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Unique id of the category
+    NewCategory:
       type: object
       required:
-        - id
         - name
         - path
         - level
       properties:
-        id:
-          type: string
-          format: uuid
         name:
           type: string
+          description: Name of the category
         parentId:
           type: string
           format: uuid

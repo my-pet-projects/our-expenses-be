@@ -247,12 +247,15 @@ func (r *CategoryRepository) DeleteAll(ctx context.Context, filter domain.Catego
 
 func (r CategoryRepository) marshalCategory(category *domain.Category) categoryModel {
 	id, _ := primitive.ObjectIDFromHex(category.ID())
-	parentID, _ := primitive.ObjectIDFromHex(*category.ParentID())
+	parentIDObj := primitive.NilObjectID
+	if category.ParentID() != nil {
+		parentIDObj, _ = primitive.ObjectIDFromHex(*category.ParentID())
+	}
 
 	return categoryModel{
 		ID:       id,
 		Name:     category.Name(),
-		ParentID: parentID,
+		ParentID: parentIDObj,
 		Path:     category.Path(),
 		Level:    category.Level(),
 	}
@@ -265,7 +268,7 @@ func (r CategoryRepository) unmarshalCategory(categoryModel categoryModel) (*dom
 		parentID = &parentIDHex
 	}
 	cat, catErr := domain.NewCategory(categoryModel.ID.Hex(), categoryModel.Name,
-		parentID, categoryModel.Path, categoryModel.Level)
+		parentID, categoryModel.Path, categoryModel.Level, categoryModel.CreatedAt, &categoryModel.UpdatedAt)
 	if catErr != nil {
 		return nil, errors.Wrap(catErr, "unmarshal category")
 	}

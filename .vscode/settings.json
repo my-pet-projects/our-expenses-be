@@ -1,6 +1,7 @@
 {
     "go.lintTool": "golangci-lint",
     "go.lintFlags": ["--fast"],
+    "go.testFlags": ["-v"],
     "go.coverOnSave": true,
     "go.coverageDecorator": {
         "type": "gutter",

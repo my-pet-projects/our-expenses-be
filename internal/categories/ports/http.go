@@ -10,6 +10,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/command"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/server/httperr"
 )
@@ -70,6 +71,37 @@ func (h HTTPServer) FindCategoryByID(echoCtx echo.Context, id string) error {
 	return echoCtx.JSON(http.StatusOK, categoryRes)
 }
 
+// AddCategory adds a new category.
+func (h HTTPServer) AddCategory(echoCtx echo.Context) error {
+	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category http request")
+	defer span.End()
+
+	var newCategory NewCategory
+	bindErr := echoCtx.Bind(&newCategory)
+	if bindErr != nil {
+		catErr := Error{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid format for a new category",
+		}
+		h.app.Logger.Error(ctx, "Invalid category format", bindErr)
+		return echoCtx.JSON(http.StatusBadRequest, catErr)
+	}
+
+	cmd := command.NewCategory{
+		ParentID: newCategory.ParentId,
+		Name:     newCategory.Name,
+		Path:     newCategory.Path,
+		Level:    newCategory.Level,
+	}
+	categoryID, categoryIDErr := h.app.Commands.AddCategory.Handle(ctx, cmd)
+	if categoryIDErr != nil {
+		h.app.Logger.Error(ctx, "Failed to create category", categoryIDErr)
+		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(categoryIDErr))
+	}
+
+	return echoCtx.JSON(http.StatusCreated, categoryID)
+}
+
 func categoriesToResponse(domainCategories []domain.Category) []Category {
 	categories := []Category{}
 	for _, cat := range domainCategories {
@@ -86,12 +118,14 @@ func categoryToResponse(domainCategory *domain.Category) Category {
 		parents = &categoryParents
 	}
 	category := Category{
-		Id:       domainCategory.ID(),
-		Name:     domainCategory.Name(),
-		ParentId: domainCategory.ParentID(),
-		Path:     domainCategory.Path(),
-		Level:    domainCategory.Level(),
-		Parents:  parents,
+		Id: domainCategory.ID(),
+		NewCategory: NewCategory{
+			Name:     domainCategory.Name(),
+			ParentId: domainCategory.ParentID(),
+			Path:     domainCategory.Path(),
+			Level:    domainCategory.Level(),
+			Parents:  parents,
+		},
 	}
 	return category
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/labstack/echo/v4"
@@ -11,6 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/command"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/ports"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/testing/mocks"
@@ -205,5 +207,112 @@ func TestFindCategory_NilQueryResult_Returns404(t *testing.T) {
 	logger.AssertExpectations(t)
 	query.AssertExpectations(t)
 	assert.Equal(t, http.StatusNotFound, response.Code, "HTTP status should be 404.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestAddCategory_SuccessfulCommand_Returns201(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	cmd := new(mocks.AddCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			AddCategory: cmd,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	categoryJSON := `{"name":"category"}`
+	categoryId := "categoryId"
+
+	matchCatFn := func(command command.NewCategory) bool {
+		return command.Name == "category"
+	}
+	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(&categoryId, nil)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", strings.NewReader(categoryJSON))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.AddCategory(ctx)
+
+	// Assert
+	logger.AssertExpectations(t)
+	cmd.AssertExpectations(t)
+	assert.Equal(t, http.StatusCreated, response.Code, "HTTP status should be 201.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestAddCategory_FailedCommand_Returns500(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	cmd := new(mocks.AddCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			AddCategory: cmd,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	categoryJSON := `{"name":"category"}`
+
+	cmd.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", strings.NewReader(categoryJSON))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.AddCategory(ctx)
+
+	// Assert
+	logger.AssertExpectations(t)
+	cmd.AssertExpectations(t)
+	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestAddCategory_InvalidPayload_Returns400(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	cmd := new(mocks.AddCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			AddCategory: cmd,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	categoryJSON := "invalid"
+
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", strings.NewReader(categoryJSON))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.AddCategory(ctx)
+
+	// Assert
+	logger.AssertExpectations(t)
+	cmd.AssertExpectations(t)
+	assert.Equal(t, http.StatusBadRequest, response.Code, "HTTP status should be 400.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }

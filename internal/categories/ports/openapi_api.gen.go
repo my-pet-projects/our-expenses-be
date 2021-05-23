@@ -16,6 +16,9 @@ type ServerInterface interface {
 	// Returns all categories
 	// (GET /categories)
 	FindCategories(ctx echo.Context, params FindCategoriesParams) error
+	// Creates a new category
+	// (POST /categories)
+	AddCategory(ctx echo.Context) error
 	// Returns a category by ID
 	// (GET /categories/{id})
 	FindCategoryByID(ctx echo.Context, id string) error
@@ -48,6 +51,15 @@ func (w *ServerInterfaceWrapper) FindCategories(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.FindCategories(ctx, params)
+	return err
+}
+
+// AddCategory converts echo context to params.
+func (w *ServerInterfaceWrapper) AddCategory(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.AddCategory(ctx)
 	return err
 }
 
@@ -96,6 +108,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.GET(baseURL+"/categories", wrapper.FindCategories)
+	router.POST(baseURL+"/categories", wrapper.AddCategory)
 	router.GET(baseURL+"/categories/:id", wrapper.FindCategoryByID)
 
 }
