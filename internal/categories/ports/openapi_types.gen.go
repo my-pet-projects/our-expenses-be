@@ -5,16 +5,30 @@ package ports
 
 // Category defines model for Category.
 type Category struct {
-	Id       string     `json:"id"`
-	Level    int        `json:"level"`
-	Name     string     `json:"name"`
-	ParentId string     `json:"parentId"`
-	Parents  []Category `json:"parents"`
-	Path     string     `json:"path"`
+	Id       string      `json:"id"`
+	Level    int         `json:"level"`
+	Name     string      `json:"name"`
+	ParentId *string     `json:"parentId,omitempty"`
+	Parents  *[]Category `json:"parents,omitempty"`
+	Path     string      `json:"path"`
 }
 
 // Error defines model for Error.
 type Error struct {
-	Error  string `json:"error"`
-	Status string `json:"status"`
+
+	// Error code
+	Code int32 `json:"code"`
+
+	// Error message
+	Message string `json:"message"`
+}
+
+// FindCategoriesParams defines parameters for FindCategories.
+type FindCategoriesParams struct {
+
+	// category parentId to filter by
+	ParentId *string `json:"parentId,omitempty"`
+
+	// include all category children
+	AllChildren *bool `json:"allChildren,omitempty"`
 }

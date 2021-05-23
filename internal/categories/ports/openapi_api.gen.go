@@ -4,14 +4,21 @@
 package ports
 
 import (
+	"fmt"
+	"net/http"
+
+	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/labstack/echo/v4"
 )
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-
+	// Returns all categories
 	// (GET /categories)
-	GetCategories(ctx echo.Context) error
+	FindCategories(ctx echo.Context, params FindCategoriesParams) error
+	// Returns a category by ID
+	// (GET /categories/{id})
+	FindCategoryByID(ctx echo.Context, id string) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -19,12 +26,44 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
-// GetCategories converts echo context to params.
-func (w *ServerInterfaceWrapper) GetCategories(ctx echo.Context) error {
+// FindCategories converts echo context to params.
+func (w *ServerInterfaceWrapper) FindCategories(ctx echo.Context) error {
 	var err error
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params FindCategoriesParams
+	// ------------- Optional query parameter "parentId" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "parentId", ctx.QueryParams(), &params.ParentId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter parentId: %s", err))
+	}
+
+	// ------------- Optional query parameter "allChildren" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "allChildren", ctx.QueryParams(), &params.AllChildren)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter allChildren: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetCategories(ctx)
+	err = w.Handler.FindCategories(ctx, params)
+	return err
+}
+
+// FindCategoryByID converts echo context to params.
+func (w *ServerInterfaceWrapper) FindCategoryByID(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.FindCategoryByID(ctx, id)
 	return err
 }
 
@@ -56,6 +95,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/categories", wrapper.GetCategories)
+	router.GET(baseURL+"/categories", wrapper.FindCategories)
+	router.GET(baseURL+"/categories/:id", wrapper.FindCategoryByID)
 
 }

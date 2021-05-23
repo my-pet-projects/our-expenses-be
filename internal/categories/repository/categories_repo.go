@@ -6,19 +6,22 @@ import (
 	"strings"
 	"time"
 
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/entity"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
-
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
+
+var categoriesRepoTracer trace.Tracer
+
+const collectionName string = "categories"
 
 // categoryModel defines category structure in MongoDB.
 type categoryModel struct {
@@ -31,30 +34,25 @@ type categoryModel struct {
 	UpdatedAt time.Time          `bson:"updatedAt,omitempty"`
 }
 
-const collectionName string = "categories"
-const loggerCategory string = "repository/category"
-
 // CategoryRepository represents a struct to access categories MongoDB collection.
 type CategoryRepository struct {
 	client *database.MongoClient
 	logger logger.LogInterface
 }
 
-var tracer trace.Tracer
-
 // CategoryRepoInterface defines a contract to persist categories in the database.
 type CategoryRepoInterface interface {
-	GetAll(ctx context.Context, filter entity.CategoryFilter) ([]domain.Category, error)
-	GetOne(ctx context.Context, id string) (*entity.Category, error)
-	Insert(ctx context.Context, category *entity.Category) (*entity.ID, error)
-	Update(ctx context.Context, category *entity.Category) (string, error)
-	DeleteAll(ctx context.Context, filter entity.CategoryFilter) (int, error)
+	GetAll(ctx context.Context, filter domain.CategoryFilter) ([]domain.Category, error)
+	GetOne(ctx context.Context, id string) (*domain.Category, error)
+	Insert(ctx context.Context, category *domain.Category) (*string, error)
+	Update(ctx context.Context, category *domain.Category) (string, error)
+	DeleteAll(ctx context.Context, filter domain.CategoryFilter) (int, error)
 	DeleteOne(ctx context.Context, id string) (int, error)
 }
 
 // NewCategoryRepo returns a CategoryRepository.
 func NewCategoryRepo(client *database.MongoClient, logger logger.LogInterface) *CategoryRepository {
-	tracer = otel.Tracer("categories repository")
+	categoriesRepoTracer = otel.Tracer("categories_repository")
 	return &CategoryRepository{
 		logger: logger,
 		client: client,
@@ -67,12 +65,10 @@ func (r *CategoryRepository) collection() *mongo.Collection {
 }
 
 // GetAll returns all categories from the database that matches the filter.
-func (r *CategoryRepository) GetAll(ctx context.Context, filter entity.CategoryFilter) ([]domain.Category, error) {
-	ctx, span := tracer.Start(ctx, "find categories in the database")
-	// span.SetAttributes(attribute.Any("from", from), attribute.Any("to", to))
+func (r *CategoryRepository) GetAll(ctx context.Context, filter domain.CategoryFilter) ([]domain.Category, error) {
+	ctx, span := categoriesRepoTracer.Start(ctx, "find categories in the database")
+	span.SetAttributes(attribute.Any("filter", filter))
 	defer span.End()
-
-	start := time.Now()
 
 	query := bson.M{}
 	if filter.ParentID == "" {
@@ -131,11 +127,6 @@ func (r *CategoryRepository) GetAll(ctx context.Context, filter entity.CategoryF
 
 	span.AddEvent("fetched finished", trace.WithAttributes(attribute.Any("items", len(categoryModels))))
 
-	r.logger.InfoWithFields(ctx, fmt.Sprintf("Found %d items", len(categoryModels)), logger.FieldsSet{
-		"component": "db/end",
-		"duration":  time.Since(start),
-	})
-
 	categories := []domain.Category{}
 	for _, categoryModel := range categoryModels {
 		cat, catErr := r.unmarshalCategory(categoryModel)
@@ -149,13 +140,16 @@ func (r *CategoryRepository) GetAll(ctx context.Context, filter entity.CategoryF
 }
 
 // GetOne returns a single category from the database.
-func (repo *CategoryRepository) GetOne(ctx context.Context, id string) (*entity.Category, error) {
-	category := entity.Category{}
+func (r *CategoryRepository) GetOne(ctx context.Context, id string) (*domain.Category, error) {
+	ctx, span := categoriesRepoTracer.Start(ctx, "find categories in the database")
+	span.SetAttributes(attribute.Any("id", id))
+	defer span.End()
 
 	objID, _ := primitive.ObjectIDFromHex(id)
 
 	filter := bson.M{"_id": objID}
-	findError := repo.collection().FindOne(ctx, filter).Decode(&category)
+	categoryDbModel := categoryModel{}
+	findError := r.collection().FindOne(ctx, filter).Decode(&categoryDbModel)
 	if findError != nil {
 		if findError == mongo.ErrNoDocuments {
 			return nil, nil
@@ -163,48 +157,47 @@ func (repo *CategoryRepository) GetOne(ctx context.Context, id string) (*entity.
 		return nil, findError
 	}
 
-	return &category, nil
+	category, categoryErr := r.unmarshalCategory(categoryDbModel)
+	if categoryErr != nil {
+		return nil, categoryErr
+	}
+
+	return category, nil
 }
 
 // Insert a category into the database.
-func (repo *CategoryRepository) Insert(ctx context.Context, category *entity.Category) (*entity.ID, error) {
-	start := time.Now()
+func (r *CategoryRepository) Insert(ctx context.Context, category *domain.Category) (*string, error) {
+	ctx, span := categoriesRepoTracer.Start(ctx, "add category to the database")
+	defer span.End()
 
-	// Datadase trace object?
-	repo.logger.InfoWithFields(ctx, "Inserting category into database ...", logger.FieldsSet{
-		"component": "db/start",
-		"payload":   fmt.Sprintf("%+v", category),
-	})
+	categoryDbModel := r.marshalCategory(category)
 
-	insRes, insErr := repo.collection().InsertOne(ctx, category)
+	insRes, insErr := r.collection().InsertOne(ctx, categoryDbModel)
 	if insErr != nil {
-		return nil, errors.Wrap(insErr, "failed to insert category into db")
+		return nil, errors.Wrap(insErr, "mongodb insert category")
 	}
+
 	objID, _ := insRes.InsertedID.(primitive.ObjectID)
+	objIDString := objID.Hex()
 
-	repo.logger.InfoWithFields(ctx, fmt.Sprintf("Inserted category with ID %s", objID.Hex()), logger.FieldsSet{
-		"component": "db/end",
-		"duration":  time.Since(start),
-	})
-
-	return &objID, nil
+	return &objIDString, nil
 }
 
 // Update updates a category in the database.
-func (repo *CategoryRepository) Update(ctx context.Context, category *entity.Category) (string, error) {
+func (r *CategoryRepository) Update(ctx context.Context, category *domain.Category) (string, error) {
 	filter := bson.M{"_id": category.ID}
 
 	updater := bson.M{"$set": category}
 
-	if &category.ParentID == nil {
-		updater["$unset"] = bson.M{
-			"parentId": "",
-		}
-	}
+	// if &category.ParentID == nil {
+	// 	updater["$unset"] = bson.M{
+	// 		"parentId": "",
+	// 	}
+	// }
 
 	fmt.Print(updater)
 
-	updateResult, updateError := repo.collection().UpdateOne(ctx, filter, updater)
+	updateResult, updateError := r.collection().UpdateOne(ctx, filter, updater)
 	if updateError != nil {
 		return "", updateError
 	}
@@ -215,11 +208,11 @@ func (repo *CategoryRepository) Update(ctx context.Context, category *entity.Cat
 }
 
 // DeleteOne deletes a category in the database.
-func (repo *CategoryRepository) DeleteOne(ctx context.Context, id string) (int, error) {
+func (r *CategoryRepository) DeleteOne(ctx context.Context, id string) (int, error) {
 	categoryID, _ := primitive.ObjectIDFromHex(id)
 	filter := bson.M{"_id": categoryID}
 
-	deleteResult, deleteError := repo.collection().DeleteOne(ctx, filter)
+	deleteResult, deleteError := r.collection().DeleteOne(ctx, filter)
 	if deleteError != nil {
 		return 0, deleteError
 	}
@@ -230,7 +223,7 @@ func (repo *CategoryRepository) DeleteOne(ctx context.Context, id string) (int, 
 }
 
 // DeleteAll deletes all categories in the database.
-func (repo *CategoryRepository) DeleteAll(ctx context.Context, filter entity.CategoryFilter) (int, error) {
+func (r *CategoryRepository) DeleteAll(ctx context.Context, filter domain.CategoryFilter) (int, error) {
 	query := bson.M{}
 
 	if len(filter.Path) != 0 && filter.FindChildren {
@@ -242,7 +235,7 @@ func (repo *CategoryRepository) DeleteAll(ctx context.Context, filter entity.Cat
 		}
 	}
 
-	deleteResult, deleteError := repo.collection().DeleteMany(ctx, query)
+	deleteResult, deleteError := r.collection().DeleteMany(ctx, query)
 	if deleteError != nil {
 		return 0, deleteError
 	}
@@ -252,9 +245,27 @@ func (repo *CategoryRepository) DeleteAll(ctx context.Context, filter entity.Cat
 	return int(deletedDocuments), nil
 }
 
+func (r CategoryRepository) marshalCategory(category *domain.Category) categoryModel {
+	id, _ := primitive.ObjectIDFromHex(category.ID())
+	parentID, _ := primitive.ObjectIDFromHex(*category.ParentID())
+
+	return categoryModel{
+		ID:       id,
+		Name:     category.Name(),
+		ParentID: parentID,
+		Path:     category.Path(),
+		Level:    category.Level(),
+	}
+}
+
 func (r CategoryRepository) unmarshalCategory(categoryModel categoryModel) (*domain.Category, error) {
+	var parentID *string
+	if !categoryModel.ParentID.IsZero() {
+		parentIDHex := categoryModel.ParentID.Hex()
+		parentID = &parentIDHex
+	}
 	cat, catErr := domain.NewCategory(categoryModel.ID.Hex(), categoryModel.Name,
-		categoryModel.ParentID.Hex(), categoryModel.Path, categoryModel.Level)
+		parentID, categoryModel.Path, categoryModel.Level)
 	if catErr != nil {
 		return nil, errors.Wrap(catErr, "unmarshal category")
 	}

@@ -13,11 +13,53 @@ security:
 paths:
   /categories:
     get:
-      operationId: getCategories
+      summary: Returns all categories
+      description: |
+        Returns all categories from the system.
+      operationId: findCategories
       parameters:
+        - name: parentId
+          in: query
+          description: category parentId to filter by
+          required: false
+          schema:
+            type: string
+        - name: allChildren
+          in: query
+          description: include all category children
+          required: false
+          schema:
+            type: boolean
       responses:
         '200':
-          description: todo
+          description: categories response
+          content:
+            application/json:
+              schema:
+                type: array
+                $ref: '#/components/schemas/Category'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /categories/{id}:
+    get:
+      summary: Returns a category by ID
+      description: Returns a category based on a single ID
+      operationId: findCategoryByID
+      parameters:
+        - name: id
+          in: path
+          description: ID of category to fetch
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: category response
           content:
             application/json:
               schema:
@@ -28,7 +70,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
 components:
   securitySchemes:
     bearerAuth:
@@ -41,10 +82,8 @@ components:
       required:
         - id
         - name
-        - parentId
         - path
         - level
-        - parents
       properties:
         id:
           type: string
@@ -65,10 +104,13 @@ components:
     Error:
       type: object
       required:
-        - status
-        - error
+        - code
+        - message
       properties:
-        status:
+        code:
+          type: integer
+          format: int32
+          description: Error code
+        message:
           type: string
-        error:
-          type: string
+          description: Error message

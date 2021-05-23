@@ -1,4 +1,6 @@
 {
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": ["--fast"],
     "go.coverOnSave": true,
     "go.coverageDecorator": {
         "type": "gutter",
@@ -8,7 +10,7 @@
         "uncoveredGutterStyle": "blockred"
     },
     "go.coverOnSingleTest": true,
-    "go.buildOnSave":"workspace",
+    "go.buildOnSave": "workspace",
     "cSpell.words": [
         "Infof",
         "Upserted",
@@ -22,9 +24,11 @@
         "mattn",
         "mongodb",
         "oapi",
+        "openapi",
         "otel",
         "otelecho",
         "otelmongo",
-        "stretchr"
+        "stretchr",
+        "unmarshalled"
     ]
 }

@@ -3,14 +3,14 @@ package app
 import (
 	"context"
 
+	"github.com/pkg/errors"
+
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/query"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
-
-	"github.com/pkg/errors"
 )
 
 // Application provides an application.
@@ -30,7 +30,7 @@ type Commands struct {
 // Queries struct holds available application queries.
 type Queries struct {
 	FindCategories query.FindCategoriesHandlerInterface
-	// FindTrackingDates query.FindTrackingDatesHandlerInterface
+	FindCategory   query.FindCategoryHandlerInterface
 }
 
 // NewApplication returns application instance.
@@ -68,7 +68,7 @@ func NewApplication(ctx context.Context, cancel context.CancelFunc) (*Applicatio
 		},
 		Queries: Queries{
 			FindCategories: query.NewFindCategoriesHandler(categoryRepo, log),
-			// FindTrackingDates: query.NewFindTrackingDatesHandler(locationsRepo, log),
+			FindCategory:   query.NewFindCategoryHandler(categoryRepo, log),
 		},
 		Logger: log,
 		Config: *cfg,
