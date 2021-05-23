@@ -8,12 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
 
 // Server provides an HTTP server.

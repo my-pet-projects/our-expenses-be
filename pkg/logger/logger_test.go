@@ -7,9 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 )
 
 func TestNewLogger_InvalidLogLevel_ThrowsError(t *testing.T) {

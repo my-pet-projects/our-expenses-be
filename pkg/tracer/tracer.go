@@ -1,8 +1,9 @@
 package tracer
 
 import (
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 	"github.com/lightstep/otel-launcher-go/launcher"
+
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 )
 
 // Tracer is a wrapper around Lightstep tracer.

@@ -3,10 +3,11 @@ package database_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/testing/mocks"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestNewMongoClient_InvalidConfig_ThrowsError(t *testing.T) {

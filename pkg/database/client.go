@@ -5,16 +5,16 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
-
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
+	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
+
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
 
 // MongoClient provides a MongoDB client.

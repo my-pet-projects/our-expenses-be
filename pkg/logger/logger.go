@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/apperror"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
-
 	"github.com/mattn/go-colorable"
 	"github.com/sirupsen/logrus"
+
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/apperror"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 )
 
 // Logger is a wrapper around Logrus logger.

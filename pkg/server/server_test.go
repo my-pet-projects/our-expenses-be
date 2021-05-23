@@ -6,11 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/testing/mocks"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/testing/mocks"
 )
 
 func TestNewServer_ReturnsServerInstanceWithSettingsFromConfig(t *testing.T) {

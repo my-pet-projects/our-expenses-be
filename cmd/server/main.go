@@ -7,10 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/labstack/echo/v4"
+
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/ports"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/server"
-	"github.com/labstack/echo/v4"
 )
 
 func main() {

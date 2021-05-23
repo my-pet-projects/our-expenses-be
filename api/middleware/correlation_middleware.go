@@ -3,10 +3,10 @@ package middleware
 import (
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/utils"
-
-	"github.com/google/uuid"
 )
 
 func CorrelationMiddleware(log logger.LogInterface) func(http.Handler) http.Handler {
