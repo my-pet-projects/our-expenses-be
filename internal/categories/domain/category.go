@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"strings"
 	"time"
 )
@@ -74,8 +73,6 @@ func (c Category) ParentIDs() []string {
 		}
 		parentIDs = append(parentIDs, parentID)
 	}
-	fmt.Printf("\n\n %+v \n\n", parentIDs)
-	fmt.Printf("\n\n %+v \n\n", strings.Split(c.path, "|"))
 	return parentIDs
 }
 

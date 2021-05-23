@@ -2,7 +2,6 @@ package query
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
@@ -46,8 +45,6 @@ func (h FindCategoryHandler) Handle(ctx context.Context, id string) (*domain.Cat
 	}
 
 	if category != nil && len(category.ParentIDs()) != 0 {
-		fmt.Printf("\n\n %+v \n\n", len(category.ParentIDs()))
-
 		parentCategoriesFilter := domain.CategoryFilter{
 			CategoryIDs: category.ParentIDs(),
 		}
