@@ -27,6 +27,7 @@ type Application struct {
 type Commands struct {
 	AddCategory    command.AddCategoryHandlerInterface
 	UpdateCategory command.UpdateCategoryHandlerInterface
+	DeleteCategory command.DeleteCategoryHandlerInterface
 }
 
 // Queries struct holds available application queries.
@@ -68,6 +69,7 @@ func NewApplication(ctx context.Context, cancel context.CancelFunc) (*Applicatio
 		Commands: Commands{
 			AddCategory:    command.NewAddCategoryHandler(categoryRepo, log),
 			UpdateCategory: command.NewUpdateCategoryHandler(categoryRepo, log),
+			DeleteCategory: command.NewDeleteCategoryHandler(categoryRepo, log),
 		},
 		Queries: Queries{
 			FindCategories: query.NewFindCategoriesHandler(categoryRepo, log),

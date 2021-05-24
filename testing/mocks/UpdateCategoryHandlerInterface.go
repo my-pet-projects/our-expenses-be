@@ -7,6 +7,8 @@ import (
 
 	command "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/command"
 
+	domain "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -16,15 +18,24 @@ type UpdateCategoryHandlerInterface struct {
 }
 
 // Handle provides a mock function with given fields: ctx, args
-func (_m *UpdateCategoryHandlerInterface) Handle(ctx context.Context, args command.UpdateCategoryCommandArgs) error {
+func (_m *UpdateCategoryHandlerInterface) Handle(ctx context.Context, args command.UpdateCategoryCommandArgs) (*domain.UpdateResult, error) {
 	ret := _m.Called(ctx, args)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, command.UpdateCategoryCommandArgs) error); ok {
+	var r0 *domain.UpdateResult
+	if rf, ok := ret.Get(0).(func(context.Context, command.UpdateCategoryCommandArgs) *domain.UpdateResult); ok {
 		r0 = rf(ctx, args)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.UpdateResult)
+		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, command.UpdateCategoryCommandArgs) error); ok {
+		r1 = rf(ctx, args)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }

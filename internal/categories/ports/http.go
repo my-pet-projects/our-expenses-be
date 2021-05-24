@@ -125,13 +125,36 @@ func (h HTTPServer) UpdateCategory(echoCtx echo.Context, id string) error {
 		Path:     category.Path,
 		Level:    category.Level,
 	}
-	categoryUpdErr := h.app.Commands.UpdateCategory.Handle(ctx, cmdArgs)
+	_, categoryUpdErr := h.app.Commands.UpdateCategory.Handle(ctx, cmdArgs)
 	if categoryUpdErr != nil {
 		h.app.Logger.Error(ctx, "Failed to update category", categoryUpdErr)
 		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(categoryUpdErr))
 	}
 
 	return echoCtx.NoContent(http.StatusOK)
+}
+
+// DeleteCategory deletes a category.
+func (h HTTPServer) DeleteCategory(echoCtx echo.Context, id string) error {
+	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle delete category http request")
+	span.SetAttributes(attribute.Any("id", id))
+	defer span.End()
+
+	categoryDelResult, categoryDelErr := h.app.Commands.DeleteCategory.Handle(ctx, id)
+	if categoryDelErr != nil {
+		h.app.Logger.Error(ctx, "Failed to delete category", categoryDelErr)
+		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(categoryDelErr))
+	}
+
+	if categoryDelResult == nil {
+		catErr := Error{
+			Code:    http.StatusNotFound,
+			Message: fmt.Sprintf("Could not find category with ID %s", id),
+		}
+		return echoCtx.JSON(http.StatusNotFound, catErr)
+	}
+
+	return echoCtx.NoContent(http.StatusNoContent)
 }
 
 func categoriesToResponse(domainCategories []domain.Category) []Category {

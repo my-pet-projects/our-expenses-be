@@ -32,7 +32,7 @@ type UpdateCategoryHandler struct {
 
 // UpdateCategoryHandlerInterface defines a contract to handle command.
 type UpdateCategoryHandlerInterface interface {
-	Handle(ctx context.Context, args UpdateCategoryCommandArgs) error
+	Handle(ctx context.Context, args UpdateCategoryCommandArgs) (*domain.UpdateResult, error)
 }
 
 // NewUpdateCategoryHandler returns command handler.
@@ -48,19 +48,22 @@ func NewUpdateCategoryHandler(
 }
 
 // Handle handles update category command.
-func (h UpdateCategoryHandler) Handle(ctx context.Context, args UpdateCategoryCommandArgs) error {
+func (h UpdateCategoryHandler) Handle(
+	ctx context.Context,
+	args UpdateCategoryCommandArgs,
+) (*domain.UpdateResult, error) {
 	ctx, span := updateCategoryTracer.Start(ctx, "execute update category command")
 	defer span.End()
 
 	category, categoryErr := domain.NewCategory(args.ID, args.Name, args.ParentID, args.Path, args.Level, time.Now(), nil)
 	if categoryErr != nil {
-		return errors.Wrap(categoryErr, "prepare category failed")
+		return nil, errors.Wrap(categoryErr, "prepare category failed")
 	}
 
-	_, updateCmdErr := h.repo.Update(ctx, category)
+	updateCmdResult, updateCmdErr := h.repo.Update(ctx, category)
 	if updateCmdErr != nil {
-		return errors.Wrap(updateCmdErr, "update category command failed")
+		return nil, errors.Wrap(updateCmdErr, "update category command failed")
 	}
 
-	return nil
+	return updateCmdResult, nil
 }

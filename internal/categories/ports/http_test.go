@@ -331,11 +331,12 @@ func TestUpdateCategory_SuccessfulCommand_Returns200(t *testing.T) {
 	}
 	categoryJSON := `{"name":"category"}`
 	categoryId := "categoryId"
+	updateResult := &domain.UpdateResult{UpdateCount: 10}
 
 	matchCatFn := func(args command.UpdateCategoryCommandArgs) bool {
 		return args.Name == "category"
 	}
-	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(nil)
+	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(updateResult, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", strings.NewReader(categoryJSON))
@@ -370,7 +371,7 @@ func TestUpdateCategory_FailedCommand_Returns500(t *testing.T) {
 	categoryJSON := `{"name":"category"}`
 	categoryId := "categoryId"
 
-	cmd.On("Handle", mock.Anything, mock.Anything).Return(errors.New("error"))
+	cmd.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
 
 	response := httptest.NewRecorder()
@@ -424,4 +425,114 @@ func TestUpdateCategory_InvalidPayload_Returns400(t *testing.T) {
 	cmd.AssertExpectations(t)
 	assert.Equal(t, http.StatusBadRequest, response.Code, "HTTP status should be 400.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestDeleteCategory_SuccessfulCommand_Returns204(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	cmd := new(mocks.DeleteCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			DeleteCategory: cmd,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	categoryId := "categoryId"
+	deleteResult := &domain.DeleteResult{DeleteCount: 10}
+
+	matchCatFn := func(id string) bool {
+		return id == categoryId
+	}
+	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(deleteResult, nil)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", nil)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.DeleteCategory(ctx, categoryId)
+
+	// Assert
+	logger.AssertExpectations(t)
+	cmd.AssertExpectations(t)
+	assert.Equal(t, http.StatusNoContent, response.Code, "HTTP status should be 204.")
+	assert.Empty(t, response.Body.String(), "Should return empty body.")
+}
+
+func TestDeleteCategory_FailedCommand_Returns500(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	cmd := new(mocks.DeleteCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			DeleteCategory: cmd,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	categoryId := "categoryId"
+
+	matchCatFn := func(id string) bool {
+		return id == categoryId
+	}
+	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(nil, errors.New("error"))
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", nil)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.DeleteCategory(ctx, categoryId)
+
+	// Assert
+	logger.AssertExpectations(t)
+	cmd.AssertExpectations(t)
+	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
+	assert.NotEmpty(t, response.Body.String(), "Should return not empty body.")
+}
+
+func TestDeleteCategory_EmptyDeleteResult_Returns404(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	cmd := new(mocks.DeleteCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			DeleteCategory: cmd,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	categoryId := "categoryId"
+
+	matchCatFn := func(id string) bool {
+		return id == categoryId
+	}
+	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(nil, nil)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", nil)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.DeleteCategory(ctx, categoryId)
+
+	// Assert
+	logger.AssertExpectations(t)
+	cmd.AssertExpectations(t)
+	assert.Equal(t, http.StatusNotFound, response.Code, "HTTP status should be 404.")
+	assert.NotEmpty(t, response.Body.String(), "Should return not empty body.")
 }

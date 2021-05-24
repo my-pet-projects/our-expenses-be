@@ -19,6 +19,9 @@ type ServerInterface interface {
 	// Creates a new category
 	// (POST /categories)
 	AddCategory(ctx echo.Context) error
+	// Deletes a category by ID
+	// (DELETE /categories/{id})
+	DeleteCategory(ctx echo.Context, id string) error
 	// Returns a category by ID
 	// (GET /categories/{id})
 	FindCategoryByID(ctx echo.Context, id string) error
@@ -63,6 +66,22 @@ func (w *ServerInterfaceWrapper) AddCategory(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.AddCategory(ctx)
+	return err
+}
+
+// DeleteCategory converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteCategory(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.DeleteCategory(ctx, id)
 	return err
 }
 
@@ -128,6 +147,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.GET(baseURL+"/categories", wrapper.FindCategories)
 	router.POST(baseURL+"/categories", wrapper.AddCategory)
+	router.DELETE(baseURL+"/categories/:id", wrapper.DeleteCategory)
 	router.GET(baseURL+"/categories/:id", wrapper.FindCategoryByID)
 	router.PUT(baseURL+"/categories/:id", wrapper.UpdateCategory)
 

@@ -37,10 +37,11 @@ func TestUpdateCategoryHandler_CategoryError_ThrowsError(t *testing.T) {
 	sut := command.NewUpdateCategoryHandler(repo, log)
 
 	// Act
-	err := sut.Handle(ctx, args)
+	result, err := sut.Handle(ctx, args)
 
 	// Assert
 	repo.AssertExpectations(t)
+	assert.Nil(t, result, "Result should be nil.")
 	assert.NotNil(t, err, "Error result should not be nil.")
 }
 
@@ -64,16 +65,17 @@ func TestUpdateCategoryHandler_RepoError_ThrowsError(t *testing.T) {
 			cat.Level() == args.Level && cat.ParentID() == args.ParentID
 	}
 	repo.On("Update", mock.Anything,
-		mock.MatchedBy(matchCategoryFn)).Return("", errors.New("error"))
+		mock.MatchedBy(matchCategoryFn)).Return(nil, errors.New("error"))
 
 	// SUT
 	sut := command.NewUpdateCategoryHandler(repo, log)
 
 	// Act
-	err := sut.Handle(ctx, args)
+	result, err := sut.Handle(ctx, args)
 
 	// Assert
 	repo.AssertExpectations(t)
+	assert.Nil(t, result, "Result should be nil.")
 	assert.NotNil(t, err, "Error result should not be nil.")
 }
 
@@ -91,21 +93,23 @@ func TestUpdateCategoryHandler_RepoSuccess_ReturnsResult(t *testing.T) {
 		Path:     "path",
 		Level:    1,
 	}
+	updateResult := &domain.UpdateResult{UpdateCount: 10}
 
 	matchCategoryFn := func(cat *domain.Category) bool {
 		return cat.ID() == args.ID && cat.Name() == args.Name && cat.Path() == args.Path &&
 			cat.Level() == args.Level && cat.ParentID() == args.ParentID
 	}
 	repo.On("Update", mock.Anything,
-		mock.MatchedBy(matchCategoryFn)).Return(categoryID, nil)
+		mock.MatchedBy(matchCategoryFn)).Return(updateResult, nil)
 
 	// SUT
 	sut := command.NewUpdateCategoryHandler(repo, log)
 
 	// Act
-	err := sut.Handle(ctx, args)
+	result, err := sut.Handle(ctx, args)
 
 	// Assert
 	repo.AssertExpectations(t)
+	assert.NotNil(t, result, "Result should be nil.")
 	assert.Nil(t, err, "Error result should be nil.")
 }
