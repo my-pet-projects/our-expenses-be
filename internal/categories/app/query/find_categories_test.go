@@ -3,7 +3,6 @@ package query_test
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,13 +30,15 @@ func TestFindCategoriesHandle_RepoError_ThrowsError(t *testing.T) {
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	filter := domain.CategoryFilter{
-		ParentID: "parentId1",
-		FindAll:  true,
+	parentId := "parentId"
+	findQuery := query.FindCategoriesQuery{
+		ParentID:        &parentId,
+		FindAllChildren: true,
 	}
 
-	matchFilterFn := func(f domain.CategoryFilter) bool {
-		return reflect.DeepEqual(f, filter)
+	matchFilterFn := func(filter domain.CategoryFilter) bool {
+		return filter.ParentID == findQuery.ParentID &&
+			filter.FindChildren == findQuery.FindAllChildren
 	}
 	repo.On("GetAll", mock.Anything,
 		mock.MatchedBy(matchFilterFn)).Return(nil, errors.New("error"))
@@ -46,7 +47,7 @@ func TestFindCategoriesHandle_RepoError_ThrowsError(t *testing.T) {
 	sut := query.NewFindCategoriesHandler(repo, log)
 
 	// Act
-	query, err := sut.Handle(ctx, filter)
+	query, err := sut.Handle(ctx, findQuery)
 
 	// Assert
 	repo.AssertExpectations(t)
@@ -59,14 +60,16 @@ func TestFindCategoriesHandle_RepoSuccess_ReturnsCategories(t *testing.T) {
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	filter := domain.CategoryFilter{
-		ParentID: "parentId1",
-		FindAll:  true,
+	parentId := "parentId"
+	findQuery := query.FindCategoriesQuery{
+		ParentID:        &parentId,
+		FindAllChildren: true,
 	}
 	categories := []domain.Category{{}}
 
-	matchFilterFn := func(f domain.CategoryFilter) bool {
-		return reflect.DeepEqual(f, filter)
+	matchFilterFn := func(filter domain.CategoryFilter) bool {
+		return filter.ParentID == findQuery.ParentID &&
+			filter.FindChildren == findQuery.FindAllChildren
 	}
 	repo.On("GetAll", mock.Anything,
 		mock.MatchedBy(matchFilterFn)).Return(categories, nil)
@@ -75,7 +78,7 @@ func TestFindCategoriesHandle_RepoSuccess_ReturnsCategories(t *testing.T) {
 	sut := query.NewFindCategoriesHandler(repo, log)
 
 	// Act
-	query, err := sut.Handle(ctx, filter)
+	query, err := sut.Handle(ctx, findQuery)
 
 	// Assert
 	repo.AssertExpectations(t)

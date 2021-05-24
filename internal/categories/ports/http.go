@@ -11,6 +11,7 @@ import (
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/command"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/query"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/server/httperr"
 )
@@ -34,17 +35,23 @@ func NewHTTPServer(app *app.Application) HTTPServer {
 func (h HTTPServer) FindCategories(echoCtx echo.Context, params FindCategoriesParams) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get categories http request")
 	defer span.End()
+	h.app.Logger.Info(ctx, "Handling get categories HTTP request")
 
-	filter := domain.CategoryFilter{}
-
-	query, queryErr := h.app.Queries.FindCategories.Handle(ctx, filter)
+	query := query.FindCategoriesQuery{
+		ParentID:        params.ParentId,
+		FindAllChildren: false,
+	}
+	if params.AllChildren != nil {
+		query.FindAllChildren = *params.AllChildren
+	}
+	queryRes, queryErr := h.app.Queries.FindCategories.Handle(ctx, query)
 	if queryErr != nil {
 		h.app.Logger.Error(ctx, "Failed to fetch categories", queryErr)
 		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(queryErr))
 	}
 
-	categoriesRes := categoriesToResponse(query)
-	return echoCtx.JSON(http.StatusOK, categoriesRes)
+	response := categoriesToResponse(queryRes)
+	return echoCtx.JSON(http.StatusOK, response)
 }
 
 // FindCategoryByID returns categories.
@@ -52,14 +59,18 @@ func (h HTTPServer) FindCategoryByID(echoCtx echo.Context, id string) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category http request")
 	span.SetAttributes(attribute.Any("id", id))
 	defer span.End()
+	h.app.Logger.Info(ctx, "Handling get category HTTP request")
 
-	query, queryErr := h.app.Queries.FindCategory.Handle(ctx, id)
+	query := query.FindCategoryQuery{
+		CategoryID: id,
+	}
+	queryRes, queryErr := h.app.Queries.FindCategory.Handle(ctx, query)
 	if queryErr != nil {
 		h.app.Logger.Error(ctx, "Failed to find category", queryErr)
 		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(queryErr))
 	}
 
-	if query == nil {
+	if queryRes == nil {
 		catErr := Error{
 			Code:    http.StatusNotFound,
 			Message: fmt.Sprintf("Could not find category with ID %s", id),
@@ -67,7 +78,7 @@ func (h HTTPServer) FindCategoryByID(echoCtx echo.Context, id string) error {
 		return echoCtx.JSON(http.StatusNotFound, catErr)
 	}
 
-	categoryRes := categoryToResponse(query)
+	categoryRes := categoryToResponse(queryRes)
 	return echoCtx.JSON(http.StatusOK, categoryRes)
 }
 
@@ -75,6 +86,7 @@ func (h HTTPServer) FindCategoryByID(echoCtx echo.Context, id string) error {
 func (h HTTPServer) AddCategory(echoCtx echo.Context) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category http request")
 	defer span.End()
+	h.app.Logger.Info(ctx, "Handling add categories HTTP request")
 
 	var newCategory Category
 	bindErr := echoCtx.Bind(&newCategory)
@@ -87,7 +99,7 @@ func (h HTTPServer) AddCategory(echoCtx echo.Context) error {
 		return echoCtx.JSON(http.StatusBadRequest, catErr)
 	}
 
-	cmdArgs := command.NewCategoryCommandArgs{
+	cmdArgs := command.NewCategoryCommand{
 		ParentID: newCategory.ParentId,
 		Name:     newCategory.Name,
 		Path:     newCategory.Path,
@@ -106,6 +118,7 @@ func (h HTTPServer) AddCategory(echoCtx echo.Context) error {
 func (h HTTPServer) UpdateCategory(echoCtx echo.Context, id string) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle update category http request")
 	defer span.End()
+	h.app.Logger.Info(ctx, "Handling update category HTTP request")
 
 	var category Category
 	bindErr := echoCtx.Bind(&category)
@@ -118,14 +131,14 @@ func (h HTTPServer) UpdateCategory(echoCtx echo.Context, id string) error {
 		return echoCtx.JSON(http.StatusBadRequest, catErr)
 	}
 
-	cmdArgs := command.UpdateCategoryCommandArgs{
+	cmd := command.UpdateCategoryCommand{
 		ID:       category.Id,
 		ParentID: category.ParentId,
 		Name:     category.Name,
 		Path:     category.Path,
 		Level:    category.Level,
 	}
-	_, categoryUpdErr := h.app.Commands.UpdateCategory.Handle(ctx, cmdArgs)
+	_, categoryUpdErr := h.app.Commands.UpdateCategory.Handle(ctx, cmd)
 	if categoryUpdErr != nil {
 		h.app.Logger.Error(ctx, "Failed to update category", categoryUpdErr)
 		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(categoryUpdErr))
@@ -139,14 +152,18 @@ func (h HTTPServer) DeleteCategory(echoCtx echo.Context, id string) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle delete category http request")
 	span.SetAttributes(attribute.Any("id", id))
 	defer span.End()
+	h.app.Logger.Info(ctx, "Handling delete categories HTTP request")
 
-	categoryDelResult, categoryDelErr := h.app.Commands.DeleteCategory.Handle(ctx, id)
-	if categoryDelErr != nil {
-		h.app.Logger.Error(ctx, "Failed to delete category", categoryDelErr)
-		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(categoryDelErr))
+	cmd := command.DeleteCategoryCommand{
+		CategoryID: id,
+	}
+	cmdRes, cmdErr := h.app.Commands.DeleteCategory.Handle(ctx, cmd)
+	if cmdErr != nil {
+		h.app.Logger.Error(ctx, "Failed to delete category", cmdErr)
+		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(cmdErr))
 	}
 
-	if categoryDelResult == nil {
+	if cmdRes == nil {
 		catErr := Error{
 			Code:    http.StatusNotFound,
 			Message: fmt.Sprintf("Could not find category with ID %s", id),
@@ -162,15 +179,19 @@ func (h HTTPServer) FindCategoryUsages(echoCtx echo.Context, id string) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category usages http request")
 	span.SetAttributes(attribute.Any("id", id))
 	defer span.End()
+	h.app.Logger.Info(ctx, "Handling get category usages HTTP request")
 
-	query, queryErr := h.app.Queries.FindCategoryUsages.Handle(ctx, id)
+	query := query.FindCategoryUsagesQuery{
+		CategoryID: id,
+	}
+	queryRes, queryErr := h.app.Queries.FindCategoryUsages.Handle(ctx, query)
 	if queryErr != nil {
 		h.app.Logger.Error(ctx, "Failed to find category usages", queryErr)
 		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(queryErr))
 	}
 
-	categoryRes := categoriesToResponse(query)
-	return echoCtx.JSON(http.StatusOK, categoryRes)
+	response := categoriesToResponse(queryRes)
+	return echoCtx.JSON(http.StatusOK, response)
 }
 
 func categoriesToResponse(domainCategories []domain.Category) []Category {

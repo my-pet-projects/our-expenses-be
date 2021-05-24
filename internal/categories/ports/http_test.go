@@ -13,6 +13,7 @@ import (
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/command"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/query"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/ports"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/testing/mocks"
@@ -33,17 +34,18 @@ func TestFindCategories_SuccessfulQuery_Returns200(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	query := new(mocks.FindCategoriesHandlerInterface)
+	handler := new(mocks.FindCategoriesHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{},
 		Queries: app.Queries{
-			FindCategories: query,
+			FindCategories: handler,
 		},
 		Logger: logger,
 	}
 	categories := []domain.Category{{}}
 
-	query.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(categories, nil)
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(categories, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
@@ -63,7 +65,7 @@ func TestFindCategories_SuccessfulQuery_Returns200(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	query.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusOK, response.Code, "HTTP status should be 200.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
@@ -72,17 +74,18 @@ func TestFindCategories_FailedQuery_Returns500(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	query := new(mocks.FindCategoriesHandlerInterface)
+	handler := new(mocks.FindCategoriesHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{},
 		Queries: app.Queries{
-			FindCategories: query,
+			FindCategories: handler,
 		},
 		Logger: logger,
 	}
 
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
-	query.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+	handler.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("error"))
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
@@ -97,7 +100,7 @@ func TestFindCategories_FailedQuery_Returns500(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	query.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
@@ -106,11 +109,11 @@ func TestFindCategory_SuccessfulQuery_Returns200(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	query := new(mocks.FindCategoryHandlerInterface)
+	handler := new(mocks.FindCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{},
 		Queries: app.Queries{
-			FindCategory: query,
+			FindCategory: handler,
 		},
 		Logger: logger,
 	}
@@ -118,10 +121,11 @@ func TestFindCategory_SuccessfulQuery_Returns200(t *testing.T) {
 	category := domain.Category{}
 	category.SetParents([]domain.Category{{}})
 
-	matchIdFn := func(id string) bool {
-		return id == categoryId
+	matchIdFn := func(q query.FindCategoryQuery) bool {
+		return q.CategoryID == categoryId
 	}
-	query.On("Handle", mock.Anything, mock.MatchedBy(matchIdFn)).Return(&category, nil)
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchIdFn)).Return(&category, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
@@ -135,7 +139,7 @@ func TestFindCategory_SuccessfulQuery_Returns200(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	query.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusOK, response.Code, "HTTP status should be 200.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
@@ -144,18 +148,19 @@ func TestFindCategory_FailedQuery_Returns500(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	query := new(mocks.FindCategoryHandlerInterface)
+	handler := new(mocks.FindCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{},
 		Queries: app.Queries{
-			FindCategory: query,
+			FindCategory: handler,
 		},
 		Logger: logger,
 	}
 	categoryID := "categoryId"
 
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
-	query.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+	handler.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("error"))
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
@@ -169,7 +174,7 @@ func TestFindCategory_FailedQuery_Returns500(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	query.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
@@ -178,20 +183,21 @@ func TestFindCategory_NilQueryResult_Returns404(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	query := new(mocks.FindCategoryHandlerInterface)
+	handler := new(mocks.FindCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{},
 		Queries: app.Queries{
-			FindCategory: query,
+			FindCategory: handler,
 		},
 		Logger: logger,
 	}
 	categoryId := "categoryId"
 
-	matchIdFn := func(id string) bool {
-		return id == categoryId
+	matchIdFn := func(q query.FindCategoryQuery) bool {
+		return q.CategoryID == categoryId
 	}
-	query.On("Handle", mock.Anything, mock.MatchedBy(matchIdFn)).Return(nil, nil)
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchIdFn)).Return(nil, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
@@ -205,7 +211,7 @@ func TestFindCategory_NilQueryResult_Returns404(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	query.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusNotFound, response.Code, "HTTP status should be 404.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
@@ -214,10 +220,10 @@ func TestAddCategory_SuccessfulCommand_Returns201(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	cmd := new(mocks.AddCategoryHandlerInterface)
+	handler := new(mocks.AddCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{
-			AddCategory: cmd,
+			AddCategory: handler,
 		},
 		Queries: app.Queries{},
 		Logger:  logger,
@@ -225,10 +231,11 @@ func TestAddCategory_SuccessfulCommand_Returns201(t *testing.T) {
 	categoryJSON := `{"name":"category"}`
 	categoryId := "categoryId"
 
-	matchCatFn := func(command command.NewCategoryCommandArgs) bool {
+	matchCatFn := func(command command.NewCategoryCommand) bool {
 		return command.Name == "category"
 	}
-	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(&categoryId, nil)
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(&categoryId, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", strings.NewReader(categoryJSON))
@@ -243,7 +250,7 @@ func TestAddCategory_SuccessfulCommand_Returns201(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	cmd.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusCreated, response.Code, "HTTP status should be 201.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
@@ -252,17 +259,18 @@ func TestAddCategory_FailedCommand_Returns500(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	cmd := new(mocks.AddCategoryHandlerInterface)
+	handler := new(mocks.AddCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{
-			AddCategory: cmd,
+			AddCategory: handler,
 		},
 		Queries: app.Queries{},
 		Logger:  logger,
 	}
 	categoryJSON := `{"name":"category"}`
 
-	cmd.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
 
 	response := httptest.NewRecorder()
@@ -278,7 +286,7 @@ func TestAddCategory_FailedCommand_Returns500(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	cmd.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
@@ -287,16 +295,17 @@ func TestAddCategory_InvalidPayload_Returns400(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	cmd := new(mocks.AddCategoryHandlerInterface)
+	handler := new(mocks.AddCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{
-			AddCategory: cmd,
+			AddCategory: handler,
 		},
 		Queries: app.Queries{},
 		Logger:  logger,
 	}
 	categoryJSON := "invalid"
 
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
 
 	response := httptest.NewRecorder()
@@ -312,7 +321,7 @@ func TestAddCategory_InvalidPayload_Returns400(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	cmd.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusBadRequest, response.Code, "HTTP status should be 400.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
@@ -321,10 +330,10 @@ func TestUpdateCategory_SuccessfulCommand_Returns200(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	cmd := new(mocks.UpdateCategoryHandlerInterface)
+	handler := new(mocks.UpdateCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{
-			UpdateCategory: cmd,
+			UpdateCategory: handler,
 		},
 		Queries: app.Queries{},
 		Logger:  logger,
@@ -333,10 +342,11 @@ func TestUpdateCategory_SuccessfulCommand_Returns200(t *testing.T) {
 	categoryId := "categoryId"
 	updateResult := &domain.UpdateResult{UpdateCount: 10}
 
-	matchCatFn := func(args command.UpdateCategoryCommandArgs) bool {
+	matchCatFn := func(args command.UpdateCategoryCommand) bool {
 		return args.Name == "category"
 	}
-	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(updateResult, nil)
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(updateResult, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", strings.NewReader(categoryJSON))
@@ -351,7 +361,7 @@ func TestUpdateCategory_SuccessfulCommand_Returns200(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	cmd.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusOK, response.Code, "HTTP status should be 200.")
 	assert.Empty(t, response.Body.String(), "Should return empty body.")
 }
@@ -360,10 +370,10 @@ func TestUpdateCategory_FailedCommand_Returns500(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	cmd := new(mocks.UpdateCategoryHandlerInterface)
+	handler := new(mocks.UpdateCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{
-			UpdateCategory: cmd,
+			UpdateCategory: handler,
 		},
 		Queries: app.Queries{},
 		Logger:  logger,
@@ -371,7 +381,8 @@ func TestUpdateCategory_FailedCommand_Returns500(t *testing.T) {
 	categoryJSON := `{"name":"category"}`
 	categoryId := "categoryId"
 
-	cmd.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
 
 	response := httptest.NewRecorder()
@@ -387,7 +398,7 @@ func TestUpdateCategory_FailedCommand_Returns500(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	cmd.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
@@ -396,10 +407,10 @@ func TestUpdateCategory_InvalidPayload_Returns400(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	cmd := new(mocks.UpdateCategoryHandlerInterface)
+	handler := new(mocks.UpdateCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{
-			UpdateCategory: cmd,
+			UpdateCategory: handler,
 		},
 		Queries: app.Queries{},
 		Logger:  logger,
@@ -407,6 +418,7 @@ func TestUpdateCategory_InvalidPayload_Returns400(t *testing.T) {
 	categoryJSON := "invalid"
 	categoryId := "categoryId"
 
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
 
 	response := httptest.NewRecorder()
@@ -422,7 +434,7 @@ func TestUpdateCategory_InvalidPayload_Returns400(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	cmd.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusBadRequest, response.Code, "HTTP status should be 400.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
@@ -431,10 +443,10 @@ func TestDeleteCategory_SuccessfulCommand_Returns204(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	cmd := new(mocks.DeleteCategoryHandlerInterface)
+	handler := new(mocks.DeleteCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{
-			DeleteCategory: cmd,
+			DeleteCategory: handler,
 		},
 		Queries: app.Queries{},
 		Logger:  logger,
@@ -442,10 +454,11 @@ func TestDeleteCategory_SuccessfulCommand_Returns204(t *testing.T) {
 	categoryId := "categoryId"
 	deleteResult := &domain.DeleteResult{DeleteCount: 10}
 
-	matchCatFn := func(id string) bool {
-		return id == categoryId
+	matchCatFn := func(cmd command.DeleteCategoryCommand) bool {
+		return cmd.CategoryID == categoryId
 	}
-	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(deleteResult, nil)
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(deleteResult, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
@@ -459,7 +472,7 @@ func TestDeleteCategory_SuccessfulCommand_Returns204(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	cmd.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusNoContent, response.Code, "HTTP status should be 204.")
 	assert.Empty(t, response.Body.String(), "Should return empty body.")
 }
@@ -468,20 +481,21 @@ func TestDeleteCategory_FailedCommand_Returns500(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	cmd := new(mocks.DeleteCategoryHandlerInterface)
+	handler := new(mocks.DeleteCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{
-			DeleteCategory: cmd,
+			DeleteCategory: handler,
 		},
 		Queries: app.Queries{},
 		Logger:  logger,
 	}
 	categoryId := "categoryId"
 
-	matchCatFn := func(id string) bool {
-		return id == categoryId
+	matchCatFn := func(cmd command.DeleteCategoryCommand) bool {
+		return cmd.CategoryID == categoryId
 	}
-	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(nil, errors.New("error"))
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(nil, errors.New("error"))
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
 
 	response := httptest.NewRecorder()
@@ -496,7 +510,7 @@ func TestDeleteCategory_FailedCommand_Returns500(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	cmd.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
 	assert.NotEmpty(t, response.Body.String(), "Should return not empty body.")
 }
@@ -505,20 +519,21 @@ func TestDeleteCategory_EmptyDeleteResult_Returns404(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	cmd := new(mocks.DeleteCategoryHandlerInterface)
+	handler := new(mocks.DeleteCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{
-			DeleteCategory: cmd,
+			DeleteCategory: handler,
 		},
 		Queries: app.Queries{},
 		Logger:  logger,
 	}
 	categoryId := "categoryId"
 
-	matchCatFn := func(id string) bool {
-		return id == categoryId
+	matchCatFn := func(cmd command.DeleteCategoryCommand) bool {
+		return cmd.CategoryID == categoryId
 	}
-	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(nil, nil)
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(nil, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
@@ -532,7 +547,7 @@ func TestDeleteCategory_EmptyDeleteResult_Returns404(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	cmd.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusNotFound, response.Code, "HTTP status should be 404.")
 	assert.NotEmpty(t, response.Body.String(), "Should return not empty body.")
 }
@@ -541,17 +556,18 @@ func TestFindCategoryUsages_SuccessfulQuery_Returns200(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	query := new(mocks.FindCategoryUsagesHandlerInterface)
+	handler := new(mocks.FindCategoryUsagesHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{},
 		Queries: app.Queries{
-			FindCategoryUsages: query,
+			FindCategoryUsages: handler,
 		},
 		Logger: logger,
 	}
 	categories := []domain.Category{{}}
 
-	query.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(categories, nil)
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(categories, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
@@ -566,7 +582,7 @@ func TestFindCategoryUsages_SuccessfulQuery_Returns200(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	query.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusOK, response.Code, "HTTP status should be 200.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
@@ -575,18 +591,19 @@ func TestFindCategoryUsages_FailedQuery_Returns500(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	query := new(mocks.FindCategoryUsagesHandlerInterface)
+	handler := new(mocks.FindCategoryUsagesHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{},
 		Queries: app.Queries{
-			FindCategoryUsages: query,
+			FindCategoryUsages: handler,
 		},
 		Logger: logger,
 	}
 	categoryId := "categoryId"
 
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
-	query.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+	handler.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("error"))
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
@@ -600,7 +617,7 @@ func TestFindCategoryUsages_FailedQuery_Returns500(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	query.AssertExpectations(t)
+	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }

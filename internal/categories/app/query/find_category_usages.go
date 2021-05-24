@@ -15,6 +15,11 @@ import (
 
 var findCategoryUsagesTracer trace.Tracer
 
+// FindCategoryUsagesQuery defines a category usages query.
+type FindCategoryUsagesQuery struct {
+	CategoryID string
+}
+
 // FindCategoryUsagesHandler defines handler to fetch category usages.
 type FindCategoryUsagesHandler struct {
 	repo   repository.CategoryRepoInterface
@@ -23,7 +28,7 @@ type FindCategoryUsagesHandler struct {
 
 // FindCategoryUsagesHandlerInterface defines a contract to handle query.
 type FindCategoryUsagesHandlerInterface interface {
-	Handle(ctx context.Context, id string) ([]domain.Category, error)
+	Handle(ctx context.Context, query FindCategoryUsagesQuery) ([]domain.Category, error)
 }
 
 // NewFindCategoryUsagesHandler returns query handler.
@@ -39,13 +44,16 @@ func NewFindCategoryUsagesHandler(
 }
 
 // Handle handles find category usages query.
-func (h FindCategoryUsagesHandler) Handle(ctx context.Context, id string) ([]domain.Category, error) {
+func (h FindCategoryUsagesHandler) Handle(
+	ctx context.Context,
+	query FindCategoryUsagesQuery,
+) ([]domain.Category, error) {
 	ctx, span := findCategoryUsagesTracer.Start(ctx, "execute find category usages")
-	span.SetAttributes(attribute.Any("id", id))
+	span.SetAttributes(attribute.Any("id", query.CategoryID))
 	defer span.End()
 
 	filter := domain.CategoryFilter{
-		CategoryID:   id,
+		CategoryID:   query.CategoryID,
 		FindChildren: true,
 	}
 

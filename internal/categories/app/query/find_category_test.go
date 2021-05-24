@@ -34,6 +34,9 @@ func TestFindCategoryHandle_RepoError_ThrowsError(t *testing.T) {
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
 	categoryId := "categoryId"
+	findQuery := query.FindCategoryQuery{
+		CategoryID: categoryId,
+	}
 
 	matchIdFn := func(id string) bool {
 		return id == categoryId
@@ -45,7 +48,7 @@ func TestFindCategoryHandle_RepoError_ThrowsError(t *testing.T) {
 	sut := query.NewFindCategoryHandler(repo, log)
 
 	// Act
-	query, err := sut.Handle(ctx, categoryId)
+	query, err := sut.Handle(ctx, findQuery)
 
 	// Assert
 	repo.AssertExpectations(t)
@@ -62,6 +65,9 @@ func TestFindCategoryHandle_RepoSuccess_CategoryHasNoPath_ReturnsCategory(t *tes
 	parentId1 := "parentId1"
 	path := ""
 	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, 1, time.Now(), nil)
+	findQuery := query.FindCategoryQuery{
+		CategoryID: categoryId,
+	}
 
 	matchIdFn := func(id string) bool {
 		return id == categoryId
@@ -73,7 +79,7 @@ func TestFindCategoryHandle_RepoSuccess_CategoryHasNoPath_ReturnsCategory(t *tes
 	sut := query.NewFindCategoryHandler(repo, log)
 
 	// Act
-	query, err := sut.Handle(ctx, categoryId)
+	query, err := sut.Handle(ctx, findQuery)
 
 	// Assert
 	repo.AssertExpectations(t)
@@ -96,6 +102,9 @@ func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoSuccess_Returns
 	parentCategory2, _ := domain.NewCategory(parentId2, "name1", nil, path, 1, time.Now(), nil)
 	parentCategories := []domain.Category{*parentCategory1, *parentCategory2}
 	parentFilter := domain.CategoryFilter{CategoryIDs: []string{parentId1, parentId2}}
+	findQuery := query.FindCategoryQuery{
+		CategoryID: categoryId,
+	}
 
 	matchIdFn := func(id string) bool {
 		return id == categoryId
@@ -112,7 +121,7 @@ func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoSuccess_Returns
 	sut := query.NewFindCategoryHandler(repo, log)
 
 	// Act
-	query, err := sut.Handle(ctx, categoryId)
+	query, err := sut.Handle(ctx, findQuery)
 
 	// Assert
 	repo.AssertExpectations(t)
@@ -133,6 +142,9 @@ func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoError_ThrowsErr
 	path := fmt.Sprintf("|%s|%s", parentId1, parentId2)
 	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, 1, time.Now(), nil)
 	parentFilter := domain.CategoryFilter{CategoryIDs: []string{parentId1, parentId2}}
+	findQuery := query.FindCategoryQuery{
+		CategoryID: categoryId,
+	}
 
 	matchIdFn := func(id string) bool {
 		return id == categoryId
@@ -149,7 +161,7 @@ func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoError_ThrowsErr
 	sut := query.NewFindCategoryHandler(repo, log)
 
 	// Act
-	query, err := sut.Handle(ctx, categoryId)
+	query, err := sut.Handle(ctx, findQuery)
 
 	// Assert
 	repo.AssertExpectations(t)

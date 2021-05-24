@@ -15,8 +15,8 @@ import (
 
 var updateCategoryTracer trace.Tracer
 
-// UpdateCategoryCommandArgs defines category command arguments.
-type UpdateCategoryCommandArgs struct {
+// UpdateCategoryCommand defines a category update command.
+type UpdateCategoryCommand struct {
 	ID       string
 	ParentID *string
 	Name     string
@@ -24,7 +24,7 @@ type UpdateCategoryCommandArgs struct {
 	Level    int
 }
 
-// UpdateCategoryHandler defines handler to add category.
+// UpdateCategoryHandler defines a handler to update category.
 type UpdateCategoryHandler struct {
 	repo   repository.CategoryRepoInterface
 	logger logger.LogInterface
@@ -32,7 +32,7 @@ type UpdateCategoryHandler struct {
 
 // UpdateCategoryHandlerInterface defines a contract to handle command.
 type UpdateCategoryHandlerInterface interface {
-	Handle(ctx context.Context, args UpdateCategoryCommandArgs) (*domain.UpdateResult, error)
+	Handle(ctx context.Context, cmd UpdateCategoryCommand) (*domain.UpdateResult, error)
 }
 
 // NewUpdateCategoryHandler returns command handler.
@@ -50,12 +50,12 @@ func NewUpdateCategoryHandler(
 // Handle handles update category command.
 func (h UpdateCategoryHandler) Handle(
 	ctx context.Context,
-	args UpdateCategoryCommandArgs,
+	cmd UpdateCategoryCommand,
 ) (*domain.UpdateResult, error) {
 	ctx, span := updateCategoryTracer.Start(ctx, "execute update category command")
 	defer span.End()
 
-	category, categoryErr := domain.NewCategory(args.ID, args.Name, args.ParentID, args.Path, args.Level, time.Now(), nil)
+	category, categoryErr := domain.NewCategory(cmd.ID, cmd.Name, cmd.ParentID, cmd.Path, cmd.Level, time.Now(), nil)
 	if categoryErr != nil {
 		return nil, errors.Wrap(categoryErr, "prepare category failed")
 	}

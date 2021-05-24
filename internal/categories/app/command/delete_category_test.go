@@ -32,6 +32,9 @@ func TestDeleteCategoryHandler_FailedToGetCategory_ThrowsError(t *testing.T) {
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
 	categoryID := "categoryId"
+	cmd := command.DeleteCategoryCommand{
+		CategoryID: categoryID,
+	}
 
 	matchIdFn := func(id string) bool {
 		return categoryID == id
@@ -43,7 +46,7 @@ func TestDeleteCategoryHandler_FailedToGetCategory_ThrowsError(t *testing.T) {
 	sut := command.NewDeleteCategoryHandler(repo, log)
 
 	// Act
-	result, err := sut.Handle(ctx, categoryID)
+	result, err := sut.Handle(ctx, cmd)
 
 	// Assert
 	repo.AssertExpectations(t)
@@ -57,6 +60,9 @@ func TestDeleteCategoryHandler_NoCategoryFound_ReturnsEmptyResult(t *testing.T) 
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
 	categoryID := "categoryId"
+	cmd := command.DeleteCategoryCommand{
+		CategoryID: categoryID,
+	}
 
 	matchIdFn := func(id string) bool {
 		return categoryID == id
@@ -68,7 +74,7 @@ func TestDeleteCategoryHandler_NoCategoryFound_ReturnsEmptyResult(t *testing.T) 
 	sut := command.NewDeleteCategoryHandler(repo, log)
 
 	// Act
-	result, err := sut.Handle(ctx, categoryID)
+	result, err := sut.Handle(ctx, cmd)
 
 	// Assert
 	repo.AssertExpectations(t)
@@ -82,6 +88,9 @@ func TestDeleteCategoryHandler_FailedDeleteCategory_ThrowsError(t *testing.T) {
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
 	categoryID := "categoryId"
+	cmd := command.DeleteCategoryCommand{
+		CategoryID: categoryID,
+	}
 	category, _ := domain.NewCategory(categoryID, "name", nil, "path", 1, time.Now(), nil)
 
 	matchIdFn := func(id string) bool {
@@ -99,7 +108,7 @@ func TestDeleteCategoryHandler_FailedDeleteCategory_ThrowsError(t *testing.T) {
 	sut := command.NewDeleteCategoryHandler(repo, log)
 
 	// Act
-	result, err := sut.Handle(ctx, categoryID)
+	result, err := sut.Handle(ctx, cmd)
 
 	// Assert
 	repo.AssertExpectations(t)
@@ -113,6 +122,9 @@ func TestDeleteCategoryHandler_DeletesCategory_ReturnsResult(t *testing.T) {
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
 	categoryID := "categoryId"
+	cmd := command.DeleteCategoryCommand{
+		CategoryID: categoryID,
+	}
 	category, _ := domain.NewCategory(categoryID, "name", nil, "path", 1, time.Now(), nil)
 	deleteResult := &domain.DeleteResult{DeleteCount: 10}
 
@@ -131,7 +143,7 @@ func TestDeleteCategoryHandler_DeletesCategory_ReturnsResult(t *testing.T) {
 	sut := command.NewDeleteCategoryHandler(repo, log)
 
 	// Act
-	result, err := sut.Handle(ctx, categoryID)
+	result, err := sut.Handle(ctx, cmd)
 
 	// Assert
 	repo.AssertExpectations(t)

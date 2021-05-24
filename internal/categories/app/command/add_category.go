@@ -15,15 +15,15 @@ import (
 
 var addCategoryTracer trace.Tracer
 
-// NewCategoryCommandArgs defines category command object.
-type NewCategoryCommandArgs struct {
+// NewCategoryCommand defines a category command.
+type NewCategoryCommand struct {
 	ParentID *string
 	Name     string
 	Path     string
 	Level    int
 }
 
-// AddCategoryHandler defines handler to add category.
+// AddCategoryHandler defines a handler to add category.
 type AddCategoryHandler struct {
 	repo   repository.CategoryRepoInterface
 	logger logger.LogInterface
@@ -31,7 +31,7 @@ type AddCategoryHandler struct {
 
 // AddCategoryHandlerInterface defines a contract to handle command.
 type AddCategoryHandlerInterface interface {
-	Handle(ctx context.Context, args NewCategoryCommandArgs) (*string, error)
+	Handle(ctx context.Context, cmd NewCategoryCommand) (*string, error)
 }
 
 // NewAddCategoryHandler returns command handler.
@@ -47,11 +47,11 @@ func NewAddCategoryHandler(
 }
 
 // Handle handles add category command.
-func (h AddCategoryHandler) Handle(ctx context.Context, args NewCategoryCommandArgs) (*string, error) {
+func (h AddCategoryHandler) Handle(ctx context.Context, cmd NewCategoryCommand) (*string, error) {
 	ctx, span := addCategoryTracer.Start(ctx, "execute add category command")
 	defer span.End()
 
-	category, categoryErr := domain.NewCategory("", args.Name, args.ParentID, args.Path, args.Level, time.Now(), nil)
+	category, categoryErr := domain.NewCategory("", cmd.Name, cmd.ParentID, cmd.Path, cmd.Level, time.Now(), nil)
 	if categoryErr != nil {
 		return nil, errors.Wrap(categoryErr, "prepare category failed")
 	}

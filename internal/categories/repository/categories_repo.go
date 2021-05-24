@@ -72,10 +72,10 @@ func (r *CategoryRepository) GetAll(ctx context.Context, filter domain.CategoryF
 	defer span.End()
 
 	query := bson.M{}
-	if filter.ParentID == "" {
+	if filter.ParentID == nil {
 		query["parentId"] = bson.M{"$exists": false}
 	} else {
-		parentID, _ := primitive.ObjectIDFromHex(filter.ParentID)
+		parentID, _ := primitive.ObjectIDFromHex(*filter.ParentID)
 		query["parentId"] = parentID
 	}
 

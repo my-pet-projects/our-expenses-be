@@ -31,13 +31,13 @@ func TestUpdateCategoryHandler_CategoryError_ThrowsError(t *testing.T) {
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
 
-	args := command.UpdateCategoryCommandArgs{}
+	cmd := command.UpdateCategoryCommand{}
 
 	// SUT
 	sut := command.NewUpdateCategoryHandler(repo, log)
 
 	// Act
-	result, err := sut.Handle(ctx, args)
+	result, err := sut.Handle(ctx, cmd)
 
 	// Assert
 	repo.AssertExpectations(t)
@@ -52,7 +52,7 @@ func TestUpdateCategoryHandler_RepoError_ThrowsError(t *testing.T) {
 	ctx := context.Background()
 	categoryID := "categoryId"
 	parentID := "parentId"
-	args := command.UpdateCategoryCommandArgs{
+	cmd := command.UpdateCategoryCommand{
 		ID:       categoryID,
 		Name:     "name",
 		ParentID: &parentID,
@@ -61,8 +61,8 @@ func TestUpdateCategoryHandler_RepoError_ThrowsError(t *testing.T) {
 	}
 
 	matchCategoryFn := func(cat *domain.Category) bool {
-		return cat.ID() == args.ID && cat.Name() == args.Name && cat.Path() == args.Path &&
-			cat.Level() == args.Level && cat.ParentID() == args.ParentID
+		return cat.ID() == cmd.ID && cat.Name() == cmd.Name && cat.Path() == cmd.Path &&
+			cat.Level() == cmd.Level && cat.ParentID() == cmd.ParentID
 	}
 	repo.On("Update", mock.Anything,
 		mock.MatchedBy(matchCategoryFn)).Return(nil, errors.New("error"))
@@ -71,7 +71,7 @@ func TestUpdateCategoryHandler_RepoError_ThrowsError(t *testing.T) {
 	sut := command.NewUpdateCategoryHandler(repo, log)
 
 	// Act
-	result, err := sut.Handle(ctx, args)
+	result, err := sut.Handle(ctx, cmd)
 
 	// Assert
 	repo.AssertExpectations(t)
@@ -86,7 +86,7 @@ func TestUpdateCategoryHandler_RepoSuccess_ReturnsResult(t *testing.T) {
 	ctx := context.Background()
 	categoryID := "categoryId"
 	parentID := "parentId"
-	args := command.UpdateCategoryCommandArgs{
+	cmd := command.UpdateCategoryCommand{
 		ID:       categoryID,
 		Name:     "name",
 		ParentID: &parentID,
@@ -96,8 +96,8 @@ func TestUpdateCategoryHandler_RepoSuccess_ReturnsResult(t *testing.T) {
 	updateResult := &domain.UpdateResult{UpdateCount: 10}
 
 	matchCategoryFn := func(cat *domain.Category) bool {
-		return cat.ID() == args.ID && cat.Name() == args.Name && cat.Path() == args.Path &&
-			cat.Level() == args.Level && cat.ParentID() == args.ParentID
+		return cat.ID() == cmd.ID && cat.Name() == cmd.Name && cat.Path() == cmd.Path &&
+			cat.Level() == cmd.Level && cat.ParentID() == cmd.ParentID
 	}
 	repo.On("Update", mock.Anything,
 		mock.MatchedBy(matchCategoryFn)).Return(updateResult, nil)
@@ -106,7 +106,7 @@ func TestUpdateCategoryHandler_RepoSuccess_ReturnsResult(t *testing.T) {
 	sut := command.NewUpdateCategoryHandler(repo, log)
 
 	// Act
-	result, err := sut.Handle(ctx, args)
+	result, err := sut.Handle(ctx, cmd)
 
 	// Assert
 	repo.AssertExpectations(t)

@@ -36,6 +36,9 @@ func TestFindCategoryUsagesHandle_RepoError_ThrowsError(t *testing.T) {
 		CategoryID:   categoryId,
 		FindChildren: true,
 	}
+	findQuery := query.FindCategoryUsagesQuery{
+		CategoryID: categoryId,
+	}
 
 	matchFilterFn := func(f domain.CategoryFilter) bool {
 		return reflect.DeepEqual(f, filter)
@@ -47,7 +50,7 @@ func TestFindCategoryUsagesHandle_RepoError_ThrowsError(t *testing.T) {
 	sut := query.NewFindCategoryUsagesHandler(repo, log)
 
 	// Act
-	query, err := sut.Handle(ctx, categoryId)
+	query, err := sut.Handle(ctx, findQuery)
 
 	// Assert
 	repo.AssertExpectations(t)
@@ -65,6 +68,9 @@ func TestFindCategoryUsagesHandle_RepoSuccess_ReturnsCategories(t *testing.T) {
 		CategoryID:   "categoryId",
 		FindChildren: true,
 	}
+	findQuery := query.FindCategoryUsagesQuery{
+		CategoryID: categoryId,
+	}
 	categories := []domain.Category{{}}
 
 	matchFilterFn := func(f domain.CategoryFilter) bool {
@@ -77,7 +83,7 @@ func TestFindCategoryUsagesHandle_RepoSuccess_ReturnsCategories(t *testing.T) {
 	sut := query.NewFindCategoryUsagesHandler(repo, log)
 
 	// Act
-	query, err := sut.Handle(ctx, categoryId)
+	query, err := sut.Handle(ctx, findQuery)
 
 	// Assert
 	repo.AssertExpectations(t)

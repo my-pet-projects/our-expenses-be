@@ -5,7 +5,10 @@ package mocks
 import (
 	context "context"
 
+	command "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/command"
+
 	domain "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -14,13 +17,13 @@ type DeleteCategoryHandlerInterface struct {
 	mock.Mock
 }
 
-// Handle provides a mock function with given fields: ctx, id
-func (_m *DeleteCategoryHandlerInterface) Handle(ctx context.Context, id string) (*domain.DeleteResult, error) {
-	ret := _m.Called(ctx, id)
+// Handle provides a mock function with given fields: ctx, cmd
+func (_m *DeleteCategoryHandlerInterface) Handle(ctx context.Context, cmd command.DeleteCategoryCommand) (*domain.DeleteResult, error) {
+	ret := _m.Called(ctx, cmd)
 
 	var r0 *domain.DeleteResult
-	if rf, ok := ret.Get(0).(func(context.Context, string) *domain.DeleteResult); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, command.DeleteCategoryCommand) *domain.DeleteResult); ok {
+		r0 = rf(ctx, cmd)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.DeleteResult)
@@ -28,8 +31,8 @@ func (_m *DeleteCategoryHandlerInterface) Handle(ctx context.Context, id string)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, command.DeleteCategoryCommand) error); ok {
+		r1 = rf(ctx, cmd)
 	} else {
 		r1 = ret.Error(1)
 	}

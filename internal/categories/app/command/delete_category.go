@@ -14,7 +14,12 @@ import (
 
 var deleteCategoryTracer trace.Tracer
 
-// DeleteCategoryHandler defines handler to add category.
+// DeleteCategoryCommand defines a category delete command.
+type DeleteCategoryCommand struct {
+	CategoryID string
+}
+
+// DeleteCategoryHandler defines a handler to delete category.
 type DeleteCategoryHandler struct {
 	repo   repository.CategoryRepoInterface
 	logger logger.LogInterface
@@ -22,7 +27,7 @@ type DeleteCategoryHandler struct {
 
 // DeleteCategoryHandlerInterface defines a contract to handle command.
 type DeleteCategoryHandlerInterface interface {
-	Handle(ctx context.Context, id string) (*domain.DeleteResult, error)
+	Handle(ctx context.Context, cmd DeleteCategoryCommand) (*domain.DeleteResult, error)
 }
 
 // NewDeleteCategoryHandler returns command handler.
@@ -38,11 +43,11 @@ func NewDeleteCategoryHandler(
 }
 
 // Handle handles delete category command.
-func (h DeleteCategoryHandler) Handle(ctx context.Context, id string) (*domain.DeleteResult, error) {
+func (h DeleteCategoryHandler) Handle(ctx context.Context, cmd DeleteCategoryCommand) (*domain.DeleteResult, error) {
 	ctx, span := deleteCategoryTracer.Start(ctx, "execute delete category command")
 	defer span.End()
 
-	category, categoryErr := h.repo.GetOne(ctx, id)
+	category, categoryErr := h.repo.GetOne(ctx, cmd.CategoryID)
 	if categoryErr != nil {
 		return nil, errors.Wrap(categoryErr, "get category for deletion")
 	}

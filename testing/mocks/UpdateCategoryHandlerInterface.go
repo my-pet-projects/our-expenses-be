@@ -17,13 +17,13 @@ type UpdateCategoryHandlerInterface struct {
 	mock.Mock
 }
 
-// Handle provides a mock function with given fields: ctx, args
-func (_m *UpdateCategoryHandlerInterface) Handle(ctx context.Context, args command.UpdateCategoryCommandArgs) (*domain.UpdateResult, error) {
-	ret := _m.Called(ctx, args)
+// Handle provides a mock function with given fields: ctx, cmd
+func (_m *UpdateCategoryHandlerInterface) Handle(ctx context.Context, cmd command.UpdateCategoryCommand) (*domain.UpdateResult, error) {
+	ret := _m.Called(ctx, cmd)
 
 	var r0 *domain.UpdateResult
-	if rf, ok := ret.Get(0).(func(context.Context, command.UpdateCategoryCommandArgs) *domain.UpdateResult); ok {
-		r0 = rf(ctx, args)
+	if rf, ok := ret.Get(0).(func(context.Context, command.UpdateCategoryCommand) *domain.UpdateResult); ok {
+		r0 = rf(ctx, cmd)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.UpdateResult)
@@ -31,8 +31,8 @@ func (_m *UpdateCategoryHandlerInterface) Handle(ctx context.Context, args comma
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, command.UpdateCategoryCommandArgs) error); ok {
-		r1 = rf(ctx, args)
+	if rf, ok := ret.Get(1).(func(context.Context, command.UpdateCategoryCommand) error); ok {
+		r1 = rf(ctx, cmd)
 	} else {
 		r1 = ret.Error(1)
 	}

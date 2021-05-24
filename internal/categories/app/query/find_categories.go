@@ -13,7 +13,13 @@ import (
 
 var findCategoriesTracer trace.Tracer
 
-// FindCategoriesHandler defines handler to fetch categories.
+// FindCategoriesQuery defines a category query.
+type FindCategoriesQuery struct {
+	ParentID        *string
+	FindAllChildren bool
+}
+
+// FindCategoriesHandler defines a handler to fetch categories.
 type FindCategoriesHandler struct {
 	repo   repository.CategoryRepoInterface
 	logger logger.LogInterface
@@ -21,11 +27,14 @@ type FindCategoriesHandler struct {
 
 // FindCategoriesHandlerInterface defines a contract to handle query.
 type FindCategoriesHandlerInterface interface {
-	Handle(ctx context.Context, filter domain.CategoryFilter) ([]domain.Category, error)
+	Handle(ctx context.Context, query FindCategoriesQuery) ([]domain.Category, error)
 }
 
-// NewFindCategoriesHandler returns query handler.
-func NewFindCategoriesHandler(repo repository.CategoryRepoInterface, logger logger.LogInterface) FindCategoriesHandler {
+// NewFindCategoriesHandler returns a query handler.
+func NewFindCategoriesHandler(
+	repo repository.CategoryRepoInterface,
+	logger logger.LogInterface,
+) FindCategoriesHandler {
 	findCategoriesTracer = otel.Tracer("app.query.find_categories")
 	return FindCategoriesHandler{
 		repo:   repo,
@@ -33,10 +42,17 @@ func NewFindCategoriesHandler(repo repository.CategoryRepoInterface, logger logg
 	}
 }
 
-// Handle handles find categories query.
-func (h FindCategoriesHandler) Handle(ctx context.Context, filter domain.CategoryFilter) ([]domain.Category, error) {
+// Handle handles query to find categories.
+func (h FindCategoriesHandler) Handle(
+	ctx context.Context,
+	query FindCategoriesQuery,
+) ([]domain.Category, error) {
 	ctx, span := findCategoriesTracer.Start(ctx, "execute find categories query")
 	defer span.End()
 
+	filter := domain.CategoryFilter{
+		ParentID:     query.ParentID,
+		FindChildren: query.FindAllChildren,
+	}
 	return h.repo.GetAll(ctx, filter)
 }
