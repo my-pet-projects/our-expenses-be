@@ -87,13 +87,13 @@ func (h HTTPServer) AddCategory(echoCtx echo.Context) error {
 		return echoCtx.JSON(http.StatusBadRequest, catErr)
 	}
 
-	cmd := command.NewCategory{
+	cmdArgs := command.NewCategoryCommandArgs{
 		ParentID: newCategory.ParentId,
 		Name:     newCategory.Name,
 		Path:     newCategory.Path,
 		Level:    newCategory.Level,
 	}
-	categoryID, categoryCrtErr := h.app.Commands.AddCategory.Handle(ctx, cmd)
+	categoryID, categoryCrtErr := h.app.Commands.AddCategory.Handle(ctx, cmdArgs)
 	if categoryCrtErr != nil {
 		h.app.Logger.Error(ctx, "Failed to create category", categoryCrtErr)
 		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(categoryCrtErr))

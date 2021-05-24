@@ -31,7 +31,7 @@ func TestAddCategoryHandler_CategoryError_ThrowsError(t *testing.T) {
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
 
-	cmd := command.NewCategory{}
+	cmd := command.NewCategoryCommandArgs{}
 
 	// SUT
 	sut := command.NewAddCategoryHandler(repo, log)
@@ -51,7 +51,7 @@ func TestAddCategoryHandler_RepoError_ThrowsError(t *testing.T) {
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
 	parentID := "parentId"
-	cmd := command.NewCategory{
+	cmd := command.NewCategoryCommandArgs{
 		Name:     "name",
 		ParentID: &parentID,
 		Path:     "path",
@@ -84,7 +84,7 @@ func TestAddCategoryHandler_RepoSuccess_ThrowsError(t *testing.T) {
 	ctx := context.Background()
 	categoryID := "categoryId"
 	parentID := "parentId"
-	cmd := command.NewCategory{
+	cmd := command.NewCategoryCommandArgs{
 		Name:     "name",
 		ParentID: &parentID,
 		Path:     "path",

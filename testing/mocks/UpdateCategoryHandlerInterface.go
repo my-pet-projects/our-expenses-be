@@ -15,13 +15,13 @@ type UpdateCategoryHandlerInterface struct {
 	mock.Mock
 }
 
-// Handle provides a mock function with given fields: ctx, category
-func (_m *UpdateCategoryHandlerInterface) Handle(ctx context.Context, category command.UpdateCategoryCommandArgs) error {
-	ret := _m.Called(ctx, category)
+// Handle provides a mock function with given fields: ctx, args
+func (_m *UpdateCategoryHandlerInterface) Handle(ctx context.Context, args command.UpdateCategoryCommandArgs) error {
+	ret := _m.Called(ctx, args)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, command.UpdateCategoryCommandArgs) error); ok {
-		r0 = rf(ctx, category)
+		r0 = rf(ctx, args)
 	} else {
 		r0 = ret.Error(0)
 	}

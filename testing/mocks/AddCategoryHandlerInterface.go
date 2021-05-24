@@ -15,13 +15,13 @@ type AddCategoryHandlerInterface struct {
 	mock.Mock
 }
 
-// Handle provides a mock function with given fields: ctx, category
-func (_m *AddCategoryHandlerInterface) Handle(ctx context.Context, category command.NewCategory) (*string, error) {
-	ret := _m.Called(ctx, category)
+// Handle provides a mock function with given fields: ctx, args
+func (_m *AddCategoryHandlerInterface) Handle(ctx context.Context, args command.NewCategoryCommandArgs) (*string, error) {
+	ret := _m.Called(ctx, args)
 
 	var r0 *string
-	if rf, ok := ret.Get(0).(func(context.Context, command.NewCategory) *string); ok {
-		r0 = rf(ctx, category)
+	if rf, ok := ret.Get(0).(func(context.Context, command.NewCategoryCommandArgs) *string); ok {
+		r0 = rf(ctx, args)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*string)
@@ -29,8 +29,8 @@ func (_m *AddCategoryHandlerInterface) Handle(ctx context.Context, category comm
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, command.NewCategory) error); ok {
-		r1 = rf(ctx, category)
+	if rf, ok := ret.Get(1).(func(context.Context, command.NewCategoryCommandArgs) error); ok {
+		r1 = rf(ctx, args)
 	} else {
 		r1 = ret.Error(1)
 	}

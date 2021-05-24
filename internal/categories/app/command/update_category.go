@@ -32,7 +32,7 @@ type UpdateCategoryHandler struct {
 
 // UpdateCategoryHandlerInterface defines a contract to handle command.
 type UpdateCategoryHandlerInterface interface {
-	Handle(ctx context.Context, category UpdateCategoryCommandArgs) error
+	Handle(ctx context.Context, args UpdateCategoryCommandArgs) error
 }
 
 // NewUpdateCategoryHandler returns command handler.
