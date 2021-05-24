@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -34,6 +35,16 @@ type categoryModel struct {
 	UpdatedAt time.Time          `bson:"updatedAt,omitempty"`
 }
 
+// UpdateResult represents a struct with update operation result details.
+type UpdateResult struct {
+	UpdateCount int
+}
+
+// DeleteResult represents a struct with delete operation result details.
+type DeleteResult struct {
+	DeleteCount int
+}
+
 // CategoryRepository represents a struct to access categories MongoDB collection.
 type CategoryRepository struct {
 	client *database.MongoClient
@@ -45,14 +56,14 @@ type CategoryRepoInterface interface {
 	GetAll(ctx context.Context, filter domain.CategoryFilter) ([]domain.Category, error)
 	GetOne(ctx context.Context, id string) (*domain.Category, error)
 	Insert(ctx context.Context, category *domain.Category) (*string, error)
-	Update(ctx context.Context, category *domain.Category) (string, error)
-	DeleteAll(ctx context.Context, filter domain.CategoryFilter) (int, error)
-	DeleteOne(ctx context.Context, id string) (int, error)
+	Update(ctx context.Context, category *domain.Category) (*UpdateResult, error)
+	DeleteAll(ctx context.Context, filter domain.CategoryFilter) (*DeleteResult, error)
+	DeleteOne(ctx context.Context, id string) (*DeleteResult, error)
 }
 
 // NewCategoryRepo returns a CategoryRepository.
 func NewCategoryRepo(client *database.MongoClient, logger logger.LogInterface) *CategoryRepository {
-	categoriesRepoTracer = otel.Tracer("categories_repository")
+	categoriesRepoTracer = otel.Tracer("app.repository.categories")
 	return &CategoryRepository{
 		logger: logger,
 		client: client,
@@ -184,11 +195,15 @@ func (r *CategoryRepository) Insert(ctx context.Context, category *domain.Catego
 }
 
 // Update updates a category in the database.
-func (r *CategoryRepository) Update(ctx context.Context, category *domain.Category) (string, error) {
+func (r *CategoryRepository) Update(ctx context.Context, category *domain.Category) (*UpdateResult, error) {
+	ctx, span := categoriesRepoTracer.Start(ctx, "update category in the database")
+	defer span.End()
+
 	categoryDbModel := r.marshalCategory(category)
 
 	filter := bson.M{"_id": categoryDbModel.ID}
 	updater := bson.M{"$set": categoryDbModel}
+	opts := options.Update().SetUpsert(false)
 
 	// if &category.ParentID == nil {
 	// 	updater["$unset"] = bson.M{
@@ -198,33 +213,37 @@ func (r *CategoryRepository) Update(ctx context.Context, category *domain.Catego
 
 	fmt.Print(updater)
 
-	updateResult, updateError := r.collection().UpdateOne(ctx, filter, updater)
-	if updateError != nil {
-		return "", updateError
+	mongoUpdResult, mongoUpdErr := r.collection().UpdateOne(ctx, filter, updater, opts)
+	if mongoUpdErr != nil {
+		return nil, errors.Wrap(mongoUpdErr, "mongo update category")
 	}
 
-	id, _ := updateResult.UpsertedID.(primitive.ObjectID)
+	result := &UpdateResult{
+		UpdateCount: int(mongoUpdResult.ModifiedCount),
+	}
 
-	return id.Hex(), nil
+	return result, nil
 }
 
 // DeleteOne deletes a category in the database.
-func (r *CategoryRepository) DeleteOne(ctx context.Context, id string) (int, error) {
+func (r *CategoryRepository) DeleteOne(ctx context.Context, id string) (*DeleteResult, error) {
 	categoryID, _ := primitive.ObjectIDFromHex(id)
 	filter := bson.M{"_id": categoryID}
 
-	deleteResult, deleteError := r.collection().DeleteOne(ctx, filter)
-	if deleteError != nil {
-		return 0, deleteError
+	mongoDelResult, mongoDelErr := r.collection().DeleteOne(ctx, filter)
+	if mongoDelErr != nil {
+		return nil, errors.Wrap(mongoDelErr, "mongo delete categories")
 	}
 
-	deletedDocuments := deleteResult.DeletedCount
+	result := &DeleteResult{
+		DeleteCount: int(mongoDelResult.DeletedCount),
+	}
 
-	return int(deletedDocuments), nil
+	return result, nil
 }
 
 // DeleteAll deletes all categories in the database.
-func (r *CategoryRepository) DeleteAll(ctx context.Context, filter domain.CategoryFilter) (int, error) {
+func (r *CategoryRepository) DeleteAll(ctx context.Context, filter domain.CategoryFilter) (*DeleteResult, error) {
 	query := bson.M{}
 
 	if len(filter.Path) != 0 && filter.FindChildren {
@@ -236,14 +255,16 @@ func (r *CategoryRepository) DeleteAll(ctx context.Context, filter domain.Catego
 		}
 	}
 
-	deleteResult, deleteError := r.collection().DeleteMany(ctx, query)
-	if deleteError != nil {
-		return 0, deleteError
+	mongoDelResult, mongoDelErr := r.collection().DeleteMany(ctx, query)
+	if mongoDelErr != nil {
+		return nil, errors.Wrap(mongoDelErr, "mongo delete categories")
 	}
 
-	deletedDocuments := deleteResult.DeletedCount
+	result := &DeleteResult{
+		DeleteCount: int(mongoDelResult.DeletedCount),
+	}
 
-	return int(deletedDocuments), nil
+	return result, nil
 }
 
 func (r CategoryRepository) marshalCategory(category *domain.Category) categoryModel {
