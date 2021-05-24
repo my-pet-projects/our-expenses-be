@@ -28,6 +28,20 @@ func (_m *ServerInterface) AddCategory(ctx echo.Context) error {
 	return r0
 }
 
+// DeleteCategory provides a mock function with given fields: ctx, id
+func (_m *ServerInterface) DeleteCategory(ctx echo.Context, id string) error {
+	ret := _m.Called(ctx, id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(echo.Context, string) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // FindCategories provides a mock function with given fields: ctx, params
 func (_m *ServerInterface) FindCategories(ctx echo.Context, params ports.FindCategoriesParams) error {
 	ret := _m.Called(ctx, params)
@@ -44,6 +58,20 @@ func (_m *ServerInterface) FindCategories(ctx echo.Context, params ports.FindCat
 
 // FindCategoryByID provides a mock function with given fields: ctx, id
 func (_m *ServerInterface) FindCategoryByID(ctx echo.Context, id string) error {
+	ret := _m.Called(ctx, id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(echo.Context, string) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// FindCategoryUsages provides a mock function with given fields: ctx, id
+func (_m *ServerInterface) FindCategoryUsages(ctx echo.Context, id string) error {
 	ret := _m.Called(ctx, id)
 
 	var r0 error

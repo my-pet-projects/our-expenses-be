@@ -148,6 +148,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+                /categories/{id}:
+  /categories/{id}/usages:
+    get:
+      summary: Returns a category usages
+      description: Returns a category usages.
+      operationId: findCategoryUsages
+      parameters:
+        - name: id
+          in: path
+          description: ID of category to find usages
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: category response
+          content:
+            application/json:
+              schema:
+                type: array
+                $ref: '#/components/schemas/Category'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   securitySchemes:
     bearerAuth:

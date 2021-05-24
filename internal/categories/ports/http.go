@@ -157,6 +157,22 @@ func (h HTTPServer) DeleteCategory(echoCtx echo.Context, id string) error {
 	return echoCtx.NoContent(http.StatusNoContent)
 }
 
+// FindCategoryUsages returns categories.
+func (h HTTPServer) FindCategoryUsages(echoCtx echo.Context, id string) error {
+	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category usages http request")
+	span.SetAttributes(attribute.Any("id", id))
+	defer span.End()
+
+	query, queryErr := h.app.Queries.FindCategoryUsages.Handle(ctx, id)
+	if queryErr != nil {
+		h.app.Logger.Error(ctx, "Failed to find category usages", queryErr)
+		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(queryErr))
+	}
+
+	categoryRes := categoriesToResponse(query)
+	return echoCtx.JSON(http.StatusOK, categoryRes)
+}
+
 func categoriesToResponse(domainCategories []domain.Category) []Category {
 	categories := []Category{}
 	for _, cat := range domainCategories {

@@ -32,8 +32,9 @@ type Commands struct {
 
 // Queries struct holds available application queries.
 type Queries struct {
-	FindCategories query.FindCategoriesHandlerInterface
-	FindCategory   query.FindCategoryHandlerInterface
+	FindCategories     query.FindCategoriesHandlerInterface
+	FindCategory       query.FindCategoryHandlerInterface
+	FindCategoryUsages query.FindCategoryUsagesHandlerInterface
 }
 
 // NewApplication returns application instance.
@@ -72,8 +73,9 @@ func NewApplication(ctx context.Context, cancel context.CancelFunc) (*Applicatio
 			DeleteCategory: command.NewDeleteCategoryHandler(categoryRepo, log),
 		},
 		Queries: Queries{
-			FindCategories: query.NewFindCategoriesHandler(categoryRepo, log),
-			FindCategory:   query.NewFindCategoryHandler(categoryRepo, log),
+			FindCategories:     query.NewFindCategoriesHandler(categoryRepo, log),
+			FindCategory:       query.NewFindCategoryHandler(categoryRepo, log),
+			FindCategoryUsages: query.NewFindCategoryUsagesHandler(categoryRepo, log),
 		},
 		Logger: log,
 		Config: *cfg,

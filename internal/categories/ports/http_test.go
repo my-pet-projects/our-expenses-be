@@ -536,3 +536,71 @@ func TestDeleteCategory_EmptyDeleteResult_Returns404(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, response.Code, "HTTP status should be 404.")
 	assert.NotEmpty(t, response.Body.String(), "Should return not empty body.")
 }
+
+func TestFindCategoryUsages_SuccessfulQuery_Returns200(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	query := new(mocks.FindCategoryUsagesHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{},
+		Queries: app.Queries{
+			FindCategoryUsages: query,
+		},
+		Logger: logger,
+	}
+	categories := []domain.Category{{}}
+
+	query.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(categories, nil)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", nil)
+	ctx := e.NewContext(request, response)
+	categoryId := "categoryId"
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.FindCategoryUsages(ctx, categoryId)
+
+	// Assert
+	logger.AssertExpectations(t)
+	query.AssertExpectations(t)
+	assert.Equal(t, http.StatusOK, response.Code, "HTTP status should be 200.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestFindCategoryUsages_FailedQuery_Returns500(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	query := new(mocks.FindCategoryUsagesHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{},
+		Queries: app.Queries{
+			FindCategoryUsages: query,
+		},
+		Logger: logger,
+	}
+	categoryId := "categoryId"
+
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+	query.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", nil)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.FindCategoryUsages(ctx, categoryId)
+
+	// Assert
+	logger.AssertExpectations(t)
+	query.AssertExpectations(t)
+	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
