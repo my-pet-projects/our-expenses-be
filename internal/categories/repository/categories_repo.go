@@ -185,9 +185,10 @@ func (r *CategoryRepository) Insert(ctx context.Context, category *domain.Catego
 
 // Update updates a category in the database.
 func (r *CategoryRepository) Update(ctx context.Context, category *domain.Category) (string, error) {
-	filter := bson.M{"_id": category.ID}
+	categoryDbModel := r.marshalCategory(category)
 
-	updater := bson.M{"$set": category}
+	filter := bson.M{"_id": categoryDbModel.ID}
+	updater := bson.M{"$set": categoryDbModel}
 
 	// if &category.ParentID == nil {
 	// 	updater["$unset"] = bson.M{

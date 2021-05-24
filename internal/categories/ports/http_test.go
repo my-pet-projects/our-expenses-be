@@ -316,3 +316,112 @@ func TestAddCategory_InvalidPayload_Returns400(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, response.Code, "HTTP status should be 400.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
+
+func TestUpdateCategory_SuccessfulCommand_Returns200(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	cmd := new(mocks.UpdateCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			UpdateCategory: cmd,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	categoryJSON := `{"name":"category"}`
+	categoryId := "categoryId"
+
+	matchCatFn := func(args command.UpdateCategoryCommandArgs) bool {
+		return args.Name == "category"
+	}
+	cmd.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(nil)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", strings.NewReader(categoryJSON))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.UpdateCategory(ctx, categoryId)
+
+	// Assert
+	logger.AssertExpectations(t)
+	cmd.AssertExpectations(t)
+	assert.Equal(t, http.StatusOK, response.Code, "HTTP status should be 200.")
+	assert.Empty(t, response.Body.String(), "Should return empty body.")
+}
+
+func TestUpdateCategory_FailedCommand_Returns500(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	cmd := new(mocks.UpdateCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			UpdateCategory: cmd,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	categoryJSON := `{"name":"category"}`
+	categoryId := "categoryId"
+
+	cmd.On("Handle", mock.Anything, mock.Anything).Return(errors.New("error"))
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", strings.NewReader(categoryJSON))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.UpdateCategory(ctx, categoryId)
+
+	// Assert
+	logger.AssertExpectations(t)
+	cmd.AssertExpectations(t)
+	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestUpdateCategory_InvalidPayload_Returns400(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	cmd := new(mocks.UpdateCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			UpdateCategory: cmd,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	categoryJSON := "invalid"
+	categoryId := "categoryId"
+
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", strings.NewReader(categoryJSON))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.UpdateCategory(ctx, categoryId)
+
+	// Assert
+	logger.AssertExpectations(t)
+	cmd.AssertExpectations(t)
+	assert.Equal(t, http.StatusBadRequest, response.Code, "HTTP status should be 400.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}

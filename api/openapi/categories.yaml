@@ -95,6 +95,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    put:
+      summary: Updates category
+      description: Updates category in the system.
+      operationId: updateCategory
+      parameters:
+        - name: id
+          in: path
+          description: ID of category to update
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Category to update in the system
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+      responses:
+        '200':
+          description: Category response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   securitySchemes:
     bearerAuth:

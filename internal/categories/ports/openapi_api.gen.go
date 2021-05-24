@@ -22,6 +22,9 @@ type ServerInterface interface {
 	// Returns a category by ID
 	// (GET /categories/{id})
 	FindCategoryByID(ctx echo.Context, id string) error
+	// Updates category
+	// (PUT /categories/{id})
+	UpdateCategory(ctx echo.Context, id string) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -79,6 +82,22 @@ func (w *ServerInterfaceWrapper) FindCategoryByID(ctx echo.Context) error {
 	return err
 }
 
+// UpdateCategory converts echo context to params.
+func (w *ServerInterfaceWrapper) UpdateCategory(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.UpdateCategory(ctx, id)
+	return err
+}
+
 // This is a simple interface which specifies echo.Route addition functions which
 // are present on both echo.Echo and echo.Group, since we want to allow using
 // either of them for path registration
@@ -110,5 +129,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/categories", wrapper.FindCategories)
 	router.POST(baseURL+"/categories", wrapper.AddCategory)
 	router.GET(baseURL+"/categories/:id", wrapper.FindCategoryByID)
+	router.PUT(baseURL+"/categories/:id", wrapper.UpdateCategory)
 
 }

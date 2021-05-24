@@ -76,7 +76,7 @@ func (h HTTPServer) AddCategory(echoCtx echo.Context) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category http request")
 	defer span.End()
 
-	var newCategory NewCategory
+	var newCategory Category
 	bindErr := echoCtx.Bind(&newCategory)
 	if bindErr != nil {
 		catErr := Error{
@@ -93,13 +93,45 @@ func (h HTTPServer) AddCategory(echoCtx echo.Context) error {
 		Path:     newCategory.Path,
 		Level:    newCategory.Level,
 	}
-	categoryID, categoryIDErr := h.app.Commands.AddCategory.Handle(ctx, cmd)
-	if categoryIDErr != nil {
-		h.app.Logger.Error(ctx, "Failed to create category", categoryIDErr)
-		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(categoryIDErr))
+	categoryID, categoryCrtErr := h.app.Commands.AddCategory.Handle(ctx, cmd)
+	if categoryCrtErr != nil {
+		h.app.Logger.Error(ctx, "Failed to create category", categoryCrtErr)
+		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(categoryCrtErr))
 	}
 
 	return echoCtx.JSON(http.StatusCreated, categoryID)
+}
+
+// UpdateCategory updates a category.
+func (h HTTPServer) UpdateCategory(echoCtx echo.Context, id string) error {
+	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle update category http request")
+	defer span.End()
+
+	var category Category
+	bindErr := echoCtx.Bind(&category)
+	if bindErr != nil {
+		catErr := Error{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid format for a category to update",
+		}
+		h.app.Logger.Error(ctx, "Invalid category format", bindErr)
+		return echoCtx.JSON(http.StatusBadRequest, catErr)
+	}
+
+	cmdArgs := command.UpdateCategoryCommandArgs{
+		ID:       category.Id,
+		ParentID: category.ParentId,
+		Name:     category.Name,
+		Path:     category.Path,
+		Level:    category.Level,
+	}
+	categoryUpdErr := h.app.Commands.UpdateCategory.Handle(ctx, cmdArgs)
+	if categoryUpdErr != nil {
+		h.app.Logger.Error(ctx, "Failed to update category", categoryUpdErr)
+		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(categoryUpdErr))
+	}
+
+	return echoCtx.NoContent(http.StatusOK)
 }
 
 func categoriesToResponse(domainCategories []domain.Category) []Category {

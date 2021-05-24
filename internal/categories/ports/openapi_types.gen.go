@@ -47,5 +47,11 @@ type FindCategoriesParams struct {
 // AddCategoryJSONBody defines parameters for AddCategory.
 type AddCategoryJSONBody NewCategory
 
+// UpdateCategoryJSONBody defines parameters for UpdateCategory.
+type UpdateCategoryJSONBody Category
+
 // AddCategoryJSONRequestBody defines body for AddCategory for application/json ContentType.
 type AddCategoryJSONRequestBody AddCategoryJSONBody
+
+// UpdateCategoryJSONRequestBody defines body for UpdateCategory for application/json ContentType.
+type UpdateCategoryJSONRequestBody UpdateCategoryJSONBody

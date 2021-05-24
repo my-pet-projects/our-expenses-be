@@ -15,7 +15,7 @@ import (
 
 var addCategoryTracer trace.Tracer
 
-// NewCategory defines NewCategory command object.
+// NewCategory defines category command object.
 type NewCategory struct {
 	ParentID *string
 	Name     string
