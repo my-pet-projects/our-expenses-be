@@ -99,7 +99,7 @@ func (h HTTPServer) AddCategory(echoCtx echo.Context) error {
 		return echoCtx.JSON(http.StatusBadRequest, catErr)
 	}
 
-	cmdArgs := command.NewCategoryCommand{
+	cmdArgs := command.AddCategoryCommand{
 		ParentID: newCategory.ParentId,
 		Name:     newCategory.Name,
 		Path:     newCategory.Path,

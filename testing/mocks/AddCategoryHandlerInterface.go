@@ -16,11 +16,11 @@ type AddCategoryHandlerInterface struct {
 }
 
 // Handle provides a mock function with given fields: ctx, cmd
-func (_m *AddCategoryHandlerInterface) Handle(ctx context.Context, cmd command.NewCategoryCommand) (*string, error) {
+func (_m *AddCategoryHandlerInterface) Handle(ctx context.Context, cmd command.AddCategoryCommand) (*string, error) {
 	ret := _m.Called(ctx, cmd)
 
 	var r0 *string
-	if rf, ok := ret.Get(0).(func(context.Context, command.NewCategoryCommand) *string); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, command.AddCategoryCommand) *string); ok {
 		r0 = rf(ctx, cmd)
 	} else {
 		if ret.Get(0) != nil {
@@ -29,7 +29,7 @@ func (_m *AddCategoryHandlerInterface) Handle(ctx context.Context, cmd command.N
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, command.NewCategoryCommand) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, command.AddCategoryCommand) error); ok {
 		r1 = rf(ctx, cmd)
 	} else {
 		r1 = ret.Error(1)

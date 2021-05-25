@@ -231,7 +231,7 @@ func TestAddCategory_SuccessfulCommand_Returns201(t *testing.T) {
 	categoryJSON := `{"name":"category"}`
 	categoryId := "categoryId"
 
-	matchCatFn := func(command command.NewCategoryCommand) bool {
+	matchCatFn := func(command command.AddCategoryCommand) bool {
 		return command.Name == "category"
 	}
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()

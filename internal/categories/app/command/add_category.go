@@ -15,8 +15,9 @@ import (
 
 var addCategoryTracer trace.Tracer
 
-// NewCategoryCommand defines a category command.
-type NewCategoryCommand struct {
+// AddCategoryCommand defines a category command.
+type AddCategoryCommand struct {
+	ID       string
 	ParentID *string
 	Name     string
 	Path     string
@@ -31,7 +32,7 @@ type AddCategoryHandler struct {
 
 // AddCategoryHandlerInterface defines a contract to handle command.
 type AddCategoryHandlerInterface interface {
-	Handle(ctx context.Context, cmd NewCategoryCommand) (*string, error)
+	Handle(ctx context.Context, cmd AddCategoryCommand) (*string, error)
 }
 
 // NewAddCategoryHandler returns command handler.
@@ -47,11 +48,11 @@ func NewAddCategoryHandler(
 }
 
 // Handle handles add category command.
-func (h AddCategoryHandler) Handle(ctx context.Context, cmd NewCategoryCommand) (*string, error) {
+func (h AddCategoryHandler) Handle(ctx context.Context, cmd AddCategoryCommand) (*string, error) {
 	ctx, span := addCategoryTracer.Start(ctx, "execute add category command")
 	defer span.End()
 
-	category, categoryErr := domain.NewCategory("", cmd.Name, cmd.ParentID, cmd.Path, cmd.Level, time.Now(), nil)
+	category, categoryErr := domain.NewCategory(cmd.ID, cmd.Name, cmd.ParentID, cmd.Path, cmd.Level, time.Now(), nil)
 	if categoryErr != nil {
 		return nil, errors.Wrap(categoryErr, "prepare category failed")
 	}
