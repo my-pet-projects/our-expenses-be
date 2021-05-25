@@ -1,102 +1,110 @@
 package main
 
-// import (
-// 	"context"
-// 	"encoding/json"
-// 	"fmt"
-// 	"io/ioutil"
-// 	"os"
-// 	"strconv"
-// 	"strings"
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+	"time"
 
-// 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/config"
-// 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/container"
-// 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/entity"
-// 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/infrastructure/db/repository"
-// 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/logger"
+	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
-// 	"github.com/sirupsen/logrus"
-// 	"go.mongodb.org/mongo-driver/bson/primitive"
-// 	"go.mongodb.org/mongo-driver/mongo"
-// )
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/repository"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+)
 
-// func main() {
-// 	mongoDb, mongoError := container.InitDatabase()
-// 	if mongoError != nil {
-// 		logrus.Fatalf("Failed establish MongoDB connection: '%s'", mongoError)
-// 	}
-// 	var db mongo.Database = *mongoDb
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cfg, _ := config.NewConfig()
+	log, _ := logger.NewLogger(cfg.Logger)
 
-// 	configConfig, _ := config.ProvideConfiguration()
-// 	appLogger, _ := logger.ProvideLogger(configConfig)
-// 	categoryRepo := repository.ProvideCategoryRepo(appLogger, &db)
+	mongoClient, mongoClientErr := database.NewMongoClient(log, cfg.Database)
+	if mongoClientErr != nil {
+		logrus.Fatalf("failed to create mongodb client: '%+v'", mongoClientErr)
+	}
+	if mongoConErr := mongoClient.OpenConnection(ctx, cancel); mongoConErr != nil {
+		logrus.Fatalf("failed to open mongodb connection: '%+v'", mongoClientErr)
+	}
 
-// 	ctx := context.Background()
+	categoryRepo := repository.NewCategoryRepo(mongoClient, log)
 
-// 	deleteCount, deleteErr := categoryRepo.DeleteAll(ctx, entity.CategoryFilter{})
-// 	if deleteErr != nil {
-// 		logrus.Fatalf("Failed to delete categories: '%s'", deleteErr)
-// 	}
-// 	logrus.Infof("Deleted %s categories", strconv.FormatInt(int64(deleteCount), 10))
+	delRes, delErr := categoryRepo.DeleteAll(ctx, domain.CategoryFilter{})
+	if delErr != nil {
+		logrus.Fatalf("Failed to delete categories: '%+v'", delErr)
+	}
+	log.Infof(ctx, "Deleted %d categories", delRes.DeleteCount)
 
-// 	categories := getCategories()
-// 	for _, category := range categories {
-// 		categoryRepo.Insert(ctx, &category)
-// 	}
+	categories := getCategories()
+	for _, category := range categories {
+		categoryRepo.Insert(ctx, &category)
+	}
 
-// 	os.Exit(0)
-// }
+	os.Exit(0)
+}
 
-// func getCategories() []entity.Category {
-// 	jsonFile, err := os.Open("cmd/import/categories.json")
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	defer jsonFile.Close()
+func getCategories() []domain.Category {
+	jsonFile, err := os.Open("cmd/import/categories.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer jsonFile.Close()
 
-// 	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, _ := ioutil.ReadAll(jsonFile)
 
-// 	var jsonCategories []category
-// 	_ = json.Unmarshal([]byte(byteValue), &jsonCategories)
+	var jsonCategories []category
+	_ = json.Unmarshal([]byte(byteValue), &jsonCategories)
 
-// 	var categories []entity.Category
-// 	for _, jsonCategory := range jsonCategories {
-// 		rootCategoryID := primitive.NewObjectID()
-// 		rootCategory := entity.Category{
-// 			ID:       rootCategoryID,
-// 			Name:     jsonCategory.Name,
-// 			ParentID: primitive.ObjectID{},
-// 			Path:     fmt.Sprintf("|%s", rootCategoryID.Hex()),
-// 			Level:    1,
-// 		}
-// 		categories = append(categories, rootCategory)
+	var categories []domain.Category
+	for _, jsonCategory := range jsonCategories {
+		rootCategoryID := primitive.NewObjectID()
+		rootCategory, _ := domain.NewCategory(
+			rootCategoryID.Hex(),
+			jsonCategory.Name,
+			nil,
+			fmt.Sprintf("|%s", rootCategoryID.Hex()),
+			1,
+			time.Now(),
+			nil,
+		)
 
-// 		for _, jsonSubcategory := range jsonCategory.Subcategories {
-// 			childCategoryID := primitive.NewObjectID()
-// 			childCategory := entity.Category{
-// 				ID:       childCategoryID,
-// 				Name:     jsonSubcategory.Name,
-// 				ParentID: rootCategory.ID,
-// 				Path:     strings.ToLower(fmt.Sprintf("|%s|%s", rootCategory.ID.Hex(), childCategoryID.Hex())),
-// 				Level:    2,
-// 			}
-// 			categories = append(categories, childCategory)
-// 		}
-// 	}
+		categories = append(categories, *rootCategory)
 
-// 	return categories
-// }
+		for _, jsonSubcategory := range jsonCategory.Subcategories {
+			childCategoryID := primitive.NewObjectID()
+			rootCategoryID := rootCategory.ID()
+			childCategory, _ := domain.NewCategory(
+				childCategoryID.Hex(),
+				jsonSubcategory.Name,
+				&rootCategoryID,
+				strings.ToLower(fmt.Sprintf("|%s|%s", rootCategory.ID(), childCategoryID.Hex())),
+				2,
+				time.Now(),
+				nil,
+			)
 
-// type category struct {
-// 	CategoryID    string `json:"categoryId"`
-// 	Name          string `json:"name"`
-// 	Icon          string `json:"icon"`
-// 	IconViewport  string `json:"iconViewport"`
-// 	Subcategories []struct {
-// 		ParentCategoryID   string      `json:"parentCategoryId"`
-// 		ParentCategoryName string      `json:"parentCategoryName"`
-// 		ParentCategoryIcon interface{} `json:"parentCategoryIcon"`
-// 		SubcategoryID      string      `json:"subcategoryId"`
-// 		Name               string      `json:"name"`
-// 	} `json:"subcategories"`
-// }
+			categories = append(categories, *childCategory)
+		}
+	}
+
+	return categories
+}
+
+type category struct {
+	CategoryID    string `json:"categoryId"`
+	Name          string `json:"name"`
+	Icon          string `json:"icon"`
+	IconViewport  string `json:"iconViewport"`
+	Subcategories []struct {
+		ParentCategoryID   string      `json:"parentCategoryId"`
+		ParentCategoryName string      `json:"parentCategoryName"`
+		ParentCategoryIcon interface{} `json:"parentCategoryIcon"`
+		SubcategoryID      string      `json:"subcategoryId"`
+		Name               string      `json:"name"`
+	} `json:"subcategories"`
+}
