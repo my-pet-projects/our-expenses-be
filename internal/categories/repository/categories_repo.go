@@ -45,8 +45,8 @@ type CategoryRepository struct {
 type CategoryRepoInterface interface {
 	GetAll(ctx context.Context, filter domain.CategoryFilter) ([]domain.Category, error)
 	GetOne(ctx context.Context, id string) (*domain.Category, error)
-	Insert(ctx context.Context, category *domain.Category) (*string, error)
-	Update(ctx context.Context, category *domain.Category) (*domain.UpdateResult, error)
+	Insert(ctx context.Context, category domain.Category) (*string, error)
+	Update(ctx context.Context, category domain.Category) (*domain.UpdateResult, error)
 	DeleteAll(ctx context.Context, filter domain.CategoryFilter) (*domain.DeleteResult, error)
 	DeleteOne(ctx context.Context, id string) (*domain.DeleteResult, error)
 }
@@ -167,7 +167,7 @@ func (r *CategoryRepository) GetOne(ctx context.Context, id string) (*domain.Cat
 }
 
 // Insert a category into the database.
-func (r *CategoryRepository) Insert(ctx context.Context, category *domain.Category) (*string, error) {
+func (r *CategoryRepository) Insert(ctx context.Context, category domain.Category) (*string, error) {
 	ctx, span := categoriesRepoTracer.Start(ctx, "add category to the database")
 	defer span.End()
 
@@ -185,7 +185,7 @@ func (r *CategoryRepository) Insert(ctx context.Context, category *domain.Catego
 }
 
 // Update updates a category in the database.
-func (r *CategoryRepository) Update(ctx context.Context, category *domain.Category) (*domain.UpdateResult, error) {
+func (r *CategoryRepository) Update(ctx context.Context, category domain.Category) (*domain.UpdateResult, error) {
 	ctx, span := categoriesRepoTracer.Start(ctx, "update category in the database")
 	defer span.End()
 
@@ -257,7 +257,7 @@ func (r *CategoryRepository) DeleteAll(ctx context.Context, filter domain.Catego
 	return result, nil
 }
 
-func (r CategoryRepository) marshalCategory(category *domain.Category) categoryModel {
+func (r CategoryRepository) marshalCategory(category domain.Category) categoryModel {
 	id, _ := primitive.ObjectIDFromHex(category.ID())
 	parentIDObj := primitive.NilObjectID
 	if category.ParentID() != nil {

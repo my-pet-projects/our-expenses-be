@@ -1,6 +1,6 @@
 server:
   name: our-expenses
-  host: localhost
+  host: 0.0.0.0
   port: 8080
   timeout:
     shutdown: 10
@@ -11,7 +11,7 @@ server:
 logger:
   name: our-expenses
   level: DEBUG
-  jsonFormat: false
+  jsonFormat: true
   writers:
     file:
       enabled: true

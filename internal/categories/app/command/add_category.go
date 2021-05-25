@@ -57,5 +57,5 @@ func (h AddCategoryHandler) Handle(ctx context.Context, cmd AddCategoryCommand) 
 		return nil, errors.Wrap(categoryErr, "prepare category failed")
 	}
 
-	return h.repo.Insert(ctx, category)
+	return h.repo.Insert(ctx, *category)
 }

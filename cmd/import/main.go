@@ -41,9 +41,18 @@ func main() {
 	log.Infof(ctx, "Deleted %d categories", delRes.DeleteCount)
 
 	categories := getCategories()
+
+	log.Infof(ctx, "Inserting categories ...")
+	insCount := 0
 	for _, category := range categories {
-		categoryRepo.Insert(ctx, &category)
+		_, insErr := categoryRepo.Insert(ctx, category)
+		if insErr != nil {
+			logrus.Fatalf("Failed to insert category: '%+v'", insErr)
+		}
+		insCount++
 	}
+
+	log.Infof(ctx, "Inserted %d categories", insCount)
 
 	os.Exit(0)
 }
@@ -51,14 +60,14 @@ func main() {
 func getCategories() []domain.Category {
 	jsonFile, err := os.Open("cmd/import/categories.json")
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	defer jsonFile.Close()
 
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 
 	var jsonCategories []category
-	_ = json.Unmarshal([]byte(byteValue), &jsonCategories)
+	_ = json.Unmarshal(byteValue, &jsonCategories)
 
 	var categories []domain.Category
 	for _, jsonCategory := range jsonCategories {

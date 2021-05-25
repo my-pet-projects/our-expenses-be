@@ -58,7 +58,7 @@ func TestAddCategoryHandler_RepoError_ThrowsError(t *testing.T) {
 		Level:    1,
 	}
 
-	matchCategoryFn := func(cat *domain.Category) bool {
+	matchCategoryFn := func(cat domain.Category) bool {
 		return cat.Name() == cmd.Name && cat.Path() == cmd.Path &&
 			cat.Level() == cmd.Level && cat.ParentID() == cmd.ParentID
 	}
@@ -91,7 +91,7 @@ func TestAddCategoryHandler_RepoSuccess_ThrowsError(t *testing.T) {
 		Level:    1,
 	}
 
-	matchCategoryFn := func(cat *domain.Category) bool {
+	matchCategoryFn := func(cat domain.Category) bool {
 		return cat.Name() == cmd.Name && cat.Path() == cmd.Path &&
 			cat.Level() == cmd.Level && cat.ParentID() == cmd.ParentID
 	}

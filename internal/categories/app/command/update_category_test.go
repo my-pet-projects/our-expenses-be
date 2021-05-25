@@ -60,7 +60,7 @@ func TestUpdateCategoryHandler_RepoError_ThrowsError(t *testing.T) {
 		Level:    1,
 	}
 
-	matchCategoryFn := func(cat *domain.Category) bool {
+	matchCategoryFn := func(cat domain.Category) bool {
 		return cat.ID() == cmd.ID && cat.Name() == cmd.Name && cat.Path() == cmd.Path &&
 			cat.Level() == cmd.Level && cat.ParentID() == cmd.ParentID
 	}
@@ -95,7 +95,7 @@ func TestUpdateCategoryHandler_RepoSuccess_ReturnsResult(t *testing.T) {
 	}
 	updateResult := &domain.UpdateResult{UpdateCount: 10}
 
-	matchCategoryFn := func(cat *domain.Category) bool {
+	matchCategoryFn := func(cat domain.Category) bool {
 		return cat.ID() == cmd.ID && cat.Name() == cmd.Name && cat.Path() == cmd.Path &&
 			cat.Level() == cmd.Level && cat.ParentID() == cmd.ParentID
 	}

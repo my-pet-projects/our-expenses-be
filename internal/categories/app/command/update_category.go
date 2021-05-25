@@ -62,7 +62,7 @@ func (h UpdateCategoryHandler) Handle(
 		return nil, errors.Wrap(categoryErr, "prepare category failed")
 	}
 
-	updateCmdResult, updateCmdErr := h.repo.Update(ctx, category)
+	updateCmdResult, updateCmdErr := h.repo.Update(ctx, *category)
 	if updateCmdErr != nil {
 		return nil, errors.Wrap(updateCmdErr, "update category command failed")
 	}

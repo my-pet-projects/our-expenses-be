@@ -107,11 +107,11 @@ func (_m *CategoryRepoInterface) GetOne(ctx context.Context, id string) (*domain
 }
 
 // Insert provides a mock function with given fields: ctx, category
-func (_m *CategoryRepoInterface) Insert(ctx context.Context, category *domain.Category) (*string, error) {
+func (_m *CategoryRepoInterface) Insert(ctx context.Context, category domain.Category) (*string, error) {
 	ret := _m.Called(ctx, category)
 
 	var r0 *string
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.Category) *string); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Category) *string); ok {
 		r0 = rf(ctx, category)
 	} else {
 		if ret.Get(0) != nil {
@@ -120,7 +120,7 @@ func (_m *CategoryRepoInterface) Insert(ctx context.Context, category *domain.Ca
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *domain.Category) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, domain.Category) error); ok {
 		r1 = rf(ctx, category)
 	} else {
 		r1 = ret.Error(1)
@@ -130,11 +130,11 @@ func (_m *CategoryRepoInterface) Insert(ctx context.Context, category *domain.Ca
 }
 
 // Update provides a mock function with given fields: ctx, category
-func (_m *CategoryRepoInterface) Update(ctx context.Context, category *domain.Category) (*domain.UpdateResult, error) {
+func (_m *CategoryRepoInterface) Update(ctx context.Context, category domain.Category) (*domain.UpdateResult, error) {
 	ret := _m.Called(ctx, category)
 
 	var r0 *domain.UpdateResult
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.Category) *domain.UpdateResult); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Category) *domain.UpdateResult); ok {
 		r0 = rf(ctx, category)
 	} else {
 		if ret.Get(0) != nil {
@@ -143,7 +143,7 @@ func (_m *CategoryRepoInterface) Update(ctx context.Context, category *domain.Ca
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *domain.Category) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, domain.Category) error); ok {
 		r1 = rf(ctx, category)
 	} else {
 		r1 = ret.Error(1)
