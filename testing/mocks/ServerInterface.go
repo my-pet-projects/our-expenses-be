@@ -84,6 +84,20 @@ func (_m *ServerInterface) FindCategoryUsages(ctx echo.Context, id string) error
 	return r0
 }
 
+// MoveCategory provides a mock function with given fields: ctx, id, params
+func (_m *ServerInterface) MoveCategory(ctx echo.Context, id string, params ports.MoveCategoryParams) error {
+	ret := _m.Called(ctx, id, params)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(echo.Context, string, ports.MoveCategoryParams) error); ok {
+		r0 = rf(ctx, id, params)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdateCategory provides a mock function with given fields: ctx, id
 func (_m *ServerInterface) UpdateCategory(ctx echo.Context, id string) error {
 	ret := _m.Called(ctx, id)
