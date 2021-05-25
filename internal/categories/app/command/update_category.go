@@ -55,6 +55,8 @@ func (h UpdateCategoryHandler) Handle(
 	ctx, span := updateCategoryTracer.Start(ctx, "execute update category command")
 	defer span.End()
 
+	// TODO: get a category from the database and create a new category based on that object.
+
 	category, categoryErr := domain.NewCategory(cmd.ID, cmd.Name, cmd.ParentID, cmd.Path, cmd.Level, time.Now(), nil)
 	if categoryErr != nil {
 		return nil, errors.Wrap(categoryErr, "prepare category failed")
