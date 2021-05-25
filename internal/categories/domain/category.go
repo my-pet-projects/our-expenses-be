@@ -82,6 +82,16 @@ func (c Category) ParentIDs() []string {
 	return parentIDs
 }
 
+// CreatedAt returns category creation date.
+func (c Category) CreatedAt() time.Time {
+	return c.createdAt
+}
+
+// UpdatedAt returns category update date.
+func (c Category) UpdatedAt() *time.Time {
+	return c.updatedAt
+}
+
 // SetParents sets category parents.
 func (c *Category) SetParents(parents []Category) {
 	c.parents = parents

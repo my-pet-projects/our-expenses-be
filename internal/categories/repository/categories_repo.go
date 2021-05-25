@@ -32,7 +32,7 @@ type categoryModel struct {
 	Path      string             `bson:"path"`
 	Level     int                `bson:"level"`
 	CreatedAt time.Time          `bson:"createdAt"`
-	UpdatedAt time.Time          `bson:"updatedAt,omitempty"`
+	UpdatedAt *time.Time         `bson:"updatedAt,omitempty"`
 }
 
 // CategoryRepository represents a struct to access categories MongoDB collection.
@@ -265,11 +265,13 @@ func (r CategoryRepository) marshalCategory(category *domain.Category) categoryM
 	}
 
 	return categoryModel{
-		ID:       id,
-		Name:     category.Name(),
-		ParentID: parentIDObj,
-		Path:     category.Path(),
-		Level:    category.Level(),
+		ID:        id,
+		Name:      category.Name(),
+		ParentID:  parentIDObj,
+		Path:      category.Path(),
+		Level:     category.Level(),
+		CreatedAt: category.CreatedAt(),
+		UpdatedAt: category.UpdatedAt(),
 	}
 }
 
@@ -280,7 +282,7 @@ func (r CategoryRepository) unmarshalCategory(categoryModel categoryModel) (*dom
 		parentID = &parentIDHex
 	}
 	cat, catErr := domain.NewCategory(categoryModel.ID.Hex(), categoryModel.Name,
-		parentID, categoryModel.Path, categoryModel.Level, categoryModel.CreatedAt, &categoryModel.UpdatedAt)
+		parentID, categoryModel.Path, categoryModel.Level, categoryModel.CreatedAt, categoryModel.UpdatedAt)
 	if catErr != nil {
 		return nil, errors.Wrap(catErr, "unmarshal category")
 	}
