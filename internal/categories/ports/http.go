@@ -194,6 +194,27 @@ func (h HTTPServer) FindCategoryUsages(echoCtx echo.Context, id string) error {
 	return echoCtx.JSON(http.StatusOK, response)
 }
 
+// MoveCategory moves category.
+func (h HTTPServer) MoveCategory(echoCtx echo.Context, id string, params MoveCategoryParams) error {
+	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle move category http request")
+	span.SetAttributes(attribute.Any("id", id))
+	span.SetAttributes(attribute.Any("destinationId", params.DestinationId))
+	defer span.End()
+	h.app.Logger.Info(ctx, "Handling move category HTTP request")
+
+	cmd := command.MoveCategoryCommand{
+		CategoryID:    id,
+		DestinationID: params.DestinationId,
+	}
+	_, cmdErr := h.app.Commands.MoveCategory.Handle(ctx, cmd)
+	if cmdErr != nil {
+		h.app.Logger.Error(ctx, "Failed to move category", cmdErr)
+		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(cmdErr))
+	}
+
+	return nil
+}
+
 func categoriesToResponse(domainCategories []domain.Category) []Category {
 	categories := []Category{}
 	for _, cat := range domainCategories {

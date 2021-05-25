@@ -50,6 +50,13 @@ type AddCategoryJSONBody NewCategory
 // UpdateCategoryJSONBody defines parameters for UpdateCategory.
 type UpdateCategoryJSONBody Category
 
+// MoveCategoryParams defines parameters for MoveCategory.
+type MoveCategoryParams struct {
+
+	// Parent ID of category to move to
+	DestinationId string `json:"destinationId"`
+}
+
 // AddCategoryJSONRequestBody defines body for AddCategory for application/json ContentType.
 type AddCategoryJSONRequestBody AddCategoryJSONBody
 

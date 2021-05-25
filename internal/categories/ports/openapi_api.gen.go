@@ -28,6 +28,9 @@ type ServerInterface interface {
 	// Updates category
 	// (PUT /categories/{id})
 	UpdateCategory(ctx echo.Context, id string) error
+	// Move a category
+	// (PUT /categories/{id}/move)
+	MoveCategory(ctx echo.Context, id string, params MoveCategoryParams) error
 	// Returns a category usages
 	// (GET /categories/{id}/usages)
 	FindCategoryUsages(ctx echo.Context, id string) error
@@ -120,6 +123,31 @@ func (w *ServerInterfaceWrapper) UpdateCategory(ctx echo.Context) error {
 	return err
 }
 
+// MoveCategory converts echo context to params.
+func (w *ServerInterfaceWrapper) MoveCategory(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params MoveCategoryParams
+	// ------------- Required query parameter "destinationId" -------------
+
+	err = runtime.BindQueryParameter("form", true, true, "destinationId", ctx.QueryParams(), &params.DestinationId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter destinationId: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.MoveCategory(ctx, id, params)
+	return err
+}
+
 // FindCategoryUsages converts echo context to params.
 func (w *ServerInterfaceWrapper) FindCategoryUsages(ctx echo.Context) error {
 	var err error
@@ -169,6 +197,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.DELETE(baseURL+"/categories/:id", wrapper.DeleteCategory)
 	router.GET(baseURL+"/categories/:id", wrapper.FindCategoryByID)
 	router.PUT(baseURL+"/categories/:id", wrapper.UpdateCategory)
+	router.PUT(baseURL+"/categories/:id/move", wrapper.MoveCategory)
 	router.GET(baseURL+"/categories/:id/usages", wrapper.FindCategoryUsages)
 
 }

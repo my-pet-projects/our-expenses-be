@@ -176,6 +176,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /categories/{id}/move:
+    put:
+      summary: Move a category
+      description: Move a category.
+      operationId: moveCategory
+      parameters:
+        - name: id
+          in: path
+          description: ID of category to move
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: destinationId
+          in: query
+          description: Parent ID of category to move to
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Category moved
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   securitySchemes:
     bearerAuth:
