@@ -17,6 +17,7 @@ var findCategoriesTracer trace.Tracer
 type FindCategoriesQuery struct {
 	ParentID        *string
 	FindAllChildren bool
+	FindAll         bool
 }
 
 // FindCategoriesHandler defines a handler to fetch categories.
@@ -53,6 +54,7 @@ func (h FindCategoriesHandler) Handle(
 	filter := domain.CategoryFilter{
 		ParentID:     query.ParentID,
 		FindChildren: query.FindAllChildren,
+		FindAll:      query.FindAll,
 	}
 	return h.repo.GetAll(ctx, filter)
 }

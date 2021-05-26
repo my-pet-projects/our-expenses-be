@@ -61,6 +61,13 @@ func (w *ServerInterfaceWrapper) FindCategories(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter allChildren: %s", err))
 	}
 
+	// ------------- Optional query parameter "all" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "all", ctx.QueryParams(), &params.All)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter all: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.FindCategories(ctx, params)
 	return err

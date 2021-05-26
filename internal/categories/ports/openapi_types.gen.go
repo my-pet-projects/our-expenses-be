@@ -42,6 +42,9 @@ type FindCategoriesParams struct {
 
 	// include all category children
 	AllChildren *bool `json:"allChildren,omitempty"`
+
+	// Return all categories
+	All *bool `json:"all,omitempty"`
 }
 
 // AddCategoryJSONBody defines parameters for AddCategory.

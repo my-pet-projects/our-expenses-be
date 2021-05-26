@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -52,7 +53,8 @@ func (h AddCategoryHandler) Handle(ctx context.Context, cmd AddCategoryCommand) 
 	ctx, span := addCategoryTracer.Start(ctx, "execute add category command")
 	defer span.End()
 
-	category, categoryErr := domain.NewCategory(cmd.ID, cmd.Name, cmd.ParentID, cmd.Path, cmd.Level, time.Now(), nil)
+	path := fmt.Sprintf("%s|%s", cmd.Path, cmd.ID)
+	category, categoryErr := domain.NewCategory(cmd.ID, cmd.Name, cmd.ParentID, path, cmd.Level, time.Now(), nil)
 	if categoryErr != nil {
 		return nil, errors.Wrap(categoryErr, "prepare category failed")
 	}

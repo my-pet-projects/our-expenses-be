@@ -44,6 +44,9 @@ func (h HTTPServer) FindCategories(echoCtx echo.Context, params FindCategoriesPa
 	if params.AllChildren != nil {
 		query.FindAllChildren = *params.AllChildren
 	}
+	if params.All != nil {
+		query.FindAll = *params.All
+	}
 	queryRes, queryErr := h.app.Queries.FindCategories.Handle(ctx, query)
 	if queryErr != nil {
 		h.app.Logger.Error(ctx, "Failed to fetch categories", queryErr)
@@ -59,7 +62,7 @@ func (h HTTPServer) FindCategoryByID(echoCtx echo.Context, id string) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category http request")
 	span.SetAttributes(attribute.Any("id", id))
 	defer span.End()
-	h.app.Logger.Info(ctx, "Handling get category HTTP request")
+	h.app.Logger.Infof(ctx, "Handling get %s category HTTP request", id)
 
 	query := query.FindCategoryQuery{
 		CategoryID: id,
@@ -200,7 +203,8 @@ func (h HTTPServer) MoveCategory(echoCtx echo.Context, id string, params MoveCat
 	span.SetAttributes(attribute.Any("id", id))
 	span.SetAttributes(attribute.Any("destinationId", params.DestinationId))
 	defer span.End()
-	h.app.Logger.Info(ctx, "Handling move category HTTP request")
+	h.app.Logger.Info(ctx,
+		fmt.Sprintf("Handling HTTP request to move category %s to %s", id, params.DestinationId))
 
 	cmd := command.MoveCategoryCommand{
 		CategoryID:    id,

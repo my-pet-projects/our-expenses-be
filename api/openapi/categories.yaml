@@ -30,6 +30,12 @@ paths:
           required: false
           schema:
             type: boolean
+        - name: all
+          in: query
+          description: Return all categories
+          required: false
+          schema:
+            type: boolean
       responses:
         '200':
           description: categories response
