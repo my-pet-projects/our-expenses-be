@@ -210,13 +210,13 @@ func (h HTTPServer) MoveCategory(echoCtx echo.Context, id string, params MoveCat
 		CategoryID:    id,
 		DestinationID: params.DestinationId,
 	}
-	_, cmdErr := h.app.Commands.MoveCategory.Handle(ctx, cmd)
+	cmdResult, cmdErr := h.app.Commands.MoveCategory.Handle(ctx, cmd)
 	if cmdErr != nil {
 		h.app.Logger.Error(ctx, "Failed to move category", cmdErr)
 		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(cmdErr))
 	}
 
-	return nil
+	return echoCtx.JSON(http.StatusOK, cmdResult)
 }
 
 func categoriesToResponse(domainCategories []domain.Category) []Category {

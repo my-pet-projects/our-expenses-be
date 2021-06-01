@@ -52,9 +52,11 @@ func TestFindCategories_SuccessfulQuery_Returns200(t *testing.T) {
 	ctx := e.NewContext(request, response)
 	parentID := "parentID"
 	allChildren := true
+	all := true
 	params := ports.FindCategoriesParams{
 		ParentId:    &parentID,
 		AllChildren: &allChildren,
+		All:         &all,
 	}
 
 	// SUT
@@ -124,7 +126,7 @@ func TestFindCategory_SuccessfulQuery_Returns200(t *testing.T) {
 	matchIdFn := func(q query.FindCategoryQuery) bool {
 		return q.CategoryID == categoryId
 	}
-	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	logger.On("Infof", mock.Anything, mock.Anything, mock.Anything).Return()
 	handler.On("Handle", mock.Anything, mock.MatchedBy(matchIdFn)).Return(&category, nil)
 
 	response := httptest.NewRecorder()
@@ -158,7 +160,7 @@ func TestFindCategory_FailedQuery_Returns500(t *testing.T) {
 	}
 	categoryID := "categoryId"
 
-	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	logger.On("Infof", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
 	handler.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("error"))
 
@@ -196,7 +198,7 @@ func TestFindCategory_NilQueryResult_Returns404(t *testing.T) {
 	matchIdFn := func(q query.FindCategoryQuery) bool {
 		return q.CategoryID == categoryId
 	}
-	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	logger.On("Infof", mock.Anything, mock.Anything, mock.Anything).Return()
 	handler.On("Handle", mock.Anything, mock.MatchedBy(matchIdFn)).Return(nil, nil)
 
 	response := httptest.NewRecorder()
@@ -614,6 +616,86 @@ func TestFindCategoryUsages_FailedQuery_Returns500(t *testing.T) {
 
 	// Act
 	server.FindCategoryUsages(ctx, categoryId)
+
+	// Assert
+	logger.AssertExpectations(t)
+	handler.AssertExpectations(t)
+	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestMoveCategory_SuccessfulCommand_Returns200(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	handler := new(mocks.MoveCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			MoveCategory: handler,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	updateResult := &domain.UpdateResult{
+		UpdateCount: 10,
+	}
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(updateResult, nil)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", nil)
+	ctx := e.NewContext(request, response)
+	categoryId := "categoryId"
+	destinationId := "destinationId"
+	params := ports.MoveCategoryParams{
+		DestinationId: destinationId,
+	}
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.MoveCategory(ctx, categoryId, params)
+
+	// Assert
+	logger.AssertExpectations(t)
+	handler.AssertExpectations(t)
+	assert.Equal(t, http.StatusOK, response.Code, "HTTP status should be 200.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestMoveCategory_FailedCommand_Returns500(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	handler := new(mocks.MoveCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			MoveCategory: handler,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	categoryId := "categoryId"
+	destinationId := "destinationId"
+	params := ports.MoveCategoryParams{
+		DestinationId: destinationId,
+	}
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/categories", nil)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.MoveCategory(ctx, categoryId, params)
 
 	// Assert
 	logger.AssertExpectations(t)

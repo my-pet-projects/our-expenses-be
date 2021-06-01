@@ -26,13 +26,13 @@ const collectionName string = "categories"
 
 // categoryModel defines category structure in MongoDB.
 type categoryModel struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	Name      string             `bson:"name"`
-	ParentID  primitive.ObjectID `bson:"parentId,omitempty"`
-	Path      string             `bson:"path"`
-	Level     int                `bson:"level"`
-	CreatedAt time.Time          `bson:"createdAt"`
-	UpdatedAt *time.Time         `bson:"updatedAt,omitempty"`
+	ID        primitive.ObjectID  `bson:"_id,omitempty"`
+	Name      string              `bson:"name"`
+	ParentID  *primitive.ObjectID `bson:"parentId,omitempty"`
+	Path      string              `bson:"path"`
+	Level     int                 `bson:"level"`
+	CreatedAt time.Time           `bson:"createdAt"`
+	UpdatedAt *time.Time          `bson:"updatedAt,omitempty"`
 }
 
 // CategoryRepository represents a struct to access categories MongoDB collection.
@@ -105,11 +105,6 @@ func (r *CategoryRepository) GetAll(ctx context.Context, filter domain.CategoryF
 	if filter.FindAll {
 		query = bson.M{}
 	}
-
-	r.logger.InfoWithFields(ctx, "Fetching categories from database ...", logger.FieldsSet{
-		"component": "db/start",
-		"payload":   fmt.Sprintf("%+v", query),
-	})
 
 	span.AddEvent("start query", trace.WithAttributes(attribute.Any("filter", query)))
 
@@ -193,6 +188,13 @@ func (r *CategoryRepository) Update(ctx context.Context, category domain.Categor
 
 	filter := bson.M{"_id": categoryDbModel.ID}
 	updater := bson.M{"$set": categoryDbModel}
+
+	if categoryDbModel.ParentID == nil {
+		updater["$unset"] = bson.M{
+			"parentId": "",
+		}
+	}
+
 	opts := options.Update().SetUpsert(false)
 
 	// if &category.ParentID == nil {
@@ -236,6 +238,8 @@ func (r *CategoryRepository) DeleteOne(ctx context.Context, id string) (*domain.
 func (r *CategoryRepository) DeleteAll(ctx context.Context, filter domain.CategoryFilter) (*domain.DeleteResult, error) {
 	query := bson.M{}
 
+	// TODO: little safety net to prevent deleting all items
+
 	if len(filter.Path) != 0 && filter.FindChildren {
 		query["path"] = bson.M{
 			"$regex": primitive.Regex{
@@ -259,15 +263,16 @@ func (r *CategoryRepository) DeleteAll(ctx context.Context, filter domain.Catego
 
 func (r CategoryRepository) marshalCategory(category domain.Category) categoryModel {
 	id, _ := primitive.ObjectIDFromHex(category.ID())
-	parentIDObj := primitive.NilObjectID
+	var parentID *primitive.ObjectID
 	if category.ParentID() != nil {
-		parentIDObj, _ = primitive.ObjectIDFromHex(*category.ParentID())
+		parentIDObj, _ := primitive.ObjectIDFromHex(*category.ParentID())
+		parentID = &parentIDObj
 	}
 
 	return categoryModel{
 		ID:        id,
 		Name:      category.Name(),
-		ParentID:  parentIDObj,
+		ParentID:  parentID,
 		Path:      category.Path(),
 		Level:     category.Level(),
 		CreatedAt: category.CreatedAt(),
@@ -277,7 +282,7 @@ func (r CategoryRepository) marshalCategory(category domain.Category) categoryMo
 
 func (r CategoryRepository) unmarshalCategory(categoryModel categoryModel) (*domain.Category, error) {
 	var parentID *string
-	if !categoryModel.ParentID.IsZero() {
+	if categoryModel.ParentID != nil {
 		parentIDHex := categoryModel.ParentID.Hex()
 		parentID = &parentIDHex
 	}

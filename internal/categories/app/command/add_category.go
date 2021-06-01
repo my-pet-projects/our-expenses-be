@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
@@ -53,6 +54,9 @@ func (h AddCategoryHandler) Handle(ctx context.Context, cmd AddCategoryCommand) 
 	ctx, span := addCategoryTracer.Start(ctx, "execute add category command")
 	defer span.End()
 
+	if len(cmd.ID) == 0 {
+		cmd.ID = primitive.NewObjectID().Hex()
+	}
 	path := fmt.Sprintf("%s|%s", cmd.Path, cmd.ID)
 	category, categoryErr := domain.NewCategory(cmd.ID, cmd.Name, cmd.ParentID, path, cmd.Level, time.Now(), nil)
 	if categoryErr != nil {

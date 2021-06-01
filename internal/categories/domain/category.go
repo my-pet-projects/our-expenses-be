@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -95,4 +96,31 @@ func (c Category) UpdatedAt() *time.Time {
 // SetParents sets category parents.
 func (c *Category) SetParents(parents []Category) {
 	c.parents = parents
+}
+
+func (c *Category) AssignNewParent(parent *Category) {
+	var newParentID *string
+	var newLevel int
+	var newPath string
+
+	if parent == nil {
+		newParentID = nil
+		newLevel = 1
+		newPath = fmt.Sprintf("|%s", c.id)
+	} else {
+		newParentID = &parent.id
+		newLevel = parent.level + 1
+		newPath = fmt.Sprintf("%s|%s", parent.path, c.id)
+	}
+
+	c.parentID = newParentID
+	c.path = newPath
+	c.level = newLevel
+}
+
+func (c *Category) ReplaceAncestor(oldPath string, newPath string) {
+	path := strings.Replace(c.path, oldPath, newPath, -1)
+	level := strings.Count(path, "|")
+	c.path = path
+	c.level = level
 }

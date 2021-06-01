@@ -2,6 +2,7 @@ package command_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -50,8 +51,10 @@ func TestAddCategoryHandler_RepoError_ThrowsError(t *testing.T) {
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
+	categoryID := "categoryID"
 	parentID := "parentId"
 	cmd := command.AddCategoryCommand{
+		ID:       categoryID,
 		Name:     "name",
 		ParentID: &parentID,
 		Path:     "path",
@@ -59,7 +62,7 @@ func TestAddCategoryHandler_RepoError_ThrowsError(t *testing.T) {
 	}
 
 	matchCategoryFn := func(cat domain.Category) bool {
-		return cat.Name() == cmd.Name && cat.Path() == cmd.Path &&
+		return cat.Name() == cmd.Name && cat.Path() == fmt.Sprintf("%s|%s", cmd.Path, cmd.ID) &&
 			cat.Level() == cmd.Level && cat.ParentID() == cmd.ParentID
 	}
 	repo.On("Insert", mock.Anything,
@@ -85,6 +88,7 @@ func TestAddCategoryHandler_RepoSuccess_ThrowsError(t *testing.T) {
 	categoryID := "categoryId"
 	parentID := "parentId"
 	cmd := command.AddCategoryCommand{
+		ID:       categoryID,
 		Name:     "name",
 		ParentID: &parentID,
 		Path:     "path",
@@ -92,7 +96,7 @@ func TestAddCategoryHandler_RepoSuccess_ThrowsError(t *testing.T) {
 	}
 
 	matchCategoryFn := func(cat domain.Category) bool {
-		return cat.Name() == cmd.Name && cat.Path() == cmd.Path &&
+		return cat.Name() == cmd.Name && cat.Path() == fmt.Sprintf("%s|%s", cmd.Path, cmd.ID) &&
 			cat.Level() == cmd.Level && cat.ParentID() == cmd.ParentID
 	}
 	repo.On("Insert", mock.Anything,
