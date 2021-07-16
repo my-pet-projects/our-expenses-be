@@ -14,6 +14,7 @@ type Category struct {
 	name      string
 	parentID  *string
 	path      string
+	icon      *string
 	level     int
 	parents   []Category
 	createdAt time.Time
@@ -21,7 +22,7 @@ type Category struct {
 }
 
 // NewCategory creates a new category domain object.
-func NewCategory(id string, name string, parentID *string, path string, level int,
+func NewCategory(id string, name string, parentID *string, path string, icon *string, level int,
 	createdAt time.Time, updatedAt *time.Time) (*Category, error) {
 	if name == "" {
 		return nil, errors.New("empty name")
@@ -31,6 +32,7 @@ func NewCategory(id string, name string, parentID *string, path string, level in
 		name:      name,
 		parentID:  parentID,
 		path:      path,
+		icon:      icon,
 		level:     level,
 		createdAt: createdAt,
 		updatedAt: updatedAt,
@@ -55,6 +57,11 @@ func (c Category) ParentID() *string {
 // Path returns category path.
 func (c Category) Path() string {
 	return c.path
+}
+
+// Icon returns category icon.
+func (c Category) Icon() *string {
+	return c.icon
 }
 
 // Level returns category level.

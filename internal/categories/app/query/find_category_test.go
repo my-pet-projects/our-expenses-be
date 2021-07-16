@@ -64,7 +64,8 @@ func TestFindCategoryHandle_RepoSuccess_CategoryHasNoPath_ReturnsCategory(t *tes
 	categoryId := "categoryId"
 	parentId1 := "parentId1"
 	path := ""
-	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, 1, time.Now(), nil)
+	icon := "icon"
+	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, &icon, 1, time.Now(), nil)
 	findQuery := query.FindCategoryQuery{
 		CategoryID: categoryId,
 	}
@@ -96,10 +97,11 @@ func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoSuccess_Returns
 	categoryId := "categoryId"
 	parentId1 := "parentId1"
 	parentId2 := "parentId2"
+	icon := "icon"
 	path := fmt.Sprintf("|%s|%s", parentId1, parentId2)
-	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, 1, time.Now(), nil)
-	parentCategory1, _ := domain.NewCategory(parentId1, "name1", nil, path, 1, time.Now(), nil)
-	parentCategory2, _ := domain.NewCategory(parentId2, "name1", nil, path, 1, time.Now(), nil)
+	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, &icon, 1, time.Now(), nil)
+	parentCategory1, _ := domain.NewCategory(parentId1, "name1", nil, path, &icon, 1, time.Now(), nil)
+	parentCategory2, _ := domain.NewCategory(parentId2, "name1", nil, path, &icon, 1, time.Now(), nil)
 	parentCategories := []domain.Category{*parentCategory1, *parentCategory2}
 	parentFilter := domain.CategoryFilter{CategoryIDs: []string{parentId1, parentId2}}
 	findQuery := query.FindCategoryQuery{
@@ -139,8 +141,9 @@ func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoError_ThrowsErr
 	categoryId := "categoryId"
 	parentId1 := "parentId1"
 	parentId2 := "parentId2"
+	icon := "icon"
 	path := fmt.Sprintf("|%s|%s", parentId1, parentId2)
-	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, 1, time.Now(), nil)
+	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, &icon, 1, time.Now(), nil)
 	parentFilter := domain.CategoryFilter{CategoryIDs: []string{parentId1, parentId2}}
 	findQuery := query.FindCategoryQuery{
 		CategoryID: categoryId,

@@ -23,6 +23,7 @@ type AddCategoryCommand struct {
 	ParentID *string
 	Name     string
 	Path     string
+	Icon     *string
 	Level    int
 }
 
@@ -58,7 +59,7 @@ func (h AddCategoryHandler) Handle(ctx context.Context, cmd AddCategoryCommand) 
 		cmd.ID = primitive.NewObjectID().Hex()
 	}
 	path := fmt.Sprintf("%s|%s", cmd.Path, cmd.ID)
-	category, categoryErr := domain.NewCategory(cmd.ID, cmd.Name, cmd.ParentID, path, cmd.Level, time.Now(), nil)
+	category, categoryErr := domain.NewCategory(cmd.ID, cmd.Name, cmd.ParentID, path, cmd.Icon, cmd.Level, time.Now(), nil)
 	if categoryErr != nil {
 		return nil, errors.Wrap(categoryErr, "prepare category failed")
 	}

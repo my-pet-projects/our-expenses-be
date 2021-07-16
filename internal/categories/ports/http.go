@@ -105,6 +105,7 @@ func (h HTTPServer) AddCategory(echoCtx echo.Context) error {
 	cmdArgs := command.AddCategoryCommand{
 		ParentID: newCategory.ParentId,
 		Name:     newCategory.Name,
+		Icon:     newCategory.Icon,
 		Path:     newCategory.Path,
 		Level:    newCategory.Level,
 	}
@@ -138,6 +139,7 @@ func (h HTTPServer) UpdateCategory(echoCtx echo.Context, id string) error {
 		ID:       category.Id,
 		ParentID: category.ParentId,
 		Name:     category.Name,
+		Icon:     category.Icon,
 		Path:     category.Path,
 		Level:    category.Level,
 	}
@@ -238,6 +240,7 @@ func categoryToResponse(domainCategory *domain.Category) Category {
 		Id: domainCategory.ID(),
 		NewCategory: NewCategory{
 			Name:     domainCategory.Name(),
+			Icon:     domainCategory.Icon(),
 			ParentId: domainCategory.ParentID(),
 			Path:     domainCategory.Path(),
 			Level:    domainCategory.Level(),

@@ -25,7 +25,8 @@ type Error struct {
 
 // NewCategory defines model for NewCategory.
 type NewCategory struct {
-	Level int `json:"level"`
+	Icon  *string `json:"icon,omitempty"`
+	Level int     `json:"level"`
 
 	// Name of the category
 	Name     string      `json:"name"`

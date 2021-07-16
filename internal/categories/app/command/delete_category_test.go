@@ -88,10 +88,11 @@ func TestDeleteCategoryHandler_FailedDeleteCategory_ThrowsError(t *testing.T) {
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
 	categoryID := "categoryId"
+	icon := "icon"
 	cmd := command.DeleteCategoryCommand{
 		CategoryID: categoryID,
 	}
-	category, _ := domain.NewCategory(categoryID, "name", nil, "path", 1, time.Now(), nil)
+	category, _ := domain.NewCategory(categoryID, "name", nil, "path", &icon, 1, time.Now(), nil)
 
 	matchIdFn := func(id string) bool {
 		return categoryID == id
@@ -122,10 +123,11 @@ func TestDeleteCategoryHandler_DeletesCategory_ReturnsResult(t *testing.T) {
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
 	categoryID := "categoryId"
+	icon := "icon"
 	cmd := command.DeleteCategoryCommand{
 		CategoryID: categoryID,
 	}
-	category, _ := domain.NewCategory(categoryID, "name", nil, "path", 1, time.Now(), nil)
+	category, _ := domain.NewCategory(categoryID, "name", nil, "path", &icon, 1, time.Now(), nil)
 	deleteResult := &domain.DeleteResult{DeleteCount: 10}
 
 	matchIdFn := func(id string) bool {

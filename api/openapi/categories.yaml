@@ -243,6 +243,8 @@ components:
           format: uuid
         path:
           type: string
+        icon:
+          type: string
         level:
           type: integer
         parents:
