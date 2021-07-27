@@ -27,11 +27,16 @@ func NewCategory(id string, name string, parentID *string, path string, icon *st
 	if name == "" {
 		return nil, errors.New("empty name")
 	}
+	if icon != nil {
+		trimmedIcon := strings.TrimSpace(*icon)
+		icon = &trimmedIcon
+	}
+
 	return &Category{
 		id:        id,
-		name:      name,
+		name:      strings.TrimSpace(name),
 		parentID:  parentID,
-		path:      path,
+		path:      strings.TrimSpace(path),
 		icon:      icon,
 		level:     level,
 		createdAt: createdAt,
