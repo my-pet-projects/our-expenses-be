@@ -80,7 +80,7 @@ func TestAddCategoryHandler_RepoError_ThrowsError(t *testing.T) {
 	assert.NotNil(t, err, "Error result should not be nil.")
 }
 
-func TestAddCategoryHandler_RepoSuccess_ThrowsError(t *testing.T) {
+func TestAddCategoryHandler_RepoSuccess_ReturnsNewId(t *testing.T) {
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
