@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	commands "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app/commands"
+	command "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app/command"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -16,11 +16,11 @@ type AddExpenseHandlerInterface struct {
 }
 
 // Handle provides a mock function with given fields: ctx, cmd
-func (_m *AddExpenseHandlerInterface) Handle(ctx context.Context, cmd commands.AddExpenseCommand) (*string, error) {
+func (_m *AddExpenseHandlerInterface) Handle(ctx context.Context, cmd command.AddExpenseCommand) (*string, error) {
 	ret := _m.Called(ctx, cmd)
 
 	var r0 *string
-	if rf, ok := ret.Get(0).(func(context.Context, commands.AddExpenseCommand) *string); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, command.AddExpenseCommand) *string); ok {
 		r0 = rf(ctx, cmd)
 	} else {
 		if ret.Get(0) != nil {
@@ -29,7 +29,7 @@ func (_m *AddExpenseHandlerInterface) Handle(ctx context.Context, cmd commands.A
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, commands.AddExpenseCommand) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, command.AddExpenseCommand) error); ok {
 		r1 = rf(ctx, cmd)
 	} else {
 		r1 = ret.Error(1)
