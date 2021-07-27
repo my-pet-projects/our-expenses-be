@@ -1,0 +1,89 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Our Expenses server
+  description: TODO
+servers:
+  - url: https://{hostname}/api
+    variables:
+      hostname:
+        default: localhost
+security:
+  # - bearerAuth: []
+paths:
+  /expenses:    
+    post:
+      summary: Creates a new expense
+      description: Creates a new expense in the system.
+      operationId: addExpense
+      requestBody:
+        description: Expense to add to the system
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewExpense'
+      responses:
+        '200':
+          description: Expense response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'  
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Expense:
+      allOf:
+        - $ref: '#/components/schemas/NewExpense'
+        - required:
+          - id
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Unique id of the expense
+    NewExpense:
+      type: object
+      required:
+        - categoryId
+        - price
+        - quantity
+        - currency
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+          description: Category ID of the expense
+        price:
+          type: number
+          format: float
+        quantity:
+          type: integer
+        currency:
+          type: string
+        comment:
+          type: string
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Error code
+        message:
+          type: string
+          description: Error message
