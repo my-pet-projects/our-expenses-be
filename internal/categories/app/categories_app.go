@@ -3,8 +3,6 @@ package app
 import (
 	"context"
 
-	"github.com/pkg/errors"
-
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/command"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/query"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/repository"
@@ -39,48 +37,30 @@ type Queries struct {
 }
 
 // NewApplication returns application instance.
-func NewApplication(ctx context.Context, cancel context.CancelFunc) (*Application, error) {
-	cfg, cfgErr := config.NewConfig()
-	if cfgErr != nil {
-		return nil, errors.Wrap(cfgErr, "create application config")
-	}
-	if cfgValidErr := cfg.Validate(); cfgValidErr != nil {
-		return nil, errors.Wrap(cfgValidErr, "validate application config")
-	}
-
-	log, logErr := logger.NewLogger(cfg.Logger)
-	if logErr != nil {
-		return nil, errors.Wrap(logErr, "create logger")
-	}
-
-	tracer := tracer.NewTracer(cfg.Telemetry)
-
-	log.Info(ctx, "Application starting ...")
-
-	mongoClient, mongoClientErr := database.NewMongoClient(log, cfg.Database)
-	if mongoClientErr != nil {
-		return nil, errors.Wrap(mongoClientErr, "create mongodb client")
-	}
-	if mongoConErr := mongoClient.OpenConnection(ctx, cancel); mongoConErr != nil {
-		return nil, errors.Wrap(mongoConErr, "open mongodb connection")
-	}
-
-	categoryRepo := repository.NewCategoryRepo(mongoClient, log)
+func NewApplication(
+	ctx context.Context,
+	cancel context.CancelFunc,
+	config *config.Config,
+	logger *logger.Logger,
+	tracer *tracer.Tracer,
+	mongoClient *database.MongoClient,
+) (*Application, error) {
+	categoryRepo := repository.NewCategoryRepo(mongoClient, logger)
 
 	return &Application{
 		Commands: Commands{
-			AddCategory:    command.NewAddCategoryHandler(categoryRepo, log),
-			UpdateCategory: command.NewUpdateCategoryHandler(categoryRepo, log),
-			DeleteCategory: command.NewDeleteCategoryHandler(categoryRepo, log),
-			MoveCategory:   command.NewMoveCategoryHandler(categoryRepo, log),
+			AddCategory:    command.NewAddCategoryHandler(categoryRepo, logger),
+			UpdateCategory: command.NewUpdateCategoryHandler(categoryRepo, logger),
+			DeleteCategory: command.NewDeleteCategoryHandler(categoryRepo, logger),
+			MoveCategory:   command.NewMoveCategoryHandler(categoryRepo, logger),
 		},
 		Queries: Queries{
-			FindCategories:     query.NewFindCategoriesHandler(categoryRepo, log),
-			FindCategory:       query.NewFindCategoryHandler(categoryRepo, log),
-			FindCategoryUsages: query.NewFindCategoryUsagesHandler(categoryRepo, log),
+			FindCategories:     query.NewFindCategoriesHandler(categoryRepo, logger),
+			FindCategory:       query.NewFindCategoryHandler(categoryRepo, logger),
+			FindCategoryUsages: query.NewFindCategoryUsagesHandler(categoryRepo, logger),
 		},
-		Logger: log,
-		Config: *cfg,
+		Logger: logger,
+		Config: *config,
 		Tracer: tracer,
 	}, nil
 }

@@ -27,5 +27,4 @@ database:
 
 telemetry:
   name: our-expenses
-  level: DEBUG
-  token: "#{telemetry-token}#"
+  level: info

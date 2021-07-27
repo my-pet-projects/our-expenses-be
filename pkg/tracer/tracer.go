@@ -19,9 +19,9 @@ type TraceInterface interface {
 // NewTracer instantiates Lightstep tracer.
 func NewTracer(config config.Telemetry) *Tracer {
 	launcher := launcher.ConfigureOpentelemetry(
-		launcher.WithLogLevel(config.Level),
 		launcher.WithServiceName(config.ServiceName),
 		launcher.WithAccessToken(config.AccessToken),
+		launcher.WithLogLevel(config.Level),
 	)
 	return &Tracer{
 		launcher: launcher,
