@@ -28,3 +28,4 @@ database:
 telemetry:
   name: our-expenses
   level: info
+  token: "#{telemetry-token}#"
