@@ -25,6 +25,7 @@ type expenseDbModel struct {
 	Price      primitive.Decimal128 `bson:"price"`
 	Currency   string               `bson:"currency"`
 	Quantity   int                  `bson:"quantity"`
+	Date       time.Time            `bson:"date"`
 	Comment    *string              `bson:"comment,omitempty"`
 	CreatedAt  time.Time            `bson:"createdAt"`
 	UpdatedAt  *time.Time           `bson:"updatedAt,omitempty"`
@@ -85,6 +86,7 @@ func (r ExpenseRepository) marshalExpense(expense domain.Expense) expenseDbModel
 		Currency:   expense.Currency(),
 		Quantity:   expense.Quantity(),
 		Comment:    expense.Comment(),
+		Date:       expense.Date(),
 		CreatedAt:  expense.CreatedAt(),
 		UpdatedAt:  expense.UpdatedAt(),
 	}

@@ -15,6 +15,7 @@ type Expense struct {
 	currency   string
 	quantity   int
 	comment    *string
+	date       time.Time
 	createdAt  time.Time
 	updatedAt  *time.Time
 }
@@ -27,6 +28,7 @@ func NewExpense(
 	currency string,
 	quantity int,
 	comment *string,
+	date time.Time,
 	createdAt time.Time,
 	updatedAt *time.Time,
 ) (*Expense, error) {
@@ -41,6 +43,7 @@ func NewExpense(
 		currency:   currency,
 		quantity:   quantity,
 		comment:    comment,
+		date:       date,
 		createdAt:  createdAt,
 		updatedAt:  updatedAt,
 	}, nil
@@ -74,6 +77,11 @@ func (e Expense) Quantity() int {
 // Comment returns expense comment.
 func (e Expense) Comment() *string {
 	return e.comment
+}
+
+// Date returns expense date.
+func (e Expense) Date() time.Time {
+	return e.date
 }
 
 // CreatedAt returns expense creation date.

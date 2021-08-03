@@ -60,6 +60,7 @@ components:
         - price
         - quantity
         - currency
+        - date
       properties:
         categoryId:
           type: string
@@ -74,6 +75,9 @@ components:
           type: string
         comment:
           type: string
+        date:
+          type: string
+          format: date-time
     Error:
       type: object
       required:

@@ -3,6 +3,7 @@ package command_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -57,12 +58,13 @@ func TestAddExpenseHandler_RepoError_ThrowsError(t *testing.T) {
 		Currency:   "EUR",
 		Quantity:   2,
 		Comment:    &comment,
+		Date:       time.Now(),
 	}
 
 	matchExpenseFn := func(cat domain.Expense) bool {
 		return cat.ID() == "" && cat.CategoryID() == cmd.CategoryID &&
 			cat.Price() == cmd.Price && cat.Currency() == cmd.Currency && cat.Quantity() == cmd.Quantity &&
-			cat.Comment() == cmd.Comment
+			cat.Comment() == cmd.Comment && cat.Date() == cmd.Date
 	}
 	repo.On("Insert", mock.Anything,
 		mock.MatchedBy(matchExpenseFn)).Return(nil, errors.New("error"))
@@ -92,12 +94,13 @@ func TestAddExpenseHandler_RepoSuccess_ReturnsNewId(t *testing.T) {
 		Currency:   "EUR",
 		Quantity:   2,
 		Comment:    &comment,
+		Date:       time.Now(),
 	}
 
 	matchExpenseFn := func(cat domain.Expense) bool {
 		return cat.ID() == "" && cat.CategoryID() == cmd.CategoryID &&
 			cat.Price() == cmd.Price && cat.Currency() == cmd.Currency && cat.Quantity() == cmd.Quantity &&
-			cat.Comment() == cmd.Comment
+			cat.Comment() == cmd.Comment && cat.Date() == cmd.Date
 	}
 	repo.On("Insert", mock.Anything,
 		mock.MatchedBy(matchExpenseFn)).Return(&expenseID, nil)
