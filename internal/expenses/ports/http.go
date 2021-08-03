@@ -34,7 +34,7 @@ func (h HTTPServer) AddExpense(echoCtx echo.Context) error {
 	defer span.End()
 	h.app.Logger.Info(ctx, "Handling add expense HTTP request")
 
-	var newExpense Expense
+	var newExpense NewExpense
 	bindErr := echoCtx.Bind(&newExpense)
 	if bindErr != nil {
 		expenseErr := Error{
@@ -59,5 +59,9 @@ func (h HTTPServer) AddExpense(echoCtx echo.Context) error {
 		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(expenseCrtErr))
 	}
 
-	return echoCtx.JSON(http.StatusCreated, expenseID)
+	response := NewExpenseResponse{
+		Id: *expenseID,
+	}
+
+	return echoCtx.JSON(http.StatusCreated, response)
 }
