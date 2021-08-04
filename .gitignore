@@ -15,3 +15,6 @@
 .env
 *.log
 **/*/__debug_bin
+
+# Build artefacts
+build/
