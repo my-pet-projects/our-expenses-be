@@ -19,7 +19,7 @@ var addExpenseTracer trace.Tracer
 type AddExpenseCommand struct {
 	CategoryID string
 	Price      string
-	Quantity   int
+	Quantity   string
 	Currency   string
 	Date       time.Time
 	Comment    *string

@@ -24,7 +24,7 @@ type expenseDbModel struct {
 	CategoryID string               `bson:"categoryId"`
 	Price      primitive.Decimal128 `bson:"price"`
 	Currency   string               `bson:"currency"`
-	Quantity   int                  `bson:"quantity"`
+	Quantity   primitive.Decimal128 `bson:"quantity"`
 	Date       time.Time            `bson:"date"`
 	Comment    *string              `bson:"comment,omitempty"`
 	CreatedAt  time.Time            `bson:"createdAt"`
@@ -78,13 +78,14 @@ func (r *ExpenseRepository) Insert(ctx context.Context, category domain.Expense)
 func (r ExpenseRepository) marshalExpense(expense domain.Expense) expenseDbModel {
 	id, _ := primitive.ObjectIDFromHex(expense.ID())
 	price, _ := primitive.ParseDecimal128(expense.Price())
+	quantity, _ := primitive.ParseDecimal128(expense.Quantity())
 
 	return expenseDbModel{
 		ID:         id,
 		CategoryID: expense.CategoryID(),
 		Price:      price,
 		Currency:   expense.Currency(),
-		Quantity:   expense.Quantity(),
+		Quantity:   quantity,
 		Comment:    expense.Comment(),
 		Date:       expense.Date(),
 		CreatedAt:  expense.CreatedAt(),

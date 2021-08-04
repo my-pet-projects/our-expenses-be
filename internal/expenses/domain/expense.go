@@ -13,7 +13,7 @@ type Expense struct {
 	categoryID string
 	price      decimal.Decimal
 	currency   string
-	quantity   int
+	quantity   decimal.Decimal
 	comment    *string
 	date       time.Time
 	createdAt  time.Time
@@ -26,7 +26,7 @@ func NewExpense(
 	categoryID string,
 	price string,
 	currency string,
-	quantity int,
+	quantity string,
 	comment *string,
 	date time.Time,
 	createdAt time.Time,
@@ -36,12 +36,16 @@ func NewExpense(
 	if decPriceErr != nil {
 		return nil, errors.Wrap(decPriceErr, "price convert")
 	}
+	decQuantity, decQuantityErr := decimal.NewFromString(quantity)
+	if decQuantityErr != nil {
+		return nil, errors.Wrap(decPriceErr, "quantity convert")
+	}
 	return &Expense{
 		id:         id,
 		categoryID: categoryID,
 		price:      decPrice,
 		currency:   currency,
-		quantity:   quantity,
+		quantity:   decQuantity,
 		comment:    comment,
 		date:       date,
 		createdAt:  createdAt,
@@ -70,8 +74,8 @@ func (e Expense) Currency() string {
 }
 
 // Quantity returns expense quantity.
-func (e Expense) Quantity() int {
-	return e.quantity
+func (e Expense) Quantity() string {
+	return e.quantity.String()
 }
 
 // Comment returns expense comment.

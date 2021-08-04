@@ -56,7 +56,7 @@ func TestAddExpenseHandler_RepoError_ThrowsError(t *testing.T) {
 		CategoryID: "categoryId",
 		Price:      "12.55",
 		Currency:   "EUR",
-		Quantity:   2,
+		Quantity:   "2",
 		Comment:    &comment,
 		Date:       time.Now(),
 	}
@@ -92,7 +92,7 @@ func TestAddExpenseHandler_RepoSuccess_ReturnsNewId(t *testing.T) {
 		CategoryID: "categoryId",
 		Price:      "12.55",
 		Currency:   "EUR",
-		Quantity:   2,
+		Quantity:   "2",
 		Comment:    &comment,
 		Date:       time.Now(),
 	}

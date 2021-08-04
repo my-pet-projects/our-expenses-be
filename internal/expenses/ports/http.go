@@ -49,7 +49,7 @@ func (h HTTPServer) AddExpense(echoCtx echo.Context) error {
 		CategoryID: newExpense.CategoryId,
 		Price:      fmt.Sprint(newExpense.Price),
 		Currency:   newExpense.Currency,
-		Quantity:   newExpense.Quantity,
+		Quantity:   fmt.Sprint(newExpense.Quantity),
 		Comment:    newExpense.Comment,
 		Date:       newExpense.Date,
 	}
