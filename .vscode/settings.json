@@ -16,6 +16,7 @@
         "Infof",
         "Upserted",
         "Warnf",
+        "YYOS",
         "bson",
         "codegen",
         "donec",
