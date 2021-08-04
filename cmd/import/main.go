@@ -12,8 +12,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/repository"
+	categoryDomain "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
+	categoryRepo "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/repository"
+	expenseDomain "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
+	expenseRepo "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
@@ -23,7 +25,6 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cfg, _ := config.NewConfig()
 	log, _ := logger.NewLogger(cfg.Logger)
-
 	mongoClient, mongoClientErr := database.NewMongoClient(log, cfg.Database)
 	if mongoClientErr != nil {
 		logrus.Fatalf("failed to create mongodb client: '%+v'", mongoClientErr)
@@ -31,50 +32,94 @@ func main() {
 	if mongoConErr := mongoClient.OpenConnection(ctx, cancel); mongoConErr != nil {
 		logrus.Fatalf("failed to open mongodb connection: '%+v'", mongoClientErr)
 	}
+	categoryRepo := categoryRepo.NewCategoryRepo(mongoClient, log)
+	expenseRepo := expenseRepo.NewExpenseRepo(mongoClient, log)
 
-	categoryRepo := repository.NewCategoryRepo(mongoClient, log)
-
-	delRes, delErr := categoryRepo.DeleteAll(ctx, domain.CategoryFilter{})
-	if delErr != nil {
-		logrus.Fatalf("Failed to delete categories: '%+v'", delErr)
+	catDelRes, catDelErr := categoryRepo.DeleteAll(ctx, categoryDomain.CategoryFilter{})
+	if catDelErr != nil {
+		logrus.Fatalf("Failed to delete categories: '%+v'", catDelErr)
 	}
-	log.Infof(ctx, "Deleted %d categories", delRes.DeleteCount)
+	log.Infof(ctx, "Deleted %d categories", catDelRes.DeleteCount)
 
-	categories := getCategories()
+	categories, oldNewCategoriesMap := getCategories()
+	expenses := getExpenses(oldNewCategoriesMap)
 
 	log.Infof(ctx, "Inserting categories ...")
-	insCount := 0
+	catInsCount := 0
 	for _, category := range categories {
-		_, insErr := categoryRepo.Insert(ctx, category)
-		if insErr != nil {
-			logrus.Fatalf("Failed to insert category: '%+v'", insErr)
+		_, catInsErr := categoryRepo.Insert(ctx, category)
+		if catInsErr != nil {
+			logrus.Fatalf("Failed to insert category: '%+v'", catInsErr)
 		}
-		insCount++
+		catInsCount++
 	}
+	log.Infof(ctx, "Inserted %d categories", catInsCount)
 
-	log.Infof(ctx, "Inserted %d categories", insCount)
+	log.Infof(ctx, "Inserting expenses ...")
+	expInsCount := 0
+	for _, expense := range expenses {
+		_, expInsErr := expenseRepo.Insert(ctx, expense)
+		if expInsErr != nil {
+			logrus.Fatalf("Failed to insert category: '%+v'", expInsErr)
+		}
+		expInsCount++
+	}
+	log.Infof(ctx, "Inserted %d expenses", expInsCount)
 
 	os.Exit(0)
 }
 
-func getCategories() []domain.Category {
-	jsonFile, err := os.Open("cmd/import/categories.json")
-	if err != nil {
-		panic(err)
+func getExpenses(oldNewCategoriesMap map[string]categoryDomain.Category) []expenseDomain.Expense {
+	var rawExpenses itemsExpenses
+	unmarshallErr := json.Unmarshal(readFile("cmd/import/expenses.json"), &rawExpenses)
+	if unmarshallErr != nil {
+		fmt.Printf("failed to unmarshall expenses %v", unmarshallErr)
+		os.Exit(1)
 	}
-	defer jsonFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	var expenses []expenseDomain.Expense
+	for _, rawExpense := range rawExpenses.Items {
+		newCat, ok := oldNewCategoriesMap[rawExpense.CategoryID.S]
+		if !ok {
+			fmt.Printf("matching category not found")
+			os.Exit(1)
+		}
 
-	var jsonCategories []category
-	_ = json.Unmarshal(byteValue, &jsonCategories)
+		date, _ := time.Parse("2006-01-02", rawExpense.Date.S)
 
-	var categories []domain.Category
-	for _, jsonCategory := range jsonCategories {
+		expenseID := primitive.NewObjectID()
+		expense, _ := expenseDomain.NewExpense(
+			expenseID.Hex(),
+			newCat.ID(),
+			rawExpense.Price.S,
+			rawExpense.Currency.S,
+			rawExpense.Quantity.S,
+			&rawExpense.Comment.S,
+			date,
+			time.Now(),
+			nil,
+		)
+		expenses = append(expenses, *expense)
+	}
+
+	return expenses
+}
+
+func getCategories() ([]categoryDomain.Category, map[string]categoryDomain.Category) {
+	var rawCategories []category
+	unmarshallErr := json.Unmarshal(readFile("cmd/import/categories.json"), &rawCategories)
+	if unmarshallErr != nil {
+		fmt.Printf("failed to unmarshall categories %v", unmarshallErr)
+		os.Exit(1)
+	}
+
+	var oldNewCategoriesMap = make(map[string]categoryDomain.Category)
+	var categories []categoryDomain.Category
+	for _, rawCategory := range rawCategories {
 		rootCategoryID := primitive.NewObjectID()
-		rootCategory, _ := domain.NewCategory(
+		rootCategory, _ := categoryDomain.NewCategory(
 			rootCategoryID.Hex(),
-			jsonCategory.Name,
+			rawCategory.Name,
 			nil,
 			fmt.Sprintf("|%s", rootCategoryID.Hex()),
 			nil,
@@ -85,12 +130,12 @@ func getCategories() []domain.Category {
 
 		categories = append(categories, *rootCategory)
 
-		for _, jsonSubcategory := range jsonCategory.Subcategories {
+		for _, rawSubcategory := range rawCategory.Subcategories {
 			childCategoryID := primitive.NewObjectID()
 			rootCategoryID := rootCategory.ID()
-			childCategory, _ := domain.NewCategory(
+			childCategory, _ := categoryDomain.NewCategory(
 				childCategoryID.Hex(),
-				jsonSubcategory.Name,
+				rawSubcategory.Name,
 				&rootCategoryID,
 				strings.ToLower(fmt.Sprintf("|%s|%s", rootCategory.ID(), childCategoryID.Hex())),
 				nil,
@@ -99,15 +144,27 @@ func getCategories() []domain.Category {
 				nil,
 			)
 
+			oldNewCategoriesMap[rawSubcategory.SubcategoryID] = *childCategory
 			categories = append(categories, *childCategory)
 		}
 	}
 
-	return categories
+	return categories, oldNewCategoriesMap
+}
+
+func readFile(path string) []byte {
+	jsonFile, err := os.Open(path)
+	if err != nil {
+		panic(err)
+	}
+	defer jsonFile.Close()
+
+	bytes, _ := ioutil.ReadAll(jsonFile)
+	return bytes
 }
 
 type category struct {
-	CategoryID    string `json:"categoryId"`
+	CategoryID    string `json:"CategoryId"`
 	Name          string `json:"name"`
 	Icon          string `json:"icon"`
 	IconViewport  string `json:"iconViewport"`
@@ -117,5 +174,24 @@ type category struct {
 		ParentCategoryIcon interface{} `json:"parentCategoryIcon"`
 		SubcategoryID      string      `json:"subcategoryId"`
 		Name               string      `json:"name"`
-	} `json:"subcategories"`
+	} `json:"Subcategories"`
+}
+
+type itemsExpenses struct {
+	Items []expense `json:"Items"`
+}
+
+type expense struct {
+	ExpenseID  sStruct `json:"expenseId"`
+	Price      sStruct `json:"price"`
+	Quantity   sStruct `json:"quantity"`
+	Currency   sStruct `json:"currency"`
+	Comment    sStruct `json:"comment"`
+	Date       sStruct `json:"date"`
+	Trip       sStruct `json:"trip"`
+	CategoryID sStruct `json:"SubcategoryId"`
+}
+
+type sStruct struct {
+	S string `json:"S"`
 }
