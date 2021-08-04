@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.opentelemetry.io/otel"
@@ -40,6 +41,7 @@ type ExpenseRepository struct {
 // ExpenseRepoInterface defines a contract to persist expenses in the database.
 type ExpenseRepoInterface interface {
 	Insert(ctx context.Context, expense domain.Expense) (*string, error)
+	DeleteAll(ctx context.Context) (*domain.DeleteResult, error)
 }
 
 // NewExpenseRepo returns a ExpenseRepository.
@@ -72,6 +74,21 @@ func (r *ExpenseRepository) Insert(ctx context.Context, category domain.Expense)
 	objIDString := objID.Hex()
 
 	return &objIDString, nil
+}
+
+// DeleteAll deletes all expenses in the database.
+func (r *ExpenseRepository) DeleteAll(ctx context.Context) (*domain.DeleteResult, error) {
+	query := bson.M{}
+	mongoDelResult, mongoDelErr := r.collection().DeleteMany(ctx, query)
+	if mongoDelErr != nil {
+		return nil, errors.Wrap(mongoDelErr, "mongo delete expenses")
+	}
+
+	result := &domain.DeleteResult{
+		DeleteCount: int(mongoDelResult.DeletedCount),
+	}
+
+	return result, nil
 }
 
 // marshalExpense marshalls expense domain object into MongoDB model.

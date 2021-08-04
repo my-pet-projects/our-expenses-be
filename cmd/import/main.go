@@ -41,6 +41,12 @@ func main() {
 	}
 	log.Infof(ctx, "Deleted %d categories", catDelRes.DeleteCount)
 
+	expDelRes, expDelErr := expenseRepo.DeleteAll(ctx)
+	if expDelErr != nil {
+		logrus.Fatalf("Failed to delete expenses: '%+v'", expDelErr)
+	}
+	log.Infof(ctx, "Deleted %d expenses", expDelRes.DeleteCount)
+
 	categories, oldNewCategoriesMap := getCategories()
 	expenses := getExpenses(oldNewCategoriesMap)
 
