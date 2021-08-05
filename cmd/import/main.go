@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -94,12 +95,14 @@ func getExpenses(oldNewCategoriesMap map[string]categoryDomain.Category) []expen
 		date, _ := time.Parse("2006-01-02", rawExpense.Date.S)
 
 		expenseID := primitive.NewObjectID()
+		price, _ := strconv.ParseFloat(rawExpense.Price.S, 64)
+		quantity, _ := strconv.ParseFloat(rawExpense.Quantity.S, 64)
 		expense, _ := expenseDomain.NewExpense(
 			expenseID.Hex(),
 			newCat.ID(),
-			rawExpense.Price.S,
+			price,
 			rawExpense.Currency.S,
-			rawExpense.Quantity.S,
+			quantity,
 			&rawExpense.Comment.S,
 			date,
 			time.Now(),

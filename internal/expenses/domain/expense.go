@@ -1,9 +1,9 @@
 package domain
 
 import (
+	"errors"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
@@ -24,22 +24,21 @@ type Expense struct {
 func NewExpense(
 	id string,
 	categoryID string,
-	price string,
+	price float64,
 	currency string,
-	quantity string,
+	quantity float64,
 	comment *string,
 	date time.Time,
 	createdAt time.Time,
 	updatedAt *time.Time,
 ) (*Expense, error) {
-	decPrice, decPriceErr := decimal.NewFromString(price)
-	if decPriceErr != nil {
-		return nil, errors.Wrap(decPriceErr, "price convert")
+	if categoryID == "" {
+		return nil, errors.New("empty categoryID")
 	}
-	decQuantity, decQuantityErr := decimal.NewFromString(quantity)
-	if decQuantityErr != nil {
-		return nil, errors.Wrap(decPriceErr, "quantity convert")
-	}
+
+	decPrice := decimal.NewFromFloat(price)
+	decQuantity := decimal.NewFromFloat(quantity)
+
 	return &Expense{
 		id:         id,
 		categoryID: categoryID,
@@ -64,8 +63,9 @@ func (e Expense) CategoryID() string {
 }
 
 // Price returns expense price.
-func (e Expense) Price() string {
-	return e.price.String()
+func (e Expense) Price() float64 {
+	price, _ := e.price.Float64()
+	return price
 }
 
 // Currency returns expense price.
@@ -74,8 +74,9 @@ func (e Expense) Currency() string {
 }
 
 // Quantity returns expense quantity.
-func (e Expense) Quantity() string {
-	return e.quantity.String()
+func (e Expense) Quantity() float64 {
+	quantity, _ := e.quantity.Float64()
+	return quantity
 }
 
 // Comment returns expense comment.

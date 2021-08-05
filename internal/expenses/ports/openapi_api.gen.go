@@ -12,6 +12,9 @@ type ServerInterface interface {
 	// Creates a new expense
 	// (POST /expenses)
 	AddExpense(ctx echo.Context) error
+	// Generates expense repose
+	// (GET /reports)
+	GenerateReport(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -25,6 +28,15 @@ func (w *ServerInterfaceWrapper) AddExpense(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.AddExpense(ctx)
+	return err
+}
+
+// GenerateReport converts echo context to params.
+func (w *ServerInterfaceWrapper) GenerateReport(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GenerateReport(ctx)
 	return err
 }
 
@@ -57,5 +69,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.POST(baseURL+"/expenses", wrapper.AddExpense)
+	router.GET(baseURL+"/reports", wrapper.GenerateReport)
 
 }

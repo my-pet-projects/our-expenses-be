@@ -20,16 +20,29 @@ var categoriesRepoTracer trace.Tracer
 
 const collectionName string = "expenses"
 
+type categoryDbModel struct {
+	ID        primitive.ObjectID  `bson:"_id,omitempty"`
+	Name      string              `bson:"name"`
+	ParentID  *primitive.ObjectID `bson:"parentId,omitempty"`
+	Parents   []categoryDbModel   `bson:"parents,omitempty"`
+	Path      string              `bson:"path"`
+	Icon      *string             `bson:"icon,omitempty"`
+	Level     int                 `bson:"level"`
+	CreatedAt time.Time           `bson:"createdAt"`
+	UpdatedAt *time.Time          `bson:"updatedAt,omitempty"`
+}
+
 type expenseDbModel struct {
-	ID         primitive.ObjectID   `bson:"_id,omitempty"`
-	CategoryID string               `bson:"categoryId"`
-	Price      primitive.Decimal128 `bson:"price"`
-	Currency   string               `bson:"currency"`
-	Quantity   primitive.Decimal128 `bson:"quantity"`
-	Date       time.Time            `bson:"date"`
-	Comment    *string              `bson:"comment,omitempty"`
-	CreatedAt  time.Time            `bson:"createdAt"`
-	UpdatedAt  *time.Time           `bson:"updatedAt,omitempty"`
+	ID         primitive.ObjectID `bson:"_id,omitempty"`
+	CategoryID primitive.ObjectID `bson:"categoryId"`
+	Category   categoryDbModel    `bson:"category"`
+	Price      float64            `bson:"price"`
+	Currency   string             `bson:"currency"`
+	Quantity   float64            `bson:"quantity"`
+	Date       time.Time          `bson:"date"`
+	Comment    *string            `bson:"comment,omitempty"`
+	CreatedAt  time.Time          `bson:"createdAt"`
+	UpdatedAt  *time.Time         `bson:"updatedAt,omitempty"`
 }
 
 // ExpenseRepository represents a struct to access expenses MongoDB collection.
@@ -94,18 +107,27 @@ func (r *ExpenseRepository) DeleteAll(ctx context.Context) (*domain.DeleteResult
 // marshalExpense marshalls expense domain object into MongoDB model.
 func (r ExpenseRepository) marshalExpense(expense domain.Expense) expenseDbModel {
 	id, _ := primitive.ObjectIDFromHex(expense.ID())
-	price, _ := primitive.ParseDecimal128(expense.Price())
-	quantity, _ := primitive.ParseDecimal128(expense.Quantity())
+	categoryID, _ := primitive.ObjectIDFromHex(expense.CategoryID())
 
 	return expenseDbModel{
 		ID:         id,
-		CategoryID: expense.CategoryID(),
-		Price:      price,
+		CategoryID: categoryID,
+		Price:      expense.Price(),
 		Currency:   expense.Currency(),
-		Quantity:   quantity,
+		Quantity:   expense.Quantity(),
 		Comment:    expense.Comment(),
 		Date:       expense.Date(),
 		CreatedAt:  expense.CreatedAt(),
 		UpdatedAt:  expense.UpdatedAt(),
 	}
+}
+
+func (r ExpenseRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain.Expense, error) {
+	exp, expErr := domain.NewExpense(expenseModel.ID.Hex(), expenseModel.CategoryID.Hex(),
+		expenseModel.Price, expenseModel.Currency, expenseModel.Quantity,
+		expenseModel.Comment, expenseModel.Date, expenseModel.CreatedAt, expenseModel.UpdatedAt)
+	if expErr != nil {
+		return nil, errors.Wrap(expErr, "unmarshal expense")
+	}
+	return exp, nil
 }

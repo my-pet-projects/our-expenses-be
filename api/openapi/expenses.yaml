@@ -35,6 +35,31 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/Error'
+  /reports:    
+    get:
+      summary: Generates expense repose
+      description: Generates expense report.
+      operationId: generateReport
+      # requestBody:
+      #   description: Expense to add to the system
+      #   required: true
+      #   content:
+      #     application/json:
+      #       schema:
+      #         $ref: '#/components/schemas/NewExpense'
+      responses:
+        '200':
+          description: Expense report response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseReport'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/Error'  
 components:
   securitySchemes:
@@ -68,10 +93,10 @@ components:
           description: Category ID of the expense
         price:
           type: number
-          format: float
+          format: double
         quantity:
           type: number
-          format: float
+          format: double
         currency:
           type: string
         comment:
@@ -88,6 +113,15 @@ components:
           type: string
           format: uuid
           description: ID of the newly added expense
+    ExpenseReport:
+      type: object
+      required:
+        - expenses
+      properties:
+        expenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Expense'
     Error:
       type: object
       required:

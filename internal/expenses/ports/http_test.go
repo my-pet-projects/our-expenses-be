@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -13,6 +14,8 @@ import (
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app/command"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app/query"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/ports"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/testing/mocks"
 )
@@ -135,5 +138,80 @@ func TestAddExpense_InvalidPayload_Returns400(t *testing.T) {
 	logger.AssertExpectations(t)
 	handler.AssertExpectations(t)
 	assert.Equal(t, http.StatusBadRequest, response.Code, "HTTP status should be 400.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestGenerateReport_SuccessfulQuery_Returns200(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	handler := new(mocks.FindExpensesHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{},
+		Queries: app.Queries{
+			FindExpenses: handler,
+		},
+		Logger: logger,
+	}
+	from := time.Date(2021, time.July, 3, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2021, time.August, 3, 0, 0, 0, 0, time.UTC)
+	expenses := []domain.Expense{}
+
+	matchFn := func(query query.FindExpensesQuery) bool {
+		return query.From == from && query.To == to
+	}
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchFn)).Return(expenses, nil)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/reports", nil)
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.GenerateReport(ctx)
+
+	// Assert
+	logger.AssertExpectations(t)
+	handler.AssertExpectations(t)
+	assert.Equal(t, http.StatusOK, response.Code, "HTTP status should be 200.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestGenerateReport_FailedQuery_Returns500(t *testing.T) {
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	handler := new(mocks.FindExpensesHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{},
+		Queries: app.Queries{
+			FindExpenses: handler,
+		},
+		Logger: logger,
+	}
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+	handler.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/reports", nil)
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.GenerateReport(ctx)
+
+	// Assert
+	logger.AssertExpectations(t)
+	handler.AssertExpectations(t)
+	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }

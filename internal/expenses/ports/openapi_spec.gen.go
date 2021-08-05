@@ -18,16 +18,18 @@ import (
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/7RUTW/cOAz9KwZ3j954Nrn5lt2kQHpogDZAD0EOGoszo8CWFIpKagz83wtK9niacYIc",
-	"2pM++EQ+PlLcQ+M67yxaDlDvITQ77FTaXhM5ko0n55HYYLpunEZZNYaGjGfjLNQZXCRbCRtHnWKowVi+",
-	"OIcSuPeYj7hFgqGEDkNQ2zcdTebD08Bk7BaGoQTCp2gINdT3MAac4A8HvFs/YsMS6Qu+XP/waAMu5KIY",
-	"t476G31K5P/RVtxcFW5T8A4LHP0cZRij0acsS1G1Q8vi9tQWidA2/aJRK05EDxHk4h82HS6F8WSaX+Gb",
-	"1imeoTZ266z4U1SWDfcfQb9WeZZpCnnk7yihkf77ZfiKwbvFcpiFMszqW3xp+0JpjfrjlXiVidEL5IYS",
-	"AjaRDPffpP0zmTUqQrqMvJtPn6Zgn7/fQZk/i3jK1jn6jtnDII6N3bjTpO5ur24FbbgV+G2kYhQnFAHp",
-	"Ofl6RgoZ/u/Z6mwlIjqPVnkDNVykqxK84l2iW42SpIN3gRc6mlAxhkKJlJOEhbFJ3dAHxu4MUhBS8kR+",
-	"BVxqfX0QW6TEwP853edRYHlscuV9a5r0rHoMEm6aJbL7m3ADNfxVzcOmGidNdfQ/k2KvxsHIkp1UXpaZ",
-	"LBzXliliKnZuriTD+Wr1B2ge+vcdunTACGKjYsu/jUmeywvBo5WaNiz/Y8SUEGLXKerfKn/2k3suQH2/",
-	"h0jt2MGhrqr9zgW2qsOhksYr4VmRUes2CzwZc6+NaULrGtWKSZw/DD8DAAD//+C8nS1jBgAA",
+	"H4sIAAAAAAAC/8xVTW/jNhD9K8K0RzVyk5tuaZMW6aEG0hQ9BD7Q0thmIJHMcJhUMPTfFyT1tZbi7GI3",
+	"wJ4sax5n3rx5Gh6h0LXRChVbyI9giwPWIjzeEmnyD4a0QWKJ4XWhS/S/JdqCpGGpFeQRnIRYCjtNtWDI",
+	"QSq+uoQUuDEY/+IeCdoUarRW7N9M1IeHo5ZJqj20bQqEz04SlpA/Qlewh28GvN4+YcG+0u3/BpUNlURV",
+	"rXeQPx7hZ8Id5PBTNnafda1nf+Nrf6ZNT7uX5Zzyv0o+O0xkmehdwgdMsDs+UcI5Wb7bjSxh025Gzvdo",
+	"NPF8BF3+SIixDg/nWhr76RkIItHMCAyJl4Sc6DI3hWDca2ruFuT5vYsldzdfLVDq7VmjCiLMY44IVdEs",
+	"BkvBgehQwb/4hWWNS2UMyeIErt22mmCVq7fRu89OKJbcfBH81LCjUH3RScJJS10D5wdxj9boxYEs+XTU",
+	"X+Fr1SSiLLH8JrPOyLUpWCwcSW7+8d6LZLYoCOna8WH890df7K//HiCNe8dnitGx+oHZQOsTS7XT86Ye",
+	"1jdrj5ZcefjaUdKJYxOL9BJyvSDZCP/1YnWx8iJqg0oYCTlchVcpGMGHQDebfl9GW17wNKFgtInwUvYS",
+	"JlIFdW1jGesLCEVI+CP+u4DrsrwdxPZSouXfdNnEraq4s7kwppJFOJY9WV+uX8vvfebTzeUVO9msHUvW",
+	"fvL+ZyQL09kyOQzDjuYKMlyuVh9Ac/DvGbo0YDxiJ1zF341JvOIWijvlZ1qw/z46TArW1bWg5q3xB0xG",
+	"YWcHzfa44Jw/UXlPoB1cE0/M7dIju1vgAwfy+XVzdhYe8UOOZFnX3lpxE9hw9zuqur1i8yw7HrRlJWps",
+	"M78OUngRJMW2iir3wTjHrlOodCEqH/LJN+2nAAAA//9ut2ydRAkAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

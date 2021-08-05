@@ -18,8 +18,8 @@ var addExpenseTracer trace.Tracer
 // AddExpenseCommand defines an expense command.
 type AddExpenseCommand struct {
 	CategoryID string
-	Price      string
-	Quantity   string
+	Price      float64
+	Quantity   float64
 	Currency   string
 	Date       time.Time
 	Comment    *string

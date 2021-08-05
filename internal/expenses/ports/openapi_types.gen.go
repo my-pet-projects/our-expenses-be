@@ -16,6 +16,20 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+// Expense defines model for Expense.
+type Expense struct {
+	// Embedded struct due to allOf(#/components/schemas/NewExpense)
+	NewExpense `yaml:",inline"`
+	// Embedded fields due to inline allOf schema
+	// Unique id of the expense
+	Id string `json:"id"`
+}
+
+// ExpenseReport defines model for ExpenseReport.
+type ExpenseReport struct {
+	Expenses []Expense `json:"expenses"`
+}
+
 // NewExpense defines model for NewExpense.
 type NewExpense struct {
 	// Category ID of the expense
@@ -23,8 +37,8 @@ type NewExpense struct {
 	Comment    *string   `json:"comment,omitempty"`
 	Currency   string    `json:"currency"`
 	Date       time.Time `json:"date"`
-	Price      float32   `json:"price"`
-	Quantity   float32   `json:"quantity"`
+	Price      float64   `json:"price"`
+	Quantity   float64   `json:"quantity"`
 }
 
 // NewExpenseResponse defines model for NewExpenseResponse.

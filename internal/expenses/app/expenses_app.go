@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app/command"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app/query"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
@@ -27,6 +28,7 @@ type Commands struct {
 
 // Queries struct holds available application queries.
 type Queries struct {
+	FindExpenses query.FindExpensesHandlerInterface
 }
 
 // NewApplication returns application instance.
@@ -38,15 +40,18 @@ func NewApplication(
 	tracer *tracer.Tracer,
 	mongoClient *database.MongoClient,
 ) (*Application, error) {
-	categoryRepo := repository.NewExpenseRepo(mongoClient, logger)
+	expenseRepo := repository.NewExpenseRepo(mongoClient, logger)
+	reportRepo := repository.NewReportRepo(mongoClient, logger)
 
 	return &Application{
 		Commands: Commands{
-			AddExpense: command.NewAddExpenseHandler(categoryRepo, logger),
+			AddExpense: command.NewAddExpenseHandler(expenseRepo, logger),
 		},
-		Queries: Queries{},
-		Logger:  logger,
-		Config:  *config,
-		Tracer:  tracer,
+		Queries: Queries{
+			FindExpenses: query.NewFindExpensesHandler(reportRepo, logger),
+		},
+		Logger: logger,
+		Config: *config,
+		Tracer: tracer,
 	}, nil
 }
