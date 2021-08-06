@@ -1,4 +1,4 @@
-package repository
+package adapters
 
 import (
 	"context"
@@ -57,9 +57,9 @@ type ExpenseRepoInterface interface {
 	DeleteAll(ctx context.Context) (*domain.DeleteResult, error)
 }
 
-// NewExpenseRepo returns a ExpenseRepository.
+// NewExpenseRepo returns a Expenseadapters.
 func NewExpenseRepo(client *database.MongoClient, logger logger.LogInterface) *ExpenseRepository {
-	categoriesRepoTracer = otel.Tracer("app.repository.expenses")
+	categoriesRepoTracer = otel.Tracer("app.adapters.expenses")
 	return &ExpenseRepository{
 		logger: logger,
 		client: client,

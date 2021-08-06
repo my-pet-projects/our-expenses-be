@@ -7,8 +7,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
 
@@ -22,7 +22,7 @@ type MoveCategoryCommand struct {
 
 // MoveCategoryHandler defines a handler to move category.
 type MoveCategoryHandler struct {
-	repo   repository.CategoryRepoInterface
+	repo   adapters.CategoryRepoInterface
 	logger logger.LogInterface
 }
 
@@ -33,7 +33,7 @@ type MoveCategoryHandlerInterface interface {
 
 // NewMoveCategoryHandler returns command handler.
 func NewMoveCategoryHandler(
-	repo repository.CategoryRepoInterface,
+	repo adapters.CategoryRepoInterface,
 	logger logger.LogInterface,
 ) MoveCategoryHandler {
 	moveCategoryTracer = otel.Tracer("app.command.move_category")

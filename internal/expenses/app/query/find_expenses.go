@@ -7,8 +7,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
 
@@ -22,7 +22,7 @@ type FindExpensesQuery struct {
 
 // FindExpensesHandler defines a handler to fetch expenses.
 type FindExpensesHandler struct {
-	repo   repository.ReportRepoInterface
+	repo   adapters.ReportRepoInterface
 	logger logger.LogInterface
 }
 
@@ -33,7 +33,7 @@ type FindExpensesHandlerInterface interface {
 
 // NewFindExpensesHandler returns a query handler.
 func NewFindExpensesHandler(
-	repo repository.ReportRepoInterface,
+	repo adapters.ReportRepoInterface,
 	logger logger.LogInterface,
 ) FindExpensesHandler {
 	findExpensesTracer = otel.Tracer("app.query.find_expenses")

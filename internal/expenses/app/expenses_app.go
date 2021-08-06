@@ -3,9 +3,9 @@ package app
 import (
 	"context"
 
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app/command"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app/query"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
@@ -40,8 +40,8 @@ func NewApplication(
 	tracer *tracer.Tracer,
 	mongoClient *database.MongoClient,
 ) (*Application, error) {
-	expenseRepo := repository.NewExpenseRepo(mongoClient, logger)
-	reportRepo := repository.NewReportRepo(mongoClient, logger)
+	expenseRepo := adapters.NewExpenseRepo(mongoClient, logger)
+	reportRepo := adapters.NewReportRepo(mongoClient, logger)
 
 	return &Application{
 		Commands: Commands{

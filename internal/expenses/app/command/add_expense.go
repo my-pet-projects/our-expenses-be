@@ -8,8 +8,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
 
@@ -27,7 +27,7 @@ type AddExpenseCommand struct {
 
 // AddExpenseHandler defines a handler to add expense.
 type AddExpenseHandler struct {
-	repo   repository.ExpenseRepoInterface
+	repo   adapters.ExpenseRepoInterface
 	logger logger.LogInterface
 }
 
@@ -38,7 +38,7 @@ type AddExpenseHandlerInterface interface {
 
 // NewAddExpenseHandler returns command handler.
 func NewAddExpenseHandler(
-	repo repository.ExpenseRepoInterface,
+	repo adapters.ExpenseRepoInterface,
 	logger logger.LogInterface,
 ) AddExpenseHandler {
 	addExpenseTracer = otel.Tracer("app.command.add_expense")

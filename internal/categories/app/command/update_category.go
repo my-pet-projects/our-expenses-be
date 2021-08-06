@@ -8,8 +8,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
 
@@ -27,7 +27,7 @@ type UpdateCategoryCommand struct {
 
 // UpdateCategoryHandler defines a handler to update category.
 type UpdateCategoryHandler struct {
-	repo   repository.CategoryRepoInterface
+	repo   adapters.CategoryRepoInterface
 	logger logger.LogInterface
 }
 
@@ -38,7 +38,7 @@ type UpdateCategoryHandlerInterface interface {
 
 // NewUpdateCategoryHandler returns command handler.
 func NewUpdateCategoryHandler(
-	repo repository.CategoryRepoInterface,
+	repo adapters.CategoryRepoInterface,
 	logger logger.LogInterface,
 ) UpdateCategoryHandler {
 	updateCategoryTracer = otel.Tracer("app.command.update_category")

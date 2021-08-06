@@ -13,10 +13,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	categoryAdapters "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	categoryDomain "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
-	categoryRepo "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/repository"
+	expenseAdapters "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/adapters"
 	expenseDomain "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
-	expenseRepo "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
@@ -33,8 +33,8 @@ func main() {
 	if mongoConErr := mongoClient.OpenConnection(ctx, cancel); mongoConErr != nil {
 		logrus.Fatalf("failed to open mongodb connection: '%+v'", mongoClientErr)
 	}
-	categoryRepo := categoryRepo.NewCategoryRepo(mongoClient, log)
-	expenseRepo := expenseRepo.NewExpenseRepo(mongoClient, log)
+	categoryRepo := categoryAdapters.NewCategoryRepo(mongoClient, log)
+	expenseRepo := expenseAdapters.NewExpenseRepo(mongoClient, log)
 
 	catDelRes, catDelErr := categoryRepo.DeleteAll(ctx, categoryDomain.CategoryFilter{})
 	if catDelErr != nil {

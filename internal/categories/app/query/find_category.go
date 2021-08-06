@@ -7,8 +7,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
 
@@ -21,7 +21,7 @@ type FindCategoryQuery struct {
 
 // FindCategoryHandler defines handler to fetch category.
 type FindCategoryHandler struct {
-	repo   repository.CategoryRepoInterface
+	repo   adapters.CategoryRepoInterface
 	logger logger.LogInterface
 }
 
@@ -31,7 +31,7 @@ type FindCategoryHandlerInterface interface {
 }
 
 // NewFindCategoryHandler returns query handler.
-func NewFindCategoryHandler(repo repository.CategoryRepoInterface, logger logger.LogInterface) FindCategoryHandler {
+func NewFindCategoryHandler(repo adapters.CategoryRepoInterface, logger logger.LogInterface) FindCategoryHandler {
 	findCategoryTracer = otel.Tracer("app.query.find_category")
 	return FindCategoryHandler{
 		repo:   repo,

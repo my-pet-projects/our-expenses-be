@@ -7,8 +7,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/repository"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
 
@@ -21,7 +21,7 @@ type DeleteCategoryCommand struct {
 
 // DeleteCategoryHandler defines a handler to delete category.
 type DeleteCategoryHandler struct {
-	repo   repository.CategoryRepoInterface
+	repo   adapters.CategoryRepoInterface
 	logger logger.LogInterface
 }
 
@@ -32,7 +32,7 @@ type DeleteCategoryHandlerInterface interface {
 
 // NewDeleteCategoryHandler returns command handler.
 func NewDeleteCategoryHandler(
-	repo repository.CategoryRepoInterface,
+	repo adapters.CategoryRepoInterface,
 	logger logger.LogInterface,
 ) DeleteCategoryHandler {
 	deleteCategoryTracer = otel.Tracer("app.command.delete_category")
