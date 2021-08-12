@@ -11,6 +11,7 @@ import (
 type Expense struct {
 	id         string
 	categoryID string
+	category   Category
 	price      decimal.Decimal
 	currency   string
 	quantity   decimal.Decimal
@@ -60,6 +61,16 @@ func (e Expense) ID() string {
 // CategoryID returns expense id.
 func (e Expense) CategoryID() string {
 	return e.categoryID
+}
+
+// Category returns expense category.
+func (e Expense) Category() Category {
+	return e.category
+}
+
+// SetCategory sets expense category.
+func (e *Expense) SetCategory(category Category) {
+	e.category = category
 }
 
 // Price returns expense price.

@@ -128,22 +128,52 @@ func (r *ReportRepository) GetAll(ctx context.Context, filter domain.ExpenseFilt
 
 	expenses := []domain.Expense{}
 	for _, expenseDbModel := range expenseDbModels {
-		exp, expErr := r.unmarshalReport(expenseDbModel)
+		exp, expErr := r.unmarshalExpense(expenseDbModel)
 		if expErr != nil {
 			return nil, expErr
 		}
+
 		expenses = append(expenses, *exp)
 	}
 
 	return expenses, nil
 }
 
-func (r ReportRepository) unmarshalReport(expenseModel expenseDbModel) (*domain.Expense, error) {
+func (r ReportRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain.Expense, error) {
 	exp, expErr := domain.NewExpense(expenseModel.ID.Hex(), expenseModel.CategoryID.Hex(),
 		expenseModel.Price, expenseModel.Currency, expenseModel.Quantity,
 		expenseModel.Comment, expenseModel.Date, expenseModel.CreatedAt, expenseModel.UpdatedAt)
 	if expErr != nil {
 		return nil, errors.Wrap(expErr, "unmarshal report")
 	}
+
+	cat, catErr := r.unmarshalCategory(expenseModel.Category)
+	if catErr != nil {
+		return nil, catErr
+	}
+
+	exp.SetCategory(*cat)
+
 	return exp, nil
+}
+
+func (r ReportRepository) unmarshalCategory(categoryModel categoryDbModel) (*domain.Category, error) {
+	cat, catErr := domain.NewCategory(categoryModel.ID.Hex(),
+		categoryModel.Name, categoryModel.Icon, categoryModel.Level)
+	if catErr != nil {
+		return nil, errors.Wrap(catErr, "unmarshal category")
+	}
+
+	parentCategories := make([]domain.Category, 0)
+	for _, parentCat := range categoryModel.Parents {
+		parent, parentErr := domain.NewCategory(parentCat.ID.Hex(), parentCat.Name,
+			parentCat.Icon, parentCat.Level)
+		if parentErr != nil {
+			return nil, errors.Wrap(parentErr, "unmarshal parent category")
+		}
+		parentCategories = append(parentCategories, *parent)
+	}
+	cat.SetParents(&parentCategories)
+
+	return cat, nil
 }

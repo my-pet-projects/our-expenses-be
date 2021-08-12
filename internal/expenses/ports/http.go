@@ -74,8 +74,8 @@ func (h HTTPServer) GenerateReport(echoCtx echo.Context) error {
 	defer span.End()
 	h.app.Logger.Info(ctx, "Handling get report HTTP request")
 
-	from := time.Date(2021, time.July, 3, 0, 0, 0, 0, time.UTC)
-	to := time.Date(2021, time.August, 3, 0, 0, 0, 0, time.UTC)
+	from := time.Date(2021, time.July, 5, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2021, time.July, 6, 0, 0, 0, 0, time.UTC)
 	queryArgs := query.FindExpensesQuery{
 		From: from,
 		To:   to,
@@ -88,21 +88,58 @@ func (h HTTPServer) GenerateReport(echoCtx echo.Context) error {
 	}
 
 	response := ExpenseReport{
-		Expenses: expensesToResponse(expenseRpt),
+		ByDate: reportToResponse(*expenseRpt),
 	}
 	return echoCtx.JSON(http.StatusOK, response)
 }
 
-func expensesToResponse(domainExpenses []domain.Expense) []Expense {
-	expenses := []Expense{}
-	for _, exp := range domainExpenses {
-		e := expenseToResponse(exp)
-		expenses = append(expenses, e)
+func reportToResponse(domainReport domain.ReportByDate) []DateCategoryReport {
+	dateCategoryReport := []DateCategoryReport{}
+	for _, categoryByDate := range domainReport.CategoryByDate {
+		dateCategoryReport = append(dateCategoryReport, DateCategoryReport{
+			Date:       categoryByDate.Date,
+			ByCategory: categoryByDateToResponse(categoryByDate),
+		})
 	}
-	return expenses
+	return dateCategoryReport
+}
+
+func categoryByDateToResponse(domainCategoryByDate domain.CategoriesByDate) []CategoryExpenseReport {
+	categoryExpenseReport := []CategoryExpenseReport{}
+	for _, expensesByCategory := range domainCategoryByDate.ExpensesByCategory {
+		expenses := []Expense{}
+		for _, exp := range expensesByCategory.Expenses {
+			expenses = append(expenses, expenseToResponse(exp))
+		}
+		categoryExpenseReport = append(categoryExpenseReport, CategoryExpenseReport{
+			Category: categoryToResponse(expensesByCategory.Category),
+			Expenses: expenses,
+		})
+	}
+	return categoryExpenseReport
+}
+
+func categoryToResponse(domainCategory domain.Category) Category {
+	parents := []Category{}
+	p := domainCategory.Parents()
+	if p != nil {
+		for _, parentCategory := range *p {
+			parents = append(parents, categoryToResponse(parentCategory))
+		}
+	}
+
+	category := Category{
+		Id:      domainCategory.ID(),
+		Name:    domainCategory.Name(),
+		Icon:    domainCategory.Icon(),
+		Level:   domainCategory.Level(),
+		Parents: parents,
+	}
+	return category
 }
 
 func expenseToResponse(domainExpense domain.Expense) Expense {
+	category := categoryToResponse(domainExpense.Category())
 	expense := Expense{
 		Id: domainExpense.ID(),
 		NewExpense: NewExpense{
@@ -113,6 +150,7 @@ func expenseToResponse(domainExpense domain.Expense) Expense {
 			Price:      domainExpense.Price(),
 			Quantity:   domainExpense.Quantity(),
 		},
+		Category: category,
 	}
 	return expense
 }

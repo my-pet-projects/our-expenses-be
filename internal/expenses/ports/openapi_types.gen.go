@@ -22,11 +22,22 @@ type Expense struct {
 	NewExpense `yaml:",inline"`
 	// Embedded fields due to inline allOf schema
 	// Unique id of the expense
-	Id string `json:"id"`
+	Id       string   `json:"id"`
+	Category Category `json:"category"`
 }
 
 // ExpenseReport defines model for ExpenseReport.
 type ExpenseReport struct {
+	ByDate []DateCategoryReport `json:"byDate"`
+}
+
+type DateCategoryReport struct {
+	Date       time.Time               `json:"date"`
+	ByCategory []CategoryExpenseReport `json:"byCategory"`
+}
+
+type CategoryExpenseReport struct {
+	Category Category  `json:"category"`
 	Expenses []Expense `json:"expenses"`
 }
 
@@ -39,6 +50,14 @@ type NewExpense struct {
 	Date       time.Time `json:"date"`
 	Price      float64   `json:"price"`
 	Quantity   float64   `json:"quantity"`
+}
+
+type Category struct {
+	Id      string     `json:"id"`
+	Name    string     `json:"name"`
+	Icon    *string    `json:"icon,omitempty"`
+	Level   int        `json:"level"`
+	Parents []Category `json:"parents,omitempty"`
 }
 
 // NewExpenseResponse defines model for NewExpenseResponse.

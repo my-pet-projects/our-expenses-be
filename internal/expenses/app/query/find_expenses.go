@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 
@@ -28,7 +29,7 @@ type FindExpensesHandler struct {
 
 // FindExpensesHandlerInterface defines a contract to handle query.
 type FindExpensesHandlerInterface interface {
-	Handle(ctx context.Context, query FindExpensesQuery) ([]domain.Expense, error)
+	Handle(ctx context.Context, query FindExpensesQuery) (*domain.ReportByDate, error)
 }
 
 // NewFindExpensesHandler returns a query handler.
@@ -47,7 +48,7 @@ func NewFindExpensesHandler(
 func (h FindExpensesHandler) Handle(
 	ctx context.Context,
 	query FindExpensesQuery,
-) ([]domain.Expense, error) {
+) (*domain.ReportByDate, error) {
 	ctx, span := findExpensesTracer.Start(ctx, "execute find expenses query")
 	defer span.End()
 
@@ -55,5 +56,13 @@ func (h FindExpensesHandler) Handle(
 		From: query.From,
 		To:   query.To,
 	}
-	return h.repo.GetAll(ctx, filter)
+	expenses, expensesErr := h.repo.GetAll(ctx, filter)
+	if expensesErr != nil {
+		return nil, errors.Wrap(expensesErr, "fetch expenses")
+	}
+
+	reportGenerator := domain.NewReportGenerator(expenses)
+	report := reportGenerator.GenerateReport()
+
+	return &report, nil
 }
