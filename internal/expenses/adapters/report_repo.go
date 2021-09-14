@@ -147,7 +147,7 @@ func (r ReportRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain
 		return nil, errors.Wrap(expErr, "unmarshal report")
 	}
 
-	cat, catErr := r.unmarshalCategory(expenseModel.Category)
+	cat, catErr := r.unmarshalCategory(*expenseModel.Category)
 	if catErr != nil {
 		return nil, catErr
 	}

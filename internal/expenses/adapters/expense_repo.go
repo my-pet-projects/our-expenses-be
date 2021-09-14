@@ -35,7 +35,7 @@ type categoryDbModel struct {
 type expenseDbModel struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty"`
 	CategoryID primitive.ObjectID `bson:"categoryId"`
-	Category   categoryDbModel    `bson:"category"`
+	Category   *categoryDbModel   `bson:"category,omitempty"`
 	Price      float64            `bson:"price"`
 	Currency   string             `bson:"currency"`
 	Quantity   float64            `bson:"quantity"`
