@@ -31,7 +31,7 @@ func main() {
 		logrus.Fatalf("failed to create mongodb client: '%+v'", mongoClientErr)
 	}
 	if mongoConErr := mongoClient.OpenConnection(ctx, cancel); mongoConErr != nil {
-		logrus.Fatalf("failed to open mongodb connection: '%+v'", mongoClientErr)
+		logrus.Fatalf("failed to open mongodb connection: '%+v'", mongoConErr)
 	}
 	categoryRepo := categoryAdapters.NewCategoryRepo(mongoClient, log)
 	expenseRepo := expenseAdapters.NewExpenseRepo(mongoClient, log)
