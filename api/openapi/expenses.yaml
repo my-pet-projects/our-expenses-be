@@ -41,13 +41,21 @@ paths:
       summary: Generates expense repose
       description: Generates expense report.
       operationId: generateReport
-      # requestBody:
-      #   description: Expense to add to the system
-      #   required: true
-      #   content:
-      #     application/json:
-      #       schema:
-      #         $ref: '#/components/schemas/NewExpense'
+      parameters:
+        - name: from
+          in: query
+          description: from date to filter by
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: to date to filter by
+          required: true
+          schema:
+            type: string
+            format: date-time
       responses:
         '200':
           description: Expense report response
@@ -72,12 +80,15 @@ components:
       allOf:
         - $ref: '#/components/schemas/NewExpense'
         - required:
-          - id
+            - id
+            - category
           properties:
             id:
               type: string
               format: uuid
               description: Unique id of the expense
+            category:
+              $ref: '#/components/schemas/Category'
     NewExpense:
       type: object
       required:
@@ -116,12 +127,61 @@ components:
     ExpenseReport:
       type: object
       required:
+        - byDate
+      properties:
+        byDate:
+          type: array
+          items:
+            $ref: '#/components/schemas/DateCategoryReport'
+    DateCategoryReport:
+      type: object
+      required:
+        - date
+        - byCategory
+      properties:
+        date:
+          type: string
+          format: date-time
+        byCategory:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryExpenseReport'
+    CategoryExpenseReport:
+      type: object
+      required:
+        - category
         - expenses
       properties:
+        category:
+          $ref: '#/components/schemas/Category'
         expenses:
           type: array
           items:
             $ref: '#/components/schemas/Expense'
+    Category:
+      type: object
+      required:
+        - id
+        - name
+        - path
+        - level
+        - parents
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique id of the category
+        name:
+          type: string
+          description: Name of the category
+        icon:
+          type: string
+        level:
+          type: integer
+        parents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
     Error:
       type: object
       required:
@@ -135,3 +195,7 @@ components:
         message:
           type: string
           description: Error message
+
+
+
+

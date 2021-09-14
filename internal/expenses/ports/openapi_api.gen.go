@@ -4,6 +4,10 @@
 package ports
 
 import (
+	"fmt"
+	"net/http"
+
+	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,7 +18,7 @@ type ServerInterface interface {
 	AddExpense(ctx echo.Context) error
 	// Generates expense repose
 	// (GET /reports)
-	GenerateReport(ctx echo.Context) error
+	GenerateReport(ctx echo.Context, params GenerateReportParams) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -35,8 +39,24 @@ func (w *ServerInterfaceWrapper) AddExpense(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GenerateReport(ctx echo.Context) error {
 	var err error
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GenerateReportParams
+	// ------------- Required query parameter "from" -------------
+
+	err = runtime.BindQueryParameter("form", true, true, "from", ctx.QueryParams(), &params.From)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter from: %s", err))
+	}
+
+	// ------------- Required query parameter "to" -------------
+
+	err = runtime.BindQueryParameter("form", true, true, "to", ctx.QueryParams(), &params.To)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter to: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GenerateReport(ctx)
+	err = w.Handler.GenerateReport(ctx, params)
 	return err
 }
 

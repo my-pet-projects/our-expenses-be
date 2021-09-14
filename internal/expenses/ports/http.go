@@ -2,7 +2,6 @@ package ports
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"go.opentelemetry.io/otel"
@@ -69,16 +68,14 @@ func (h HTTPServer) AddExpense(echoCtx echo.Context) error {
 }
 
 // GenerateReport generates a new expense report.
-func (h HTTPServer) GenerateReport(echoCtx echo.Context) error {
+func (h HTTPServer) GenerateReport(echoCtx echo.Context, params GenerateReportParams) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get report http request")
 	defer span.End()
 	h.app.Logger.Info(ctx, "Handling get report HTTP request")
 
-	from := time.Date(2021, time.July, 5, 0, 0, 0, 0, time.UTC)
-	to := time.Date(2021, time.July, 6, 0, 0, 0, 0, time.UTC)
 	queryArgs := query.FindExpensesQuery{
-		From: from,
-		To:   to,
+		From: params.From,
+		To:   params.To,
 	}
 
 	expenseRpt, expenseRptErr := h.app.Queries.FindExpenses.Handle(ctx, queryArgs)

@@ -155,24 +155,28 @@ func TestGenerateReport_SuccessfulQuery_Returns200(t *testing.T) {
 	}
 	from := time.Date(2021, time.July, 3, 0, 0, 0, 0, time.UTC)
 	to := time.Date(2021, time.August, 3, 0, 0, 0, 0, time.UTC)
-	expenses := []domain.Expense{}
+	report := &domain.ReportByDate{}
 
 	matchFn := func(query query.FindExpensesQuery) bool {
 		return query.From == from && query.To == to
 	}
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
-	handler.On("Handle", mock.Anything, mock.MatchedBy(matchFn)).Return(expenses, nil)
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchFn)).Return(report, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/reports", nil)
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	ctx := e.NewContext(request, response)
+	params := ports.GenerateReportParams{
+		To:   to,
+		From: from,
+	}
 
 	// SUT
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.GenerateReport(ctx)
+	server.GenerateReport(ctx, params)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -202,12 +206,16 @@ func TestGenerateReport_FailedQuery_Returns500(t *testing.T) {
 	request, _ := http.NewRequest("GET", "/reports", nil)
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	ctx := e.NewContext(request, response)
+	params := ports.GenerateReportParams{
+		To:   time.Now(),
+		From: time.Now(),
+	}
 
 	// SUT
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.GenerateReport(ctx)
+	server.GenerateReport(ctx, params)
 
 	// Assert
 	logger.AssertExpectations(t)

@@ -17,15 +17,15 @@ type FindExpensesHandlerInterface struct {
 }
 
 // Handle provides a mock function with given fields: ctx, _a1
-func (_m *FindExpensesHandlerInterface) Handle(ctx context.Context, _a1 query.FindExpensesQuery) ([]domain.Expense, error) {
+func (_m *FindExpensesHandlerInterface) Handle(ctx context.Context, _a1 query.FindExpensesQuery) (*domain.ReportByDate, error) {
 	ret := _m.Called(ctx, _a1)
 
-	var r0 []domain.Expense
-	if rf, ok := ret.Get(0).(func(context.Context, query.FindExpensesQuery) []domain.Expense); ok {
+	var r0 *domain.ReportByDate
+	if rf, ok := ret.Get(0).(func(context.Context, query.FindExpensesQuery) *domain.ReportByDate); ok {
 		r0 = rf(ctx, _a1)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]domain.Expense)
+			r0 = ret.Get(0).(*domain.ReportByDate)
 		}
 	}
 

@@ -7,6 +7,31 @@ import (
 	"time"
 )
 
+// Category defines model for Category.
+type Category struct {
+	Icon *string `json:"icon,omitempty"`
+
+	// Unique id of the category
+	Id    string `json:"id"`
+	Level int    `json:"level"`
+
+	// Name of the category
+	Name    string     `json:"name"`
+	Parents []Category `json:"parents"`
+}
+
+// CategoryExpenseReport defines model for CategoryExpenseReport.
+type CategoryExpenseReport struct {
+	Category Category  `json:"category"`
+	Expenses []Expense `json:"expenses"`
+}
+
+// DateCategoryReport defines model for DateCategoryReport.
+type DateCategoryReport struct {
+	ByCategory []CategoryExpenseReport `json:"byCategory"`
+	Date       time.Time               `json:"date"`
+}
+
 // Error defines model for Error.
 type Error struct {
 	// Error code
@@ -21,24 +46,15 @@ type Expense struct {
 	// Embedded struct due to allOf(#/components/schemas/NewExpense)
 	NewExpense `yaml:",inline"`
 	// Embedded fields due to inline allOf schema
-	// Unique id of the expense
-	Id       string   `json:"id"`
 	Category Category `json:"category"`
+
+	// Unique id of the expense
+	Id string `json:"id"`
 }
 
 // ExpenseReport defines model for ExpenseReport.
 type ExpenseReport struct {
 	ByDate []DateCategoryReport `json:"byDate"`
-}
-
-type DateCategoryReport struct {
-	Date       time.Time               `json:"date"`
-	ByCategory []CategoryExpenseReport `json:"byCategory"`
-}
-
-type CategoryExpenseReport struct {
-	Category Category  `json:"category"`
-	Expenses []Expense `json:"expenses"`
 }
 
 // NewExpense defines model for NewExpense.
@@ -52,14 +68,6 @@ type NewExpense struct {
 	Quantity   float64   `json:"quantity"`
 }
 
-type Category struct {
-	Id      string     `json:"id"`
-	Name    string     `json:"name"`
-	Icon    *string    `json:"icon,omitempty"`
-	Level   int        `json:"level"`
-	Parents []Category `json:"parents,omitempty"`
-}
-
 // NewExpenseResponse defines model for NewExpenseResponse.
 type NewExpenseResponse struct {
 	// ID of the newly added expense
@@ -68,6 +76,15 @@ type NewExpenseResponse struct {
 
 // AddExpenseJSONBody defines parameters for AddExpense.
 type AddExpenseJSONBody NewExpense
+
+// GenerateReportParams defines parameters for GenerateReport.
+type GenerateReportParams struct {
+	// from date to filter by
+	From time.Time `json:"from"`
+
+	// to date to filter by
+	To time.Time `json:"to"`
+}
 
 // AddExpenseJSONRequestBody defines body for AddExpense for application/json ContentType.
 type AddExpenseJSONRequestBody AddExpenseJSONBody
