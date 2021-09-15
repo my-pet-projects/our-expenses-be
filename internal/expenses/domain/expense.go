@@ -16,6 +16,7 @@ type Expense struct {
 	currency   string
 	quantity   decimal.Decimal
 	comment    *string
+	trip       *string
 	date       time.Time
 	createdAt  time.Time
 	updatedAt  *time.Time
@@ -29,6 +30,7 @@ func NewExpense(
 	currency string,
 	quantity float64,
 	comment *string,
+	trip *string,
 	date time.Time,
 	createdAt time.Time,
 	updatedAt *time.Time,
@@ -47,6 +49,7 @@ func NewExpense(
 		currency:   currency,
 		quantity:   decQuantity,
 		comment:    comment,
+		trip:       trip,
 		date:       date,
 		createdAt:  createdAt,
 		updatedAt:  updatedAt,
@@ -93,6 +96,11 @@ func (e Expense) Quantity() float64 {
 // Comment returns expense comment.
 func (e Expense) Comment() *string {
 	return e.comment
+}
+
+// Trip returns expense trip.
+func (e Expense) Trip() *string {
+	return e.trip
 }
 
 // Date returns expense date.

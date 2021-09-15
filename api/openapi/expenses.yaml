@@ -112,6 +112,8 @@ components:
           type: string
         comment:
           type: string
+        trip:
+          type: string
         date:
           type: string
           format: date-time

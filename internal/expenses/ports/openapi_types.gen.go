@@ -66,6 +66,7 @@ type NewExpense struct {
 	Date       time.Time `json:"date"`
 	Price      float64   `json:"price"`
 	Quantity   float64   `json:"quantity"`
+	Trip       *string   `json:"trip,omitempty"`
 }
 
 // NewExpenseResponse defines model for NewExpenseResponse.

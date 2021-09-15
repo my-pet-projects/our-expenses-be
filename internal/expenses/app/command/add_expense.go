@@ -23,6 +23,7 @@ type AddExpenseCommand struct {
 	Currency   string
 	Date       time.Time
 	Comment    *string
+	Trip       *string
 }
 
 // AddExpenseHandler defines a handler to add expense.
@@ -54,7 +55,7 @@ func (h AddExpenseHandler) Handle(ctx context.Context, cmd AddExpenseCommand) (*
 	defer span.End()
 
 	expense, expenseErr := domain.NewExpense("", cmd.CategoryID, cmd.Price, cmd.Currency, cmd.Quantity,
-		cmd.Comment, cmd.Date, time.Now(), nil)
+		cmd.Comment, cmd.Trip, cmd.Date, time.Now(), nil)
 	if expenseErr != nil {
 		return nil, errors.Wrap(expenseErr, "prepare expense failed")
 	}

@@ -41,6 +41,7 @@ type expenseDbModel struct {
 	Quantity   float64            `bson:"quantity"`
 	Date       time.Time          `bson:"date"`
 	Comment    *string            `bson:"comment,omitempty"`
+	Trip       *string            `bson:"trip,omitempty"`
 	CreatedAt  time.Time          `bson:"createdAt"`
 	UpdatedAt  *time.Time         `bson:"updatedAt,omitempty"`
 }
@@ -116,6 +117,7 @@ func (r ExpenseRepository) marshalExpense(expense domain.Expense) expenseDbModel
 		Currency:   expense.Currency(),
 		Quantity:   expense.Quantity(),
 		Comment:    expense.Comment(),
+		Trip:       expense.Trip(),
 		Date:       expense.Date(),
 		CreatedAt:  expense.CreatedAt(),
 		UpdatedAt:  expense.UpdatedAt(),
@@ -125,7 +127,7 @@ func (r ExpenseRepository) marshalExpense(expense domain.Expense) expenseDbModel
 func (r ExpenseRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain.Expense, error) {
 	exp, expErr := domain.NewExpense(expenseModel.ID.Hex(), expenseModel.CategoryID.Hex(),
 		expenseModel.Price, expenseModel.Currency, expenseModel.Quantity,
-		expenseModel.Comment, expenseModel.Date, expenseModel.CreatedAt, expenseModel.UpdatedAt)
+		expenseModel.Comment, expenseModel.Trip, expenseModel.Date, expenseModel.CreatedAt, expenseModel.UpdatedAt)
 	if expErr != nil {
 		return nil, errors.Wrap(expErr, "unmarshal expense")
 	}

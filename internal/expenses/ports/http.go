@@ -52,6 +52,7 @@ func (h HTTPServer) AddExpense(echoCtx echo.Context) error {
 		Currency:   newExpense.Currency,
 		Quantity:   newExpense.Quantity,
 		Comment:    newExpense.Comment,
+		Trip:       newExpense.Trip,
 		Date:       newExpense.Date,
 	}
 	expenseID, expenseCrtErr := h.app.Commands.AddExpense.Handle(ctx, cmdArgs)

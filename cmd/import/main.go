@@ -104,6 +104,7 @@ func getExpenses(oldNewCategoriesMap map[string]categoryDomain.Category) []expen
 			rawExpense.Currency.S,
 			quantity,
 			&rawExpense.Comment.S,
+			nil,
 			date,
 			time.Now(),
 			nil,
