@@ -143,13 +143,15 @@ func (h HTTPServer) UpdateCategory(echoCtx echo.Context, id string) error {
 		Path:     category.Path,
 		Level:    category.Level,
 	}
-	_, categoryUpdErr := h.app.Commands.UpdateCategory.Handle(ctx, cmd)
+	categoryUpd, categoryUpdErr := h.app.Commands.UpdateCategory.Handle(ctx, cmd)
 	if categoryUpdErr != nil {
 		h.app.Logger.Error(ctx, "Failed to update category", categoryUpdErr)
 		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(categoryUpdErr))
 	}
 
-	return echoCtx.NoContent(http.StatusOK)
+	// TODO: convert to response object
+
+	return echoCtx.JSON(http.StatusCreated, categoryUpd)
 }
 
 // DeleteCategory deletes a category.
@@ -217,6 +219,8 @@ func (h HTTPServer) MoveCategory(echoCtx echo.Context, id string, params MoveCat
 		h.app.Logger.Error(ctx, "Failed to move category", cmdErr)
 		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(cmdErr))
 	}
+
+	// TODO: convert to response object
 
 	return echoCtx.JSON(http.StatusOK, cmdResult)
 }

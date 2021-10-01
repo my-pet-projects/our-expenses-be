@@ -91,12 +91,14 @@ func (h MoveCategoryHandler) Handle(ctx context.Context, cmd MoveCategoryCommand
 		categoriesToUpdate = append(categoriesToUpdate, category)
 	}
 
+	moveResult := &domain.UpdateResult{}
 	for _, category := range categoriesToUpdate {
-		_, updateError := h.repo.Update(ctx, category)
-		if updateError != nil {
-			return nil, errors.Wrap(updateError, "target category")
+		updateResult, updateErr := h.repo.Update(ctx, category)
+		if updateErr != nil {
+			return nil, errors.Wrap(updateErr, "target category")
 		}
+		moveResult.UpdateCount += updateResult.UpdateCount
 	}
 
-	return nil, nil
+	return moveResult, nil
 }
