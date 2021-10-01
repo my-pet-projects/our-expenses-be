@@ -19,7 +19,9 @@ type Expense struct {
 	trip       *string
 	date       time.Time
 	createdAt  time.Time
+	createdBy  string
 	updatedAt  *time.Time
+	updatedBy  *string
 }
 
 // NewExpense creates a new expense domain object.
@@ -32,8 +34,6 @@ func NewExpense(
 	comment *string,
 	trip *string,
 	date time.Time,
-	createdAt time.Time,
-	updatedAt *time.Time,
 ) (*Expense, error) {
 	if categoryID == "" {
 		return nil, errors.New("empty categoryID")
@@ -51,8 +51,6 @@ func NewExpense(
 		comment:    comment,
 		trip:       trip,
 		date:       date,
-		createdAt:  createdAt,
-		updatedAt:  updatedAt,
 	}, nil
 }
 
@@ -113,7 +111,25 @@ func (e Expense) CreatedAt() time.Time {
 	return e.createdAt
 }
 
+// CreatedBy returns expense creator.
+func (e Expense) CreatedBy() string {
+	return e.createdBy
+}
+
 // UpdatedAt returns expense update date.
 func (e Expense) UpdatedAt() *time.Time {
 	return e.updatedAt
+}
+
+// UpdatedBy returns expense updater.
+func (e Expense) UpdatedBy() *string {
+	return e.updatedBy
+}
+
+// SetMetadata sets expense metadata.
+func (e Expense) SetMetadata(createdBy string, createdAt time.Time, updatedBy *string, updatedAt *time.Time) {
+	e.createdBy = createdBy
+	e.createdAt = createdAt
+	e.updatedBy = updatedBy
+	e.updatedAt = updatedAt
 }

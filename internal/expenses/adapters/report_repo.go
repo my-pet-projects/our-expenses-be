@@ -142,7 +142,7 @@ func (r *ReportRepository) GetAll(ctx context.Context, filter domain.ExpenseFilt
 func (r ReportRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain.Expense, error) {
 	exp, expErr := domain.NewExpense(expenseModel.ID.Hex(), expenseModel.CategoryID.Hex(),
 		expenseModel.Price, expenseModel.Currency, expenseModel.Quantity,
-		expenseModel.Comment, expenseModel.Trip, expenseModel.Date, expenseModel.CreatedAt, expenseModel.UpdatedAt)
+		expenseModel.Comment, expenseModel.Trip, expenseModel.Date)
 	if expErr != nil {
 		return nil, errors.Wrap(expErr, "unmarshal report")
 	}

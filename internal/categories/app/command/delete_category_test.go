@@ -3,7 +3,6 @@ package command_test
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -92,7 +91,7 @@ func TestDeleteCategoryHandler_FailedDeleteCategory_ThrowsError(t *testing.T) {
 	cmd := command.DeleteCategoryCommand{
 		CategoryID: categoryID,
 	}
-	category, _ := domain.NewCategory(categoryID, "name", nil, "path", &icon, 1, time.Now(), nil)
+	category, _ := domain.NewCategory(categoryID, "name", nil, "path", &icon, 1)
 
 	matchIdFn := func(id string) bool {
 		return categoryID == id
@@ -127,7 +126,7 @@ func TestDeleteCategoryHandler_DeletesCategory_ReturnsResult(t *testing.T) {
 	cmd := command.DeleteCategoryCommand{
 		CategoryID: categoryID,
 	}
-	category, _ := domain.NewCategory(categoryID, "name", nil, "path", &icon, 1, time.Now(), nil)
+	category, _ := domain.NewCategory(categoryID, "name", nil, "path", &icon, 1)
 	deleteResult := &domain.DeleteResult{DeleteCount: 10}
 
 	matchIdFn := func(id string) bool {

@@ -3,7 +3,6 @@ package command
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -59,7 +58,7 @@ func (h AddCategoryHandler) Handle(ctx context.Context, cmd AddCategoryCommand) 
 		cmd.ID = primitive.NewObjectID().Hex()
 	}
 	path := fmt.Sprintf("%s|%s", cmd.Path, cmd.ID)
-	category, categoryErr := domain.NewCategory(cmd.ID, cmd.Name, cmd.ParentID, path, cmd.Icon, cmd.Level, time.Now(), nil)
+	category, categoryErr := domain.NewCategory(cmd.ID, cmd.Name, cmd.ParentID, path, cmd.Icon, cmd.Level)
 	if categoryErr != nil {
 		return nil, errors.Wrap(categoryErr, "prepare category failed")
 	}

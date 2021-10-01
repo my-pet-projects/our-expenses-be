@@ -106,8 +106,6 @@ func getExpenses(oldNewCategoriesMap map[string]categoryDomain.Category) []expen
 			&rawExpense.Comment.S,
 			nil,
 			date,
-			time.Now(),
-			nil,
 		)
 		expenses = append(expenses, *expense)
 	}
@@ -134,9 +132,8 @@ func getCategories() ([]categoryDomain.Category, map[string]categoryDomain.Categ
 			fmt.Sprintf("|%s", rootCategoryID.Hex()),
 			nil,
 			1,
-			time.Now(),
-			nil,
 		)
+		rootCategory.SetMetadata("kot", time.Now(), nil, nil)
 
 		categories = append(categories, *rootCategory)
 
@@ -150,9 +147,8 @@ func getCategories() ([]categoryDomain.Category, map[string]categoryDomain.Categ
 				strings.ToLower(fmt.Sprintf("|%s|%s", rootCategory.ID(), childCategoryID.Hex())),
 				nil,
 				2,
-				time.Now(),
-				nil,
 			)
+			childCategory.SetMetadata("kot", time.Now(), nil, nil)
 
 			oldNewCategoriesMap[rawSubcategory.SubcategoryID] = *childCategory
 			categories = append(categories, *childCategory)

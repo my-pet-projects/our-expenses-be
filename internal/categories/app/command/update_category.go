@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	"time"
 
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
@@ -59,7 +58,7 @@ func (h UpdateCategoryHandler) Handle(
 	// TODO: get a category from the database and create a new category based on that object.
 
 	category, categoryErr := domain.NewCategory(cmd.ID, cmd.Name, cmd.ParentID, cmd.Path,
-		cmd.Icon, cmd.Level, time.Now(), nil)
+		cmd.Icon, cmd.Level)
 	if categoryErr != nil {
 		return nil, errors.Wrap(categoryErr, "prepare category failed")
 	}

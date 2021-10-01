@@ -42,8 +42,10 @@ type expenseDbModel struct {
 	Date       time.Time          `bson:"date"`
 	Comment    *string            `bson:"comment,omitempty"`
 	Trip       *string            `bson:"trip,omitempty"`
-	CreatedAt  time.Time          `bson:"createdAt"`
+	CreatedAt  time.Time          `bson:"createdAt,omitempty"`
+	CreatedBy  string             `bson:"createdBy,omitempty"`
 	UpdatedAt  *time.Time         `bson:"updatedAt,omitempty"`
+	UpdatedBy  *string            `bson:"updatedBy,omitempty"`
 }
 
 // ExpenseRepository represents a struct to access expenses MongoDB collection.
@@ -78,6 +80,9 @@ func (r *ExpenseRepository) Insert(ctx context.Context, category domain.Expense)
 	defer span.End()
 
 	dbModel := r.marshalExpense(category)
+	tempUser := "kot"
+	dbModel.CreatedBy = tempUser
+	dbModel.CreatedAt = time.Now()
 
 	insRes, insErr := r.collection().InsertOne(ctx, dbModel)
 	if insErr != nil {
@@ -119,17 +124,16 @@ func (r ExpenseRepository) marshalExpense(expense domain.Expense) expenseDbModel
 		Comment:    expense.Comment(),
 		Trip:       expense.Trip(),
 		Date:       expense.Date(),
-		CreatedAt:  expense.CreatedAt(),
-		UpdatedAt:  expense.UpdatedAt(),
 	}
 }
 
 func (r ExpenseRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain.Expense, error) {
 	exp, expErr := domain.NewExpense(expenseModel.ID.Hex(), expenseModel.CategoryID.Hex(),
 		expenseModel.Price, expenseModel.Currency, expenseModel.Quantity,
-		expenseModel.Comment, expenseModel.Trip, expenseModel.Date, expenseModel.CreatedAt, expenseModel.UpdatedAt)
+		expenseModel.Comment, expenseModel.Trip, expenseModel.Date)
 	if expErr != nil {
 		return nil, errors.Wrap(expErr, "unmarshal expense")
 	}
+	exp.SetMetadata(expenseModel.CreatedBy, expenseModel.CreatedAt, expenseModel.UpdatedBy, expenseModel.UpdatedAt)
 	return exp, nil
 }

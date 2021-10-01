@@ -17,13 +17,14 @@ type Category struct {
 	icon      *string
 	level     int
 	parents   []Category
+	createdBy string
 	createdAt time.Time
+	updatedBy *string
 	updatedAt *time.Time
 }
 
 // NewCategory creates a new category domain object.
-func NewCategory(id string, name string, parentID *string, path string, icon *string, level int,
-	createdAt time.Time, updatedAt *time.Time) (*Category, error) {
+func NewCategory(id string, name string, parentID *string, path string, icon *string, level int) (*Category, error) {
 	if name == "" {
 		return nil, errors.New("empty name")
 	}
@@ -33,14 +34,12 @@ func NewCategory(id string, name string, parentID *string, path string, icon *st
 	}
 
 	return &Category{
-		id:        id,
-		name:      strings.TrimSpace(name),
-		parentID:  parentID,
-		path:      strings.TrimSpace(path),
-		icon:      icon,
-		level:     level,
-		createdAt: createdAt,
-		updatedAt: updatedAt,
+		id:       id,
+		name:     strings.TrimSpace(name),
+		parentID: parentID,
+		path:     strings.TrimSpace(path),
+		icon:     icon,
+		level:    level,
 	}, nil
 }
 
@@ -95,6 +94,16 @@ func (c Category) ParentIDs() []string {
 	return parentIDs
 }
 
+// CreatedBy returns category creator.
+func (c Category) CreatedBy() string {
+	return c.createdBy
+}
+
+// UpdatedBy returns category updater.
+func (c Category) UpdatedBy() *string {
+	return c.updatedBy
+}
+
 // CreatedAt returns category creation date.
 func (c Category) CreatedAt() time.Time {
 	return c.createdAt
@@ -103,6 +112,14 @@ func (c Category) CreatedAt() time.Time {
 // UpdatedAt returns category update date.
 func (c Category) UpdatedAt() *time.Time {
 	return c.updatedAt
+}
+
+// SetMetadata sets category metadata.
+func (c Category) SetMetadata(createdBy string, createdAt time.Time, updatedBy *string, updatedAt *time.Time) {
+	c.createdBy = createdBy
+	c.createdAt = createdAt
+	c.updatedBy = updatedBy
+	c.updatedAt = updatedAt
 }
 
 // SetParents sets category parents.

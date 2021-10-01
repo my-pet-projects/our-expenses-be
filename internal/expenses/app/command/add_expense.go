@@ -55,7 +55,7 @@ func (h AddExpenseHandler) Handle(ctx context.Context, cmd AddExpenseCommand) (*
 	defer span.End()
 
 	expense, expenseErr := domain.NewExpense("", cmd.CategoryID, cmd.Price, cmd.Currency, cmd.Quantity,
-		cmd.Comment, cmd.Trip, cmd.Date, time.Now(), nil)
+		cmd.Comment, cmd.Trip, cmd.Date)
 	if expenseErr != nil {
 		return nil, errors.Wrap(expenseErr, "prepare expense failed")
 	}

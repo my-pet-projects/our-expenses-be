@@ -32,7 +32,9 @@ type categoryModel struct {
 	Path      string              `bson:"path"`
 	Icon      *string             `bson:"icon,omitempty"`
 	Level     int                 `bson:"level"`
-	CreatedAt time.Time           `bson:"createdAt"`
+	CreatedBy string              `bson:"createdBy,omitempty"`
+	UpdatedBy *string             `bson:"updatedBy,omitempty"`
+	CreatedAt time.Time           `bson:"createdAt,omitempty"`
 	UpdatedAt *time.Time          `bson:"updatedAt,omitempty"`
 }
 
@@ -168,6 +170,9 @@ func (r *CategoryRepository) Insert(ctx context.Context, category domain.Categor
 	defer span.End()
 
 	categoryDbModel := r.marshalCategory(category)
+	tempUser := "kot"
+	categoryDbModel.CreatedBy = tempUser
+	categoryDbModel.CreatedAt = time.Now()
 
 	insRes, insErr := r.collection().InsertOne(ctx, categoryDbModel)
 	if insErr != nil {
@@ -186,6 +191,10 @@ func (r *CategoryRepository) Update(ctx context.Context, category domain.Categor
 	defer span.End()
 
 	categoryDbModel := r.marshalCategory(category)
+	tempUser := "kot"
+	now := time.Now()
+	categoryDbModel.UpdatedBy = &tempUser
+	categoryDbModel.UpdatedAt = &now
 
 	filter := bson.M{"_id": categoryDbModel.ID}
 	updater := bson.M{"$set": categoryDbModel}
@@ -271,14 +280,12 @@ func (r CategoryRepository) marshalCategory(category domain.Category) categoryMo
 	}
 
 	return categoryModel{
-		ID:        id,
-		Name:      category.Name(),
-		Icon:      category.Icon(),
-		ParentID:  parentID,
-		Path:      category.Path(),
-		Level:     category.Level(),
-		CreatedAt: category.CreatedAt(),
-		UpdatedAt: category.UpdatedAt(),
+		ID:       id,
+		Name:     category.Name(),
+		Icon:     category.Icon(),
+		ParentID: parentID,
+		Path:     category.Path(),
+		Level:    category.Level(),
 	}
 }
 
@@ -289,8 +296,8 @@ func (r CategoryRepository) unmarshalCategory(categoryModel categoryModel) (*dom
 		parentID = &parentIDHex
 	}
 	cat, catErr := domain.NewCategory(categoryModel.ID.Hex(), categoryModel.Name,
-		parentID, categoryModel.Path, categoryModel.Icon, categoryModel.Level,
-		categoryModel.CreatedAt, categoryModel.UpdatedAt)
+		parentID, categoryModel.Path, categoryModel.Icon, categoryModel.Level)
+	cat.SetMetadata(categoryModel.CreatedBy, categoryModel.CreatedAt, categoryModel.UpdatedBy, categoryModel.UpdatedAt)
 	if catErr != nil {
 		return nil, errors.Wrap(catErr, "unmarshal category")
 	}

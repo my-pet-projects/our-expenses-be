@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -105,7 +104,7 @@ func TestMoveCategoryHandler_FailedToGetCategoryUsages_ThrowsError(t *testing.T)
 	}
 	parentID := "parentId"
 	path := fmt.Sprintf("|%s", parentID)
-	category, _ := domain.NewCategory(categoryID, "name", &parentID, path, nil, 1, time.Now(), nil)
+	category, _ := domain.NewCategory(categoryID, "name", &parentID, path, nil, 1)
 
 	matchIdFn := func(id string) bool {
 		return categoryID == id
@@ -147,7 +146,7 @@ func TestMoveCategoryHandler_FailedToGetDestinationCategory_ThrowsError(t *testi
 	}
 	parentID := "parentId"
 	path := fmt.Sprintf("|%s", parentID)
-	category, _ := domain.NewCategory(categoryID, "name", &parentID, path, nil, 1, time.Now(), nil)
+	category, _ := domain.NewCategory(categoryID, "name", &parentID, path, nil, 1)
 	categories := []domain.Category{{}}
 
 	matchIdFn := func(id string) bool {
@@ -192,7 +191,7 @@ func TestMoveCategoryHandler_NoDestinationCategory_ReturnsEmptyResult(t *testing
 	}
 	parentID := "parentId"
 	path := fmt.Sprintf("|%s", parentID)
-	category, _ := domain.NewCategory(categoryID, "name", &parentID, path, nil, 1, time.Now(), nil)
+	category, _ := domain.NewCategory(categoryID, "name", &parentID, path, nil, 1)
 	categories := []domain.Category{{}}
 
 	matchIdFn := func(id string) bool {
@@ -237,8 +236,8 @@ func TestMoveCategoryHandler_FailedToUpdateCategory_ThrowsError(t *testing.T) {
 	}
 	parentID := "parentId"
 	path := fmt.Sprintf("|%s", parentID)
-	category, _ := domain.NewCategory(categoryID, "name", &parentID, path, nil, 1, time.Now(), nil)
-	destCategory, _ := domain.NewCategory(destinationID, "dest name", &parentID, path, nil, 1, time.Now(), nil)
+	category, _ := domain.NewCategory(categoryID, "name", &parentID, path, nil, 1)
+	destCategory, _ := domain.NewCategory(destinationID, "dest name", &parentID, path, nil, 1)
 	categories := []domain.Category{{}}
 
 	matchIdFn := func(id string) bool {
@@ -296,9 +295,9 @@ func TestMoveCategoryHandler_UpdateCategory_ReturnsResult(t *testing.T) {
 		CategoryID:   targetID,
 		FindChildren: true,
 	}
-	targetCat, _ := domain.NewCategory(targetID, "target name", &targetParentID, targetPath, &icon, targetLevel, time.Now(), nil)
-	destCategory, _ := domain.NewCategory(destinationID, "dest name", &destinationParentID, destinationPath, &icon, destinationLevel, time.Now(), nil)
-	childCategory, _ := domain.NewCategory(childID, "child name", &childParentID, childPath, &icon, childLevel, time.Now(), nil)
+	targetCat, _ := domain.NewCategory(targetID, "target name", &targetParentID, targetPath, &icon, targetLevel)
+	destCategory, _ := domain.NewCategory(destinationID, "dest name", &destinationParentID, destinationPath, &icon, destinationLevel)
+	childCategory, _ := domain.NewCategory(childID, "child name", &childParentID, childPath, &icon, childLevel)
 	categories := []domain.Category{*childCategory}
 	updateResult := &domain.UpdateResult{
 		UpdateCount: 5,
