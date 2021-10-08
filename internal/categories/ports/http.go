@@ -60,7 +60,7 @@ func (h HTTPServer) FindCategories(echoCtx echo.Context, params FindCategoriesPa
 // FindCategoryByID returns categories.
 func (h HTTPServer) FindCategoryByID(echoCtx echo.Context, id string) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category http request")
-	span.SetAttributes(attribute.Any("id", id))
+	span.SetAttributes(attribute.String("id", id))
 	defer span.End()
 	h.app.Logger.Infof(ctx, "Handling get %s category HTTP request", id)
 
@@ -157,7 +157,7 @@ func (h HTTPServer) UpdateCategory(echoCtx echo.Context, id string) error {
 // DeleteCategory deletes a category.
 func (h HTTPServer) DeleteCategory(echoCtx echo.Context, id string) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle delete category http request")
-	span.SetAttributes(attribute.Any("id", id))
+	span.SetAttributes(attribute.String("id", id))
 	defer span.End()
 	h.app.Logger.Info(ctx, "Handling delete categories HTTP request")
 
@@ -184,7 +184,7 @@ func (h HTTPServer) DeleteCategory(echoCtx echo.Context, id string) error {
 // FindCategoryUsages returns categories.
 func (h HTTPServer) FindCategoryUsages(echoCtx echo.Context, id string) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category usages http request")
-	span.SetAttributes(attribute.Any("id", id))
+	span.SetAttributes(attribute.String("id", id))
 	defer span.End()
 	h.app.Logger.Info(ctx, "Handling get category usages HTTP request")
 
@@ -204,8 +204,8 @@ func (h HTTPServer) FindCategoryUsages(echoCtx echo.Context, id string) error {
 // MoveCategory moves category.
 func (h HTTPServer) MoveCategory(echoCtx echo.Context, id string, params MoveCategoryParams) error {
 	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle move category http request")
-	span.SetAttributes(attribute.Any("id", id))
-	span.SetAttributes(attribute.Any("destinationId", params.DestinationId))
+	span.SetAttributes(attribute.String("id", id))
+	span.SetAttributes(attribute.String("destinationId", params.DestinationId))
 	defer span.End()
 	h.app.Logger.Info(ctx,
 		fmt.Sprintf("Handling HTTP request to move category %s to %s", id, params.DestinationId))

@@ -44,7 +44,7 @@ func (r *ReportRepository) collection() *mongo.Collection {
 // GetAll returns all expenses from the database that matches the filter.
 func (r *ReportRepository) GetAll(ctx context.Context, filter domain.ExpenseFilter) ([]domain.Expense, error) {
 	ctx, span := r.tracer.Start(ctx, "find expenses in the database")
-	span.SetAttributes(attribute.Any("filter", filter))
+	// span.SetAttributes(attribute.Any("filter", filter))
 	defer span.End()
 
 	// Filter expense documents.
@@ -110,7 +110,7 @@ func (r *ReportRepository) GetAll(ctx context.Context, filter domain.ExpenseFilt
 		addAscendantsFieldStage,
 	}
 
-	span.AddEvent("start query", trace.WithAttributes(attribute.Any("filter", operations)))
+	// span.AddEvent("start query", trace.WithAttributes(attribute.Any("filter", operations)))
 
 	cursor, cursorErr := r.collection().Aggregate(ctx, operations)
 	if cursorErr != nil {
@@ -124,7 +124,7 @@ func (r *ReportRepository) GetAll(ctx context.Context, filter domain.ExpenseFilt
 		return nil, errors.Wrap(allError, "cursor iteration")
 	}
 
-	span.AddEvent("fetched finished", trace.WithAttributes(attribute.Any("items", len(expenseDbModels))))
+	span.AddEvent("fetched finished", trace.WithAttributes(attribute.Int("items", len(expenseDbModels))))
 
 	expenses := []domain.Expense{}
 	for _, expenseDbModel := range expenseDbModels {

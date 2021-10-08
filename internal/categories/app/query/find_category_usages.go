@@ -49,7 +49,7 @@ func (h FindCategoryUsagesHandler) Handle(
 	query FindCategoryUsagesQuery,
 ) ([]domain.Category, error) {
 	ctx, span := findCategoryUsagesTracer.Start(ctx, "execute find category usages")
-	span.SetAttributes(attribute.Any("id", query.CategoryID))
+	span.SetAttributes(attribute.String("id", query.CategoryID))
 	defer span.End()
 
 	filter := domain.CategoryFilter{

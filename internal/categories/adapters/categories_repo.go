@@ -71,7 +71,7 @@ func (r *CategoryRepository) collection() *mongo.Collection {
 // GetAll returns all categories from the database that matches the filter.
 func (r *CategoryRepository) GetAll(ctx context.Context, filter domain.CategoryFilter) ([]domain.Category, error) {
 	ctx, span := categoriesRepoTracer.Start(ctx, "find categories in the database")
-	span.SetAttributes(attribute.Any("filter", filter))
+	// span.SetAttributes(attribute.Any("filter", filter)) TODO: trace attributes?
 	defer span.End()
 
 	query := bson.M{}
@@ -109,7 +109,7 @@ func (r *CategoryRepository) GetAll(ctx context.Context, filter domain.CategoryF
 		query = bson.M{}
 	}
 
-	span.AddEvent("start query", trace.WithAttributes(attribute.Any("filter", query)))
+	// span.AddEvent("start query", trace.WithAttributes(attribute.Any("filter", query)))
 
 	cursor, findError := r.collection().Find(ctx, query)
 	if findError != nil {
@@ -124,7 +124,7 @@ func (r *CategoryRepository) GetAll(ctx context.Context, filter domain.CategoryF
 		return nil, errors.Wrap(allError, "cursor iteration")
 	}
 
-	span.AddEvent("fetched finished", trace.WithAttributes(attribute.Any("items", len(categoryModels))))
+	span.AddEvent("fetched finished", trace.WithAttributes(attribute.Int("items", len(categoryModels))))
 
 	categories := []domain.Category{}
 	for _, categoryModel := range categoryModels {
@@ -141,7 +141,7 @@ func (r *CategoryRepository) GetAll(ctx context.Context, filter domain.CategoryF
 // GetOne returns a single category from the database.
 func (r *CategoryRepository) GetOne(ctx context.Context, id string) (*domain.Category, error) {
 	ctx, span := categoriesRepoTracer.Start(ctx, "find categories in the database")
-	span.SetAttributes(attribute.Any("id", id))
+	span.SetAttributes(attribute.String("id", id))
 	defer span.End()
 
 	objID, _ := primitive.ObjectIDFromHex(id)

@@ -35,7 +35,7 @@ func NewMongoClient(log logger.LogInterface, config config.Database) (*MongoClie
 	clientOptions.SetAppName(config.Mongo.Name)
 	clientOptions.SetReadConcern(readconcern.Majority())
 	clientOptions.SetWriteConcern(writeconcern.New(writeconcern.WMajority()))
-	clientOptions.Monitor = otelmongo.NewMonitor(config.Mongo.Name)
+	clientOptions.Monitor = otelmongo.NewMonitor()
 
 	client, clientErr := mongo.NewClient(clientOptions)
 	if clientErr != nil {
