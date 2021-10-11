@@ -3,14 +3,14 @@ package config
 
 import (
 	"io/ioutil"
+	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
 
-const configPath string = "config/config.yaml"
-
+var configPath = os.Getenv("CONFIG_PATH")
 var readFileFn = ioutil.ReadFile
 
 // NewConfig provides application configuration based on yaml config file.

@@ -2,6 +2,9 @@
     "go.lintTool": "golangci-lint",
     "go.lintFlags": ["--fast"],
     "go.testFlags": ["-v"],
+    "go.testEnvVars": {
+        "CONFIG_PATH": "${workspaceFolder}/config/config.yaml"
+    },
     "go.coverOnSave": true,
     "go.coverageDecorator": {
         "type": "gutter",
