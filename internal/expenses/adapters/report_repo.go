@@ -140,16 +140,17 @@ func (r *ReportRepository) GetAll(ctx context.Context, filter domain.ExpenseFilt
 }
 
 func (r ReportRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain.Expense, error) {
+
+	cat, catErr := r.unmarshalCategory(*expenseModel.Category)
+	if catErr != nil {
+		return nil, errors.Wrap(catErr, "unmarshal category")
+	}
+
 	exp, expErr := domain.NewExpense(expenseModel.ID.Hex(), expenseModel.CategoryID.Hex(),
 		expenseModel.Price, expenseModel.Currency, expenseModel.Quantity,
 		expenseModel.Comment, expenseModel.Trip, expenseModel.Date)
 	if expErr != nil {
-		return nil, errors.Wrap(expErr, "unmarshal report")
-	}
-
-	cat, catErr := r.unmarshalCategory(*expenseModel.Category)
-	if catErr != nil {
-		return nil, catErr
+		return nil, errors.Wrap(expErr, "unmarshal expense")
 	}
 
 	exp.SetCategory(*cat)
@@ -158,16 +159,24 @@ func (r ReportRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain
 }
 
 func (r ReportRepository) unmarshalCategory(categoryModel categoryDbModel) (*domain.Category, error) {
-	cat, catErr := domain.NewCategory(categoryModel.ID.Hex(),
-		categoryModel.Name, categoryModel.Icon, categoryModel.Level)
+	var parentId string
+	if !categoryModel.ParentID.IsZero() {
+		parentId = categoryModel.ParentID.Hex()
+	}
+	cat, catErr := domain.NewCategory(categoryModel.ID.Hex(), &parentId,
+		categoryModel.Name, categoryModel.Icon, categoryModel.Level, categoryModel.Path)
 	if catErr != nil {
 		return nil, errors.Wrap(catErr, "unmarshal category")
 	}
 
 	parentCategories := make([]domain.Category, 0)
 	for _, parentCat := range categoryModel.Parents {
-		parent, parentErr := domain.NewCategory(parentCat.ID.Hex(), parentCat.Name,
-			parentCat.Icon, parentCat.Level)
+		var parentId string
+		if parentCat.ParentID != nil {
+			parentId = parentCat.ParentID.Hex()
+		}
+		parent, parentErr := domain.NewCategory(parentCat.ID.Hex(), &parentId, parentCat.Name,
+			parentCat.Icon, parentCat.Level, parentCat.Path)
 		if parentErr != nil {
 			return nil, errors.Wrap(parentErr, "unmarshal parent category")
 		}

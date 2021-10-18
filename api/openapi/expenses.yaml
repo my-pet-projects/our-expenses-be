@@ -129,30 +129,36 @@ components:
     ExpenseReport:
       type: object
       required:
-        - byDate
+        - dateReports
+        - total
       properties:
-        byDate:
+        dateReports:
           type: array
           items:
             $ref: '#/components/schemas/DateCategoryReport'
+        total:
+          $ref: '#/components/schemas/Total'
     DateCategoryReport:
       type: object
       required:
         - date
-        - byCategory
+        - categoryReports
+        - total
       properties:
         date:
           type: string
           format: date-time
-        byCategory:
+        categoryReports:
           type: array
           items:
-            $ref: '#/components/schemas/CategoryExpenseReport'
-    CategoryExpenseReport:
+            $ref: '#/components/schemas/CategoryReport'
+        total:
+          $ref: '#/components/schemas/Total'
+    CategoryReport:
       type: object
       required:
         - category
-        - expenses
+        - total
       properties:
         category:
           $ref: '#/components/schemas/Category'
@@ -160,6 +166,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Expense'
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryReport'
+        total:
+          $ref: '#/components/schemas/Total'
     Category:
       type: object
       required:
@@ -184,6 +196,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Category'
+    Total:
+      type: object
+      required:
+        - sum
+        - debug
+      properties:
+        sum:
+          type: string
+          description: Sum amount
+        debug:
+          type: string
+          description: Property to debug sum 
     Error:
       type: object
       required:

@@ -62,7 +62,7 @@ func (h FindExpensesHandler) Handle(
 	}
 
 	reportGenerator := domain.NewReportGenerator(expenses)
-	report := reportGenerator.GenerateReport()
+	report := reportGenerator.GenerateByDateReport()
 
 	return &report, nil
 }

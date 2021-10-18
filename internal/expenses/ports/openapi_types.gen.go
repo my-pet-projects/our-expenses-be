@@ -20,16 +20,19 @@ type Category struct {
 	Parents []Category `json:"parents"`
 }
 
-// CategoryExpenseReport defines model for CategoryExpenseReport.
-type CategoryExpenseReport struct {
-	Category Category  `json:"category"`
-	Expenses []Expense `json:"expenses"`
+// CategoryReport defines model for CategoryReport.
+type CategoryReport struct {
+	Category Category          `json:"category"`
+	Children *[]CategoryReport `json:"children,omitempty"`
+	Expenses *[]Expense        `json:"expenses,omitempty"`
+	Total    Total             `json:"total"`
 }
 
 // DateCategoryReport defines model for DateCategoryReport.
 type DateCategoryReport struct {
-	ByCategory []CategoryExpenseReport `json:"byCategory"`
-	Date       time.Time               `json:"date"`
+	CategoryReports []CategoryReport `json:"categoryReports"`
+	Date            time.Time        `json:"date"`
+	Total           Total            `json:"total"`
 }
 
 // Error defines model for Error.
@@ -54,7 +57,8 @@ type Expense struct {
 
 // ExpenseReport defines model for ExpenseReport.
 type ExpenseReport struct {
-	ByDate []DateCategoryReport `json:"byDate"`
+	DateReports []DateCategoryReport `json:"dateReports"`
+	Total       Total                `json:"total"`
 }
 
 // NewExpense defines model for NewExpense.
@@ -73,6 +77,15 @@ type NewExpense struct {
 type NewExpenseResponse struct {
 	// ID of the newly added expense
 	Id string `json:"id"`
+}
+
+// Total defines model for Total.
+type Total struct {
+	// Property to debug sum
+	Debug string `json:"debug"`
+
+	// Sum amount
+	Sum string `json:"sum"`
 }
 
 // AddExpenseJSONBody defines parameters for AddExpense.

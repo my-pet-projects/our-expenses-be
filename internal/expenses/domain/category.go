@@ -9,15 +9,17 @@ import (
 // Category represents a domain object.
 type Category struct {
 	id       string
+	parentId *string
 	name     string
 	icon     *string
 	level    int
+	path     string
 	parents  *[]Category
 	expenses *[]Expense
 }
 
 // NewCategory creates a new category domain object.
-func NewCategory(id string, name string, icon *string, level int) (*Category, error) {
+func NewCategory(id string, parentId *string, name string, icon *string, level int, path string) (*Category, error) {
 	if name == "" {
 		return nil, errors.New("empty name")
 	}
@@ -27,10 +29,12 @@ func NewCategory(id string, name string, icon *string, level int) (*Category, er
 	}
 
 	return &Category{
-		id:    id,
-		name:  strings.TrimSpace(name),
-		icon:  icon,
-		level: level,
+		id:       id,
+		parentId: parentId,
+		name:     strings.TrimSpace(name),
+		icon:     icon,
+		level:    level,
+		path:     path,
 	}, nil
 }
 
@@ -52,6 +56,11 @@ func (c Category) Icon() *string {
 // Level returns category level.
 func (c Category) Level() int {
 	return c.level
+}
+
+// Path returns category path.
+func (c Category) Path() string {
+	return c.path
 }
 
 // Parents returns category parents.

@@ -85,36 +85,65 @@ func (h HTTPServer) GenerateReport(echoCtx echo.Context, params GenerateReportPa
 		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(expenseRptErr))
 	}
 
-	response := ExpenseReport{
-		ByDate: reportToResponse(*expenseRpt),
-	}
+	response := reportToResponse(*expenseRpt)
 	return echoCtx.JSON(http.StatusOK, response)
 }
 
-func reportToResponse(domainReport domain.ReportByDate) []DateCategoryReport {
+func reportToResponse(domainReport domain.ReportByDate) ExpenseReport {
 	dateCategoryReport := []DateCategoryReport{}
 	for _, categoryByDate := range domainReport.CategoryByDate {
+
+		someResponses := make([]CategoryReport, 0)
+		for _, category := range categoryByDate.SubCategories {
+			someResponses = append(someResponses, toresponse(*category))
+		}
+
 		dateCategoryReport = append(dateCategoryReport, DateCategoryReport{
-			Date:       categoryByDate.Date,
-			ByCategory: categoryByDateToResponse(categoryByDate),
+			Date:            categoryByDate.Date,
+			CategoryReports: someResponses,
+			Total:           totalToTotalResponse(categoryByDate.Total),
 		})
 	}
-	return dateCategoryReport
+
+	report := ExpenseReport{
+		DateReports: dateCategoryReport,
+		Total:       totalToTotalResponse(domainReport.Total),
+	}
+	return report
 }
 
-func categoryByDateToResponse(domainCategoryByDate domain.CategoriesByDate) []CategoryExpenseReport {
-	categoryExpenseReport := []CategoryExpenseReport{}
-	for _, expensesByCategory := range domainCategoryByDate.ExpensesByCategory {
-		expenses := []Expense{}
-		for _, exp := range expensesByCategory.Expenses {
-			expenses = append(expenses, expenseToResponse(exp))
-		}
-		categoryExpenseReport = append(categoryExpenseReport, CategoryExpenseReport{
-			Category: categoryToResponse(expensesByCategory.Category),
-			Expenses: expenses,
-		})
+func totalToTotalResponse(d domain.Total) Total {
+	return Total{
+		Debug: d.SumDebug,
+		Sum:   d.Sum.String(),
 	}
-	return categoryExpenseReport
+}
+
+func toresponse(d domain.CategoryExpenses) CategoryReport {
+	response := CategoryReport{
+		Category: categoryToResponse(d.Category),
+		Total:    totalToTotalResponse(d.Total),
+	}
+
+	es := []Expense{}
+
+	if d.Expenses != nil {
+
+		for _, e := range *d.Expenses {
+			es = append(es, expenseToResponse(e))
+		}
+		response.Expenses = &es
+
+	}
+
+	c := []CategoryReport{}
+	for _, s := range d.SubCategories {
+		c = append(c, toresponse(*s))
+	}
+
+	response.Children = &c
+
+	return response
 }
 
 func categoryToResponse(domainCategory domain.Category) Category {
