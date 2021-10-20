@@ -6,13 +6,9 @@ run-server: build
 	@echo "\nService is starting ...\n"
 	$(SERVICE_ENV_VARIABLES) ./build/our-expenses-server 2> ./build/our-expenses-server.log
 
-run-import: build
-	./build/import
-
 .PHONY: build
 build:
 	CGO_ENABLED=0 GOARCH=amd64 go build -o build/our-expenses-server ./cmd/server
-	CGO_ENABLED=0 GOARCH=amd64 go build -o build/import ./cmd/import
 
 test:
 	go test ./... -cover
