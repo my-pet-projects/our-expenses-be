@@ -53,20 +53,11 @@ func TestGenerateByDateReport(t *testing.T) {
 
 	date1 := time.Date(2021, time.July, 10, 0, 0, 0, 0, time.UTC)
 
-	expense1, _ := domain.NewExpense(uuid.NewString(), category111.ID(), 10, "EUR", 1, nil, nil, date1)
-	expense1.SetCategory(*category111)
-
-	expense2, _ := domain.NewExpense(uuid.NewString(), category111.ID(), 20, "EUR", 2, nil, nil, date1)
-	expense2.SetCategory(*category111)
-
-	expense3, _ := domain.NewExpense(uuid.NewString(), category112.ID(), 30, "EUR", 3, nil, nil, date1)
-	expense3.SetCategory(*category112)
-
-	expense4, _ := domain.NewExpense(uuid.NewString(), category12.ID(), 40, "EUR", 4, nil, nil, date1)
-	expense4.SetCategory(*category12)
-
-	expense5, _ := domain.NewExpense(uuid.NewString(), category21.ID(), 100, "EUR", 4, nil, nil, date1)
-	expense5.SetCategory(*category21)
+	expense1, _ := domain.NewExpense(uuid.NewString(), *category111, 10, "EUR", 1, nil, nil, date1)
+	expense2, _ := domain.NewExpense(uuid.NewString(), *category111, 20, "EUR", 2, nil, nil, date1)
+	expense3, _ := domain.NewExpense(uuid.NewString(), *category112, 30, "EUR", 3, nil, nil, date1)
+	expense4, _ := domain.NewExpense(uuid.NewString(), *category12, 40, "EUR", 4, nil, nil, date1)
+	expense5, _ := domain.NewExpense(uuid.NewString(), *category21, 100, "EUR", 4, nil, nil, date1)
 
 	expenses := []domain.Expense{*expense1, *expense2, *expense3, *expense4, *expense5}
 

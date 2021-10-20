@@ -1,6 +1,7 @@
 package ports
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -46,14 +47,32 @@ func (h HTTPServer) AddExpense(echoCtx echo.Context) error {
 		return echoCtx.JSON(http.StatusBadRequest, expenseErr)
 	}
 
-	cmdArgs := command.AddExpenseCommand{
+	catQuery := query.FindCategoryQuery{
 		CategoryID: newExpense.CategoryId,
-		Price:      newExpense.Price,
-		Currency:   newExpense.Currency,
-		Quantity:   newExpense.Quantity,
-		Comment:    newExpense.Comment,
-		Trip:       newExpense.Trip,
-		Date:       newExpense.Date,
+	}
+
+	category, categoryErr := h.app.Queries.FindCategory.Handle(ctx, catQuery)
+	if categoryErr != nil {
+		h.app.Logger.Error(ctx, "Failed to get category", categoryErr)
+		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(categoryErr))
+	}
+
+	if category == nil {
+		catErr := Error{
+			Code:    http.StatusBadRequest,
+			Message: fmt.Sprintf("Invalid provided category with ID %s", newExpense.CategoryId),
+		}
+		return echoCtx.JSON(http.StatusBadRequest, catErr)
+	}
+
+	cmdArgs := command.AddExpenseCommand{
+		Category: *category,
+		Price:    newExpense.Price,
+		Currency: newExpense.Currency,
+		Quantity: newExpense.Quantity,
+		Comment:  newExpense.Comment,
+		Trip:     newExpense.Trip,
+		Date:     newExpense.Date,
 	}
 	expenseID, expenseCrtErr := h.app.Commands.AddExpense.Handle(ctx, cmdArgs)
 	if expenseCrtErr != nil {
@@ -92,10 +111,9 @@ func (h HTTPServer) GenerateReport(echoCtx echo.Context, params GenerateReportPa
 func reportToResponse(domainReport domain.ReportByDate) ExpenseReport {
 	dateCategoryReport := []DateCategoryReport{}
 	for _, categoryByDate := range domainReport.CategoryByDate {
-
 		someResponses := make([]CategoryReport, 0)
 		for _, category := range categoryByDate.SubCategories {
-			someResponses = append(someResponses, toresponse(*category))
+			someResponses = append(someResponses, toResponse(*category))
 		}
 
 		dateCategoryReport = append(dateCategoryReport, DateCategoryReport{
@@ -119,7 +137,7 @@ func totalToTotalResponse(d domain.Total) Total {
 	}
 }
 
-func toresponse(d domain.CategoryExpenses) CategoryReport {
+func toResponse(d domain.CategoryExpenses) CategoryReport {
 	response := CategoryReport{
 		Category: categoryToResponse(d.Category),
 		Total:    totalToTotalResponse(d.Total),
@@ -128,17 +146,15 @@ func toresponse(d domain.CategoryExpenses) CategoryReport {
 	es := []Expense{}
 
 	if d.Expenses != nil {
-
 		for _, e := range *d.Expenses {
 			es = append(es, expenseToResponse(e))
 		}
 		response.Expenses = &es
-
 	}
 
 	c := []CategoryReport{}
 	for _, s := range d.SubCategories {
-		c = append(c, toresponse(*s))
+		c = append(c, toResponse(*s))
 	}
 
 	response.Children = &c
@@ -147,20 +163,20 @@ func toresponse(d domain.CategoryExpenses) CategoryReport {
 }
 
 func categoryToResponse(domainCategory domain.Category) Category {
-	parents := []Category{}
-	p := domainCategory.Parents()
-	if p != nil {
-		for _, parentCategory := range *p {
-			parents = append(parents, categoryToResponse(parentCategory))
-		}
-	}
+	// parents := []Category{}
+	// p := domainCategory.Parents()
+	// if p != nil {
+	// 	for _, parentCategory := range *p {
+	// 		parents = append(parents, categoryToResponse(parentCategory))
+	// 	}
+	// }
 
 	category := Category{
-		Id:      domainCategory.ID(),
-		Name:    domainCategory.Name(),
-		Icon:    domainCategory.Icon(),
-		Level:   domainCategory.Level(),
-		Parents: parents,
+		Id:    domainCategory.ID(),
+		Name:  domainCategory.Name(),
+		Icon:  domainCategory.Icon(),
+		Level: domainCategory.Level(),
+		// Parents: parents,
 	}
 	return category
 }
@@ -170,12 +186,12 @@ func expenseToResponse(domainExpense domain.Expense) Expense {
 	expense := Expense{
 		Id: domainExpense.ID(),
 		NewExpense: NewExpense{
-			CategoryId: domainExpense.CategoryID(),
-			Comment:    domainExpense.Comment(),
-			Currency:   domainExpense.Currency(),
-			Date:       domainExpense.Date(),
-			Price:      domainExpense.Price(),
-			Quantity:   domainExpense.Quantity(),
+			// CategoryId: domainExpense.CategoryID(),
+			Comment:  domainExpense.Comment(),
+			Currency: domainExpense.Currency(),
+			Date:     domainExpense.Date(),
+			Price:    domainExpense.Price(),
+			Quantity: domainExpense.Quantity(),
 		},
 		Category: category,
 	}

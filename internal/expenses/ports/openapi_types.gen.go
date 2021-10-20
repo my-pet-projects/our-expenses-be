@@ -16,8 +16,8 @@ type Category struct {
 	Level int    `json:"level"`
 
 	// Name of the category
-	Name    string     `json:"name"`
-	Parents []Category `json:"parents"`
+	Name    string      `json:"name"`
+	Parents *[]Category `json:"parents,omitempty"`
 }
 
 // CategoryReport defines model for CategoryReport.

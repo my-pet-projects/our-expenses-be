@@ -146,14 +146,12 @@ func (r ReportRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain
 		return nil, errors.Wrap(catErr, "unmarshal category")
 	}
 
-	exp, expErr := domain.NewExpense(expenseModel.ID.Hex(), expenseModel.CategoryID.Hex(),
+	exp, expErr := domain.NewExpense(expenseModel.ID.Hex(), *cat,
 		expenseModel.Price, expenseModel.Currency, expenseModel.Quantity,
 		expenseModel.Comment, expenseModel.Trip, expenseModel.Date)
 	if expErr != nil {
 		return nil, errors.Wrap(expErr, "unmarshal expense")
 	}
-
-	exp.SetCategory(*cat)
 
 	return exp, nil
 }

@@ -2,6 +2,7 @@ package command_test
 
 import (
 	"context"
+	"reflect"
 	"testing"
 	"time"
 
@@ -52,17 +53,19 @@ func TestAddExpenseHandler_RepoError_ThrowsError(t *testing.T) {
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
 	comment := "comment"
+	parentID := "parentID"
+	category, _ := domain.NewCategory("categoryID", &parentID, "category", nil, 1, "path")
 	cmd := command.AddExpenseCommand{
-		CategoryID: "categoryId",
-		Price:      12.55,
-		Currency:   "EUR",
-		Quantity:   2,
-		Comment:    &comment,
-		Date:       time.Now(),
+		Category: *category,
+		Price:    12.55,
+		Currency: "EUR",
+		Quantity: 2,
+		Comment:  &comment,
+		Date:     time.Now(),
 	}
 
 	matchExpenseFn := func(cat domain.Expense) bool {
-		return cat.ID() == "" && cat.CategoryID() == cmd.CategoryID &&
+		return cat.ID() == "" && reflect.DeepEqual(cat.Category(), cmd.Category) &&
 			cat.Price() == cmd.Price && cat.Currency() == cmd.Currency && cat.Quantity() == cmd.Quantity &&
 			cat.Comment() == cmd.Comment && cat.Date() == cmd.Date
 	}
@@ -88,17 +91,19 @@ func TestAddExpenseHandler_RepoSuccess_ReturnsNewId(t *testing.T) {
 	ctx := context.Background()
 	expenseID := "expenseId"
 	comment := "comment"
+	parentID := "parentID"
+	category, _ := domain.NewCategory("categoryID", &parentID, "category", nil, 1, "path")
 	cmd := command.AddExpenseCommand{
-		CategoryID: "categoryId",
-		Price:      12.55,
-		Currency:   "EUR",
-		Quantity:   2,
-		Comment:    &comment,
-		Date:       time.Now(),
+		Category: *category,
+		Price:    12.55,
+		Currency: "EUR",
+		Quantity: 2,
+		Comment:  &comment,
+		Date:     time.Now(),
 	}
 
 	matchExpenseFn := func(cat domain.Expense) bool {
-		return cat.ID() == "" && cat.CategoryID() == cmd.CategoryID &&
+		return cat.ID() == "" && reflect.DeepEqual(cat.Category(), cmd.Category) &&
 			cat.Price() == cmd.Price && cat.Currency() == cmd.Currency && cat.Quantity() == cmd.Quantity &&
 			cat.Comment() == cmd.Comment && cat.Date() == cmd.Date
 	}

@@ -179,7 +179,6 @@ components:
         - name
         - path
         - level
-        - parents
       properties:
         id:
           type: string

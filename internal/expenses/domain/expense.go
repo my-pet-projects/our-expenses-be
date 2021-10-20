@@ -1,57 +1,81 @@
 package domain
 
 import (
-	"errors"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
 // Expense represents a domain object.
 type Expense struct {
-	id         string
-	categoryID string
-	category   Category
-	price      decimal.Decimal
-	currency   string
-	quantity   decimal.Decimal
-	comment    *string
-	trip       *string
-	date       time.Time
-	createdAt  time.Time
-	createdBy  string
-	updatedAt  *time.Time
-	updatedBy  *string
+	id        string
+	category  Category
+	price     decimal.Decimal
+	currency  string
+	quantity  decimal.Decimal
+	comment   *string
+	trip      *string
+	date      time.Time
+	createdAt time.Time
+	createdBy string
+	updatedAt *time.Time
+	updatedBy *string
+}
+
+// SetCreateMetadata sets expense create metadata.
+func SetCreateMetadata(createdBy string, createdAt time.Time) func(*Expense) {
+	return func(e *Expense) {
+		e.createdBy = createdBy
+		e.createdAt = createdAt
+	}
+}
+
+// SetUpdateMetadata sets expense update metadata.
+func SetUpdateMetadata(updatedBy string, updatedAt time.Time) func(*Expense) {
+	return func(e *Expense) {
+		e.updatedBy = &updatedBy
+		e.updatedAt = &updatedAt
+	}
 }
 
 // NewExpense creates a new expense domain object.
 func NewExpense(
 	id string,
-	categoryID string,
+	category Category,
 	price float64,
 	currency string,
 	quantity float64,
 	comment *string,
 	trip *string,
 	date time.Time,
+	opts ...func(*Expense),
 ) (*Expense, error) {
-	if categoryID == "" {
-		return nil, errors.New("empty categoryID")
+	if price == 0 {
+		return nil, errors.New("price could not be empty")
 	}
+
+	// TODO: add more business checks.
 
 	decPrice := decimal.NewFromFloat(price)
 	decQuantity := decimal.NewFromFloat(quantity)
 
-	return &Expense{
-		id:         id,
-		categoryID: categoryID,
-		price:      decPrice,
-		currency:   currency,
-		quantity:   decQuantity,
-		comment:    comment,
-		trip:       trip,
-		date:       date,
-	}, nil
+	expense := &Expense{
+		id:       id,
+		category: category,
+		price:    decPrice,
+		currency: currency,
+		quantity: decQuantity,
+		comment:  comment,
+		trip:     trip,
+		date:     date,
+	}
+
+	for _, opt := range opts {
+		opt(expense)
+	}
+
+	return expense, nil
 }
 
 // ID returns expense id.
@@ -59,19 +83,9 @@ func (e Expense) ID() string {
 	return e.id
 }
 
-// CategoryID returns expense id.
-func (e Expense) CategoryID() string {
-	return e.categoryID
-}
-
 // Category returns expense category.
 func (e Expense) Category() Category {
 	return e.category
-}
-
-// SetCategory sets expense category.
-func (e *Expense) SetCategory(category Category) {
-	e.category = category
 }
 
 // Price returns expense price.
@@ -124,12 +138,4 @@ func (e Expense) UpdatedAt() *time.Time {
 // UpdatedBy returns expense updater.
 func (e Expense) UpdatedBy() *string {
 	return e.updatedBy
-}
-
-// SetMetadata sets expense metadata.
-func (e Expense) SetMetadata(createdBy string, createdAt time.Time, updatedBy *string, updatedAt *time.Time) {
-	e.createdBy = createdBy
-	e.createdAt = createdAt
-	e.updatedBy = updatedBy
-	e.updatedAt = updatedAt
 }

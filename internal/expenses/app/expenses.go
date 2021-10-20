@@ -29,6 +29,7 @@ type Commands struct {
 // Queries struct holds available application queries.
 type Queries struct {
 	FindExpenses query.FindExpensesHandlerInterface
+	FindCategory query.FindExpenseCategoryHandlerInterface
 }
 
 // NewApplication returns application instance.
@@ -42,6 +43,7 @@ func NewApplication(
 ) (*Application, error) {
 	expenseRepo := adapters.NewExpenseRepo(mongoClient, logger)
 	reportRepo := adapters.NewReportRepo(mongoClient, logger)
+	categoryRepo := adapters.NewCategoryRepo(mongoClient, logger)
 
 	return &Application{
 		Commands: Commands{
@@ -49,6 +51,7 @@ func NewApplication(
 		},
 		Queries: Queries{
 			FindExpenses: query.NewFindExpensesHandler(reportRepo, logger),
+			FindCategory: query.NewFindCategoryHandler(categoryRepo, logger),
 		},
 		Logger: logger,
 		Config: *config,

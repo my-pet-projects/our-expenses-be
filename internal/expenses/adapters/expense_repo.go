@@ -16,21 +16,9 @@ import (
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
 
-var categoriesRepoTracer trace.Tracer
+var expenseRepoTracer trace.Tracer
 
-const collectionName string = "expenses"
-
-type categoryDbModel struct {
-	ID        primitive.ObjectID  `bson:"_id,omitempty"`
-	Name      string              `bson:"name"`
-	ParentID  *primitive.ObjectID `bson:"parentId,omitempty"`
-	Parents   []categoryDbModel   `bson:"parents,omitempty"`
-	Path      string              `bson:"path"`
-	Icon      *string             `bson:"icon,omitempty"`
-	Level     int                 `bson:"level"`
-	CreatedAt time.Time           `bson:"createdAt"`
-	UpdatedAt *time.Time          `bson:"updatedAt,omitempty"`
-}
+const expenseCollectionName string = "expenses"
 
 type expenseDbModel struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty"`
@@ -62,7 +50,7 @@ type ExpenseRepoInterface interface {
 
 // NewExpenseRepo returns a Expenseadapters.
 func NewExpenseRepo(client *database.MongoClient, logger logger.LogInterface) *ExpenseRepository {
-	categoriesRepoTracer = otel.Tracer("app.adapters.expenses")
+	expenseRepoTracer = otel.Tracer("app.adapters.expenses")
 	return &ExpenseRepository{
 		logger: logger,
 		client: client,
@@ -71,7 +59,7 @@ func NewExpenseRepo(client *database.MongoClient, logger logger.LogInterface) *E
 
 // collection returns collection handle.
 func (r *ExpenseRepository) collection() *mongo.Collection {
-	return r.client.Collection(collectionName)
+	return r.client.Collection(expenseCollectionName)
 }
 
 // Insert insert a new record into database.
@@ -113,7 +101,7 @@ func (r *ExpenseRepository) DeleteAll(ctx context.Context) (*domain.DeleteResult
 // marshalExpense marshalls expense domain object into MongoDB model.
 func (r ExpenseRepository) marshalExpense(expense domain.Expense) expenseDbModel {
 	id, _ := primitive.ObjectIDFromHex(expense.ID())
-	categoryID, _ := primitive.ObjectIDFromHex(expense.CategoryID())
+	categoryID, _ := primitive.ObjectIDFromHex(expense.Category().ID())
 
 	return expenseDbModel{
 		ID:         id,
@@ -127,13 +115,13 @@ func (r ExpenseRepository) marshalExpense(expense domain.Expense) expenseDbModel
 	}
 }
 
-func (r ExpenseRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain.Expense, error) {
-	exp, expErr := domain.NewExpense(expenseModel.ID.Hex(), expenseModel.CategoryID.Hex(),
-		expenseModel.Price, expenseModel.Currency, expenseModel.Quantity,
-		expenseModel.Comment, expenseModel.Trip, expenseModel.Date)
-	if expErr != nil {
-		return nil, errors.Wrap(expErr, "unmarshal expense")
-	}
-	exp.SetMetadata(expenseModel.CreatedBy, expenseModel.CreatedAt, expenseModel.UpdatedBy, expenseModel.UpdatedAt)
-	return exp, nil
-}
+// func (r ExpenseRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain.Expense, error) {
+// 	exp, expErr := domain.NewExpense(expenseModel.ID.Hex(), expenseModel.CategoryID.Hex(),
+// 		expenseModel.Price, expenseModel.Currency, expenseModel.Quantity,
+// 		expenseModel.Comment, expenseModel.Trip, expenseModel.Date)
+// 	if expErr != nil {
+// 		return nil, errors.Wrap(expErr, "unmarshal expense")
+// 	}
+// 	exp.SetMetadata(expenseModel.CreatedBy, expenseModel.CreatedAt, expenseModel.UpdatedBy, expenseModel.UpdatedAt)
+// 	return exp, nil
+// }

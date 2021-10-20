@@ -17,13 +17,13 @@ var addExpenseTracer trace.Tracer
 
 // AddExpenseCommand defines an expense command.
 type AddExpenseCommand struct {
-	CategoryID string
-	Price      float64
-	Quantity   float64
-	Currency   string
-	Date       time.Time
-	Comment    *string
-	Trip       *string
+	Category domain.Category
+	Price    float64
+	Quantity float64
+	Currency string
+	Date     time.Time
+	Comment  *string
+	Trip     *string
 }
 
 // AddExpenseHandler defines a handler to add expense.
@@ -54,7 +54,7 @@ func (h AddExpenseHandler) Handle(ctx context.Context, cmd AddExpenseCommand) (*
 	ctx, span := addExpenseTracer.Start(ctx, "execute add expense command")
 	defer span.End()
 
-	expense, expenseErr := domain.NewExpense("", cmd.CategoryID, cmd.Price, cmd.Currency, cmd.Quantity,
+	expense, expenseErr := domain.NewExpense("", cmd.Category, cmd.Price, cmd.Currency, cmd.Quantity,
 		cmd.Comment, cmd.Trip, cmd.Date)
 	if expenseErr != nil {
 		return nil, errors.Wrap(expenseErr, "prepare expense failed")

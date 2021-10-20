@@ -2,8 +2,10 @@ package ports_test
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -21,6 +23,7 @@ import (
 )
 
 func TestNewHTTPServer_ReturnsServer(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	app := &app.Application{}
 
@@ -32,25 +35,37 @@ func TestNewHTTPServer_ReturnsServer(t *testing.T) {
 }
 
 func TestAddExpense_SuccessfulCommand_Returns201(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	handler := new(mocks.AddExpenseHandlerInterface)
+	addExpenseHandler := new(mocks.AddExpenseHandlerInterface)
+	findCategoryHandler := new(mocks.FindExpenseCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{
-			AddExpense: handler,
+			AddExpense: addExpenseHandler,
 		},
-		Queries: app.Queries{},
-		Logger:  logger,
+		Queries: app.Queries{
+			FindCategory: findCategoryHandler,
+		},
+		Logger: logger,
 	}
-	expenseJSON := `{"categoryId":"123"}`
+	categoryID := "123"
+	expenseJSON := fmt.Sprintf(`{"categoryId":"%s"}`, categoryID)
 	expenseId := "expenseId"
+	category, _ := domain.NewCategory(categoryID, nil, "category", nil, 1, "path")
 
-	matchCatFn := func(command command.AddExpenseCommand) bool {
-		return command.CategoryID == "123"
+	matchCatFn := func(query query.FindCategoryQuery) bool {
+		return query.CategoryID == categoryID
 	}
+	findCategoryHandler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(category, nil)
+
+	matchExpFn := func(command command.AddExpenseCommand) bool {
+		return reflect.DeepEqual(command.Category, *category)
+	}
+	addExpenseHandler.On("Handle", mock.Anything, mock.MatchedBy(matchExpFn)).Return(&expenseId, nil)
+
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
-	handler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(&expenseId, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/expenses", strings.NewReader(expenseJSON))
@@ -65,27 +80,32 @@ func TestAddExpense_SuccessfulCommand_Returns201(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	handler.AssertExpectations(t)
+	addExpenseHandler.AssertExpectations(t)
 	assert.Equal(t, http.StatusCreated, response.Code, "HTTP status should be 201.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
 
-func TestAddExpense_FailedCommand_Returns500(t *testing.T) {
+func TestAddExpense_FailedCategoryQuery_Returns500(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	handler := new(mocks.AddExpenseHandlerInterface)
+	expenseHandler := new(mocks.AddExpenseHandlerInterface)
+	findCategoryHandler := new(mocks.FindExpenseCategoryHandlerInterface)
 	app := &app.Application{
 		Commands: app.Commands{
-			AddExpense: handler,
+			AddExpense: expenseHandler,
 		},
-		Queries: app.Queries{},
-		Logger:  logger,
+		Queries: app.Queries{
+			FindCategory: findCategoryHandler,
+		},
+		Logger: logger,
 	}
-	expenseJSON := `{"name":"expense"}`
+	categoryID := "123"
+	expenseJSON := fmt.Sprintf(`{"categoryId":"%s"}`, categoryID)
 
+	findCategoryHandler.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
-	handler.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
 
 	response := httptest.NewRecorder()
@@ -101,12 +121,100 @@ func TestAddExpense_FailedCommand_Returns500(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	handler.AssertExpectations(t)
+	expenseHandler.AssertExpectations(t)
+	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestAddExpense_CategoryQueryNotFound_Returns400(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	expenseHandler := new(mocks.AddExpenseHandlerInterface)
+	findCategoryHandler := new(mocks.FindExpenseCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			AddExpense: expenseHandler,
+		},
+		Queries: app.Queries{
+			FindCategory: findCategoryHandler,
+		},
+		Logger: logger,
+	}
+	categoryID := "123"
+	expenseJSON := fmt.Sprintf(`{"categoryId":"%s"}`, categoryID)
+
+	findCategoryHandler.On("Handle", mock.Anything, mock.Anything).Return(nil, nil)
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/expenses", strings.NewReader(expenseJSON))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.AddExpense(ctx)
+
+	// Assert
+	logger.AssertExpectations(t)
+	expenseHandler.AssertExpectations(t)
+	assert.Equal(t, http.StatusBadRequest, response.Code, "HTTP status should be 400.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestAddExpense_FailedExpenseCommand_Returns500(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	expenseHandler := new(mocks.AddExpenseHandlerInterface)
+	findCategoryHandler := new(mocks.FindExpenseCategoryHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			AddExpense: expenseHandler,
+		},
+		Queries: app.Queries{
+			FindCategory: findCategoryHandler,
+		},
+		Logger: logger,
+	}
+	categoryID := "123"
+	expenseJSON := fmt.Sprintf(`{"categoryId":"%s"}`, categoryID)
+	category, _ := domain.NewCategory(categoryID, nil, "category", nil, 1, "path")
+
+	matchCatFn := func(query query.FindCategoryQuery) bool {
+		return query.CategoryID == categoryID
+	}
+	findCategoryHandler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(category, nil)
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	expenseHandler.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/expenses", strings.NewReader(expenseJSON))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.AddExpense(ctx)
+
+	// Assert
+	logger.AssertExpectations(t)
+	expenseHandler.AssertExpectations(t)
 	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
 
 func TestAddExpense_InvalidPayload_Returns400(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -142,6 +250,7 @@ func TestAddExpense_InvalidPayload_Returns400(t *testing.T) {
 }
 
 func TestGenerateReport_SuccessfulQuery_Returns200(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -160,8 +269,9 @@ func TestGenerateReport_SuccessfulQuery_Returns200(t *testing.T) {
 	matchFn := func(query query.FindExpensesQuery) bool {
 		return query.From == from && query.To == to
 	}
-	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	handler.On("Handle", mock.Anything, mock.MatchedBy(matchFn)).Return(report, nil)
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/reports", nil)
@@ -186,6 +296,7 @@ func TestGenerateReport_SuccessfulQuery_Returns200(t *testing.T) {
 }
 
 func TestGenerateReport_FailedQuery_Returns500(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
