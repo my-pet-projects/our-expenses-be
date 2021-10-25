@@ -11,7 +11,6 @@ import (
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app/command"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app/query"
-	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/server/httperr"
 )
 
@@ -106,94 +105,4 @@ func (h HTTPServer) GenerateReport(echoCtx echo.Context, params GenerateReportPa
 
 	response := reportToResponse(*expenseRpt)
 	return echoCtx.JSON(http.StatusOK, response)
-}
-
-func reportToResponse(domainReport domain.ReportByDate) ExpenseReport {
-	dateCategoryReport := []DateCategoryReport{}
-	for _, categoryByDate := range domainReport.CategoryByDate {
-		someResponses := make([]CategoryReport, 0)
-		for _, category := range categoryByDate.SubCategories {
-			someResponses = append(someResponses, toResponse(*category))
-		}
-
-		dateCategoryReport = append(dateCategoryReport, DateCategoryReport{
-			Date:            categoryByDate.Date,
-			CategoryReports: someResponses,
-			Total:           totalToTotalResponse(categoryByDate.Total),
-		})
-	}
-
-	report := ExpenseReport{
-		DateReports: dateCategoryReport,
-		Total:       totalToTotalResponse(domainReport.Total),
-	}
-	return report
-}
-
-func totalToTotalResponse(d domain.Total) Total {
-	return Total{
-		Debug: d.SumDebug,
-		Sum:   d.Sum.String(),
-	}
-}
-
-func toResponse(d domain.CategoryExpenses) CategoryReport {
-	response := CategoryReport{
-		Category: categoryToResponse(d.Category),
-		Total:    totalToTotalResponse(d.Total),
-	}
-
-	es := []Expense{}
-
-	if d.Expenses != nil {
-		for _, e := range *d.Expenses {
-			es = append(es, expenseToResponse(e))
-		}
-		response.Expenses = &es
-	}
-
-	c := []CategoryReport{}
-	for _, s := range d.SubCategories {
-		c = append(c, toResponse(*s))
-	}
-
-	response.Children = &c
-
-	return response
-}
-
-func categoryToResponse(domainCategory domain.Category) Category {
-	// parents := []Category{}
-	// p := domainCategory.Parents()
-	// if p != nil {
-	// 	for _, parentCategory := range *p {
-	// 		parents = append(parents, categoryToResponse(parentCategory))
-	// 	}
-	// }
-
-	category := Category{
-		Id:    domainCategory.ID(),
-		Name:  domainCategory.Name(),
-		Icon:  domainCategory.Icon(),
-		Level: domainCategory.Level(),
-		// Parents: parents,
-	}
-	return category
-}
-
-func expenseToResponse(domainExpense domain.Expense) Expense {
-	category := categoryToResponse(domainExpense.Category())
-	expense := Expense{
-		Id: domainExpense.ID(),
-		NewExpense: NewExpense{
-			// CategoryId: domainExpense.CategoryID(),
-			Comment:  domainExpense.Comment(),
-			Currency: domainExpense.Currency(),
-			Date:     domainExpense.Date(),
-			Price:    domainExpense.Price(),
-			Quantity: domainExpense.Quantity(),
-		},
-		Category: category,
-	}
-	return expense
 }

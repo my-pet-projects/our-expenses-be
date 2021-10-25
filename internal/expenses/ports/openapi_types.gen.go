@@ -20,19 +20,19 @@ type Category struct {
 	Parents *[]Category `json:"parents,omitempty"`
 }
 
-// CategoryReport defines model for CategoryReport.
-type CategoryReport struct {
-	Category Category          `json:"category"`
-	Children *[]CategoryReport `json:"children,omitempty"`
-	Expenses *[]Expense        `json:"expenses,omitempty"`
-	Total    Total             `json:"total"`
+// CategoryExpenses defines model for CategoryExpenses.
+type CategoryExpenses struct {
+	Category      Category            `json:"category"`
+	Expenses      *[]Expense          `json:"expenses,omitempty"`
+	SubCategories *[]CategoryExpenses `json:"subCategories,omitempty"`
+	Total         Total               `json:"total"`
 }
 
 // DateCategoryReport defines model for DateCategoryReport.
 type DateCategoryReport struct {
-	CategoryReports []CategoryReport `json:"categoryReports"`
-	Date            time.Time        `json:"date"`
-	Total           Total            `json:"total"`
+	CategoryExpenses []CategoryExpenses `json:"categoryExpenses"`
+	Date             time.Time          `json:"date"`
+	Total            Total              `json:"total"`
 }
 
 // Error defines model for Error.
@@ -81,10 +81,13 @@ type NewExpenseResponse struct {
 
 // Total defines model for Total.
 type Total struct {
+	// Total currency
+	Currency string `json:"currency"`
+
 	// Property to debug sum
 	Debug string `json:"debug"`
 
-	// Sum amount
+	// Total sum amount
 	Sum string `json:"sum"`
 }
 

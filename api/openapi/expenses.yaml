@@ -142,19 +142,19 @@ components:
       type: object
       required:
         - date
-        - categoryReports
+        - categoryExpenses
         - total
       properties:
         date:
           type: string
           format: date-time
-        categoryReports:
+        categoryExpenses:
           type: array
           items:
-            $ref: '#/components/schemas/CategoryReport'
+            $ref: '#/components/schemas/CategoryExpenses'
         total:
           $ref: '#/components/schemas/Total'
-    CategoryReport:
+    CategoryExpenses:
       type: object
       required:
         - category
@@ -166,10 +166,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Expense'
-        children:
+        subCategories:
           type: array
           items:
-            $ref: '#/components/schemas/CategoryReport'
+            $ref: '#/components/schemas/CategoryExpenses'
         total:
           $ref: '#/components/schemas/Total'
     Category:
@@ -199,11 +199,15 @@ components:
       type: object
       required:
         - sum
+        - currency
         - debug
       properties:
         sum:
           type: string
-          description: Sum amount
+          description: Total sum amount
+        currency:
+          type: string
+          description: Total currency
         debug:
           type: string
           description: Property to debug sum 
