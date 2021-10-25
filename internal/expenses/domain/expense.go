@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -138,4 +139,13 @@ func (e Expense) UpdatedAt() *time.Time {
 // UpdatedBy returns expense updater.
 func (e Expense) UpdatedBy() *string {
 	return e.updatedBy
+}
+
+func (e Expense) CalculateTotal() Total {
+	totalPrice := e.price.Mul(e.quantity)
+	return Total{
+		Sum:      totalPrice,
+		Currency: e.currency,
+		SumDebug: fmt.Sprintf("%s:%s*%s=%s %s", e.category.name, e.price, e.quantity, totalPrice, e.currency),
+	}
 }

@@ -71,3 +71,8 @@ func (c Category) Parents() *[]Category {
 func (c *Category) SetParents(parents *[]Category) {
 	c.parents = parents
 }
+
+// IsRoot indicates if category has no parent and therefore is a root category.
+func (c Category) IsRoot() bool {
+	return c.parentId == nil || *c.parentId == ""
+}
