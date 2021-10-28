@@ -76,6 +76,7 @@ func (r ReportGenerator) buildCategoryFlatMap(expenses []Expense) map[string]*Ca
 			parentExpenses := &CategoryExpenses{
 				Category:      parentCategory,
 				SubCategories: make([]*CategoryExpenses, 0),
+				Expenses:      &[]Expense{},
 			}
 			categoryExpensesMap[parentCategory.id] = parentExpenses
 		}

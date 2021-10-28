@@ -65,13 +65,13 @@ func expenseToResponse(domainObj domain.Expense) Expense {
 	return Expense{
 		Id: domainObj.ID(),
 		NewExpense: NewExpense{
-			Comment:  domainObj.Comment(),
-			Currency: domainObj.Currency(),
-			Date:     domainObj.Date(),
-			Price:    domainObj.Price(),
-			Quantity: domainObj.Quantity(),
+			CategoryId: domainObj.Category().ID(),
+			Comment:    domainObj.Comment(),
+			Currency:   domainObj.Currency(),
+			Date:       domainObj.Date(),
+			Price:      domainObj.Price(),
+			Quantity:   domainObj.Quantity(),
 		},
-		Category: categoryToResponse(domainObj.Category()),
 	}
 }
 

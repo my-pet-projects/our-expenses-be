@@ -81,7 +81,6 @@ components:
         - $ref: '#/components/schemas/NewExpense'
         - required:
             - id
-            - category
           properties:
             id:
               type: string

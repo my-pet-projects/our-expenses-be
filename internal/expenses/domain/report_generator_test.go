@@ -97,7 +97,7 @@ func TestGenerateByDateReport(t *testing.T) {
 				expectedTotal := expense1Total.Add(expense2Total).Add(expense3Total).Add(expense4Total)
 				assert.Equal(t, category1, &catLevel1.Category)
 				assert.True(t, expectedTotal.Equal(catLevel1.Total))
-				assert.Nil(t, catLevel1.Expenses)
+				assert.Equal(t, &[]domain.Expense{}, catLevel1.Expenses)
 				assert.Len(t, catLevel1.SubCategories, 2)
 
 				for _, catLevel2 := range catLevel1.SubCategories {
@@ -105,7 +105,7 @@ func TestGenerateByDateReport(t *testing.T) {
 						expectedTotal := expense1Total.Add(expense2Total).Add(expense3Total)
 						assert.Equal(t, category11, &catLevel2.Category)
 						assert.True(t, expectedTotal.Equal(catLevel2.Total))
-						assert.Nil(t, catLevel2.Expenses)
+						assert.Equal(t, &[]domain.Expense{}, catLevel2.Expenses)
 						assert.Len(t, catLevel2.SubCategories, 2)
 
 						for _, catLevel3 := range catLevel2.SubCategories {
@@ -145,7 +145,7 @@ func TestGenerateByDateReport(t *testing.T) {
 				expectedTotal := expense5Total
 				assert.Equal(t, category2, &catLevel1.Category)
 				assert.True(t, expectedTotal.Equal(catLevel1.Total))
-				assert.Nil(t, catLevel1.Expenses)
+				assert.Equal(t, &[]domain.Expense{}, catLevel1.Expenses)
 				assert.Len(t, catLevel1.SubCategories, 1)
 
 				for _, catLevel2 := range catLevel1.SubCategories {

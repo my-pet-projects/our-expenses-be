@@ -49,7 +49,7 @@ type Expense struct {
 	// Embedded struct due to allOf(#/components/schemas/NewExpense)
 	NewExpense `yaml:",inline"`
 	// Embedded fields due to inline allOf schema
-	Category Category `json:"category"`
+	Category *Category `json:"category,omitempty"`
 
 	// Unique id of the expense
 	Id string `json:"id"`

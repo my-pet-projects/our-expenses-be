@@ -158,7 +158,7 @@ func (r ReportRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain
 
 func (r ReportRepository) unmarshalCategory(categoryModel categoryDbModel) (*domain.Category, error) {
 	var parentId string
-	if !categoryModel.ParentID.IsZero() {
+	if categoryModel.ParentID != nil && !categoryModel.ParentID.IsZero() {
 		parentId = categoryModel.ParentID.Hex()
 	}
 	cat, catErr := domain.NewCategory(categoryModel.ID.Hex(), &parentId,
