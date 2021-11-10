@@ -15,10 +15,11 @@ import (
 
 var findExpensesTracer trace.Tracer
 
-// FindExpensesQuery defines a expense query.
+// FindExpensesQuery defines an expense query.
 type FindExpensesQuery struct {
-	From time.Time
-	To   time.Time
+	From     time.Time
+	To       time.Time
+	Interval string
 }
 
 // FindExpensesHandler defines a handler to fetch expenses.
@@ -52,16 +53,17 @@ func (h FindExpensesHandler) Handle(
 	ctx, span := findExpensesTracer.Start(ctx, "execute find expenses query")
 	defer span.End()
 
-	filter := domain.ExpenseFilter{
-		From: query.From,
-		To:   query.To,
+	filter, filterErr := domain.NewExpenseFilter(query.From, query.To, query.Interval)
+	if filterErr != nil {
+		return nil, errors.Wrap(filterErr, "prepare filter")
 	}
-	expenses, expensesErr := h.repo.GetAll(ctx, filter)
+
+	expenses, expensesErr := h.repo.GetAll(ctx, *filter)
 	if expensesErr != nil {
 		return nil, errors.Wrap(expensesErr, "fetch expenses")
 	}
 
-	reportGenerator := domain.NewReportGenerator(expenses)
+	reportGenerator := domain.NewReportGenerator(expenses, *filter)
 	report := reportGenerator.GenerateByDateReport()
 
 	return &report, nil

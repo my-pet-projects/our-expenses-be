@@ -51,8 +51,8 @@ func (r *ReportRepository) GetAll(ctx context.Context, filter domain.ExpenseFilt
 	matchStage := bson.M{
 		"$match": bson.M{
 			"date": bson.M{
-				"$gte": filter.From,
-				"$lte": filter.To,
+				"$gte": filter.From(),
+				"$lte": filter.To(),
 			},
 		},
 	}

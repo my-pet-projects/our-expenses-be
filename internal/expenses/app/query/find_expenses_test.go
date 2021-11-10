@@ -26,6 +26,32 @@ func TestNewFindExpensesHandler_ReturnsHandler(t *testing.T) {
 	assert.NotNil(t, err, "Error result should not be nil.")
 }
 
+func TestFindExpensesHandle_FilterError_ThrowsError(t *testing.T) {
+	// Arrange
+	repo := new(mocks.ReportRepoInterface)
+	log := new(mocks.LogInterface)
+	ctx := context.Background()
+	from := time.Date(2021, time.July, 3, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2021, time.August, 3, 0, 0, 0, 0, time.UTC)
+	interval := "unknown"
+	findQuery := query.FindExpensesQuery{
+		From:     from,
+		To:       to,
+		Interval: interval,
+	}
+
+	// SUT
+	sut := query.NewFindExpensesHandler(repo, log)
+
+	// Act
+	query, err := sut.Handle(ctx, findQuery)
+
+	// Assert
+	repo.AssertExpectations(t)
+	assert.Nil(t, query, "Result should be nil.")
+	assert.NotNil(t, err, "Error result should not be nil.")
+}
+
 func TestFindExpensesHandle_RepoError_ThrowsError(t *testing.T) {
 	// Arrange
 	repo := new(mocks.ReportRepoInterface)
@@ -33,14 +59,17 @@ func TestFindExpensesHandle_RepoError_ThrowsError(t *testing.T) {
 	ctx := context.Background()
 	from := time.Date(2021, time.July, 3, 0, 0, 0, 0, time.UTC)
 	to := time.Date(2021, time.August, 3, 0, 0, 0, 0, time.UTC)
+	interval := "month"
 	findQuery := query.FindExpensesQuery{
-		From: from,
-		To:   to,
+		From:     from,
+		To:       to,
+		Interval: interval,
 	}
 
 	matchFilterFn := func(filter domain.ExpenseFilter) bool {
-		return filter.To == to &&
-			filter.From == from
+		return filter.To() == to &&
+			filter.From() == from &&
+			string(filter.Interval()) == interval
 	}
 	repo.On("GetAll", mock.Anything,
 		mock.MatchedBy(matchFilterFn)).Return(nil, errors.New("error"))
@@ -64,15 +93,18 @@ func TestFindExpensesHandle_RepoSuccess_ReturnsExpenses(t *testing.T) {
 	ctx := context.Background()
 	from := time.Date(2021, time.July, 3, 0, 0, 0, 0, time.UTC)
 	to := time.Date(2021, time.August, 3, 0, 0, 0, 0, time.UTC)
+	interval := "month"
 	findQuery := query.FindExpensesQuery{
-		From: from,
-		To:   to,
+		From:     from,
+		To:       to,
+		Interval: interval,
 	}
 	expenses := []domain.Expense{}
 
 	matchFilterFn := func(filter domain.ExpenseFilter) bool {
-		return filter.To == to &&
-			filter.From == from
+		return filter.To() == to &&
+			filter.From() == from &&
+			string(filter.Interval()) == interval
 	}
 	repo.On("GetAll", mock.Anything,
 		mock.MatchedBy(matchFilterFn)).Return(expenses, nil)

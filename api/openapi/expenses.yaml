@@ -56,6 +56,12 @@ paths:
           schema:
             type: string
             format: date-time
+        - name: interval
+          in: query
+          description: results interval
+          required: true
+          schema:
+            $ref: '#/components/schemas/Interval'
       responses:
         '200':
           description: Expense report response
@@ -76,6 +82,12 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    Interval:
+      type: string
+      enum: 
+        - day
+        - month
+        - year
     Expense:
       allOf:
         - $ref: '#/components/schemas/NewExpense'

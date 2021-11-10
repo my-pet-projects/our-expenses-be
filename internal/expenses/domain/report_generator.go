@@ -7,19 +7,21 @@ import (
 // ReportGenerator represents expense report generator.
 type ReportGenerator struct {
 	expenses []Expense
+	filter   ExpenseFilter
 }
 
 // NewReportGenerator instantiates a new report.
-func NewReportGenerator(expenses []Expense) ReportGenerator {
+func NewReportGenerator(expenses []Expense, filter ExpenseFilter) ReportGenerator {
 	return ReportGenerator{
 		expenses: expenses,
+		filter:   filter,
 	}
 }
 
 // GenerateByDateReport generates report.
 func (r ReportGenerator) GenerateByDateReport() ReportByDate {
 	dateCategoryExpenses := make([]*DateExpenses, 0)
-	dateExpensesMap := r.prepareDateExpensesMap(r.expenses)
+	dateExpensesMap := r.prepareDateExpensesMap(r.expenses, r.filter.Interval())
 	for date, expenses := range dateExpensesMap {
 		categoryExpensesMap := r.buildCategoryFlatMap(expenses)
 		rootCategoryExpense := r.buildCategoryHierarchy(categoryExpensesMap)
@@ -39,15 +41,21 @@ func (r ReportGenerator) GenerateByDateReport() ReportByDate {
 	return report
 }
 
-func (r ReportGenerator) prepareDateExpensesMap(expenses []Expense) map[time.Time][]Expense {
+func (r ReportGenerator) prepareDateExpensesMap(expenses []Expense, interval Interval) map[time.Time][]Expense {
 	dateExpensesMap := make(map[time.Time][]Expense)
 	for _, expense := range expenses {
-		dateExpenses := dateExpensesMap[expense.date]
+		date := expense.date
+		if interval == IntervalMonth {
+			date = time.Date(expense.date.Year(), expense.date.Month(), 1, 0, 0, 0, 0, time.Local)
+		} else if interval == IntervalYear {
+			date = time.Date(expense.date.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+		}
+		dateExpenses := dateExpensesMap[date]
 		if dateExpenses == nil {
 			dateExpenses = make([]Expense, 0)
 		}
 		dateExpenses = append(dateExpenses, expense)
-		dateExpensesMap[expense.date] = dateExpenses
+		dateExpensesMap[date] = dateExpenses
 	}
 	return dateExpensesMap
 }

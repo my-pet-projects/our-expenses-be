@@ -3,8 +3,8 @@ module dev.azure.com/filimonovga/our-expenses/our-expenses-server
 go 1.16
 
 require (
-	github.com/deepmap/oapi-codegen v1.8.3
-	github.com/getkin/kin-openapi v0.78.0
+	github.com/deepmap/oapi-codegen v1.9.0
+	github.com/getkin/kin-openapi v0.80.0
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo/v4 v4.6.1

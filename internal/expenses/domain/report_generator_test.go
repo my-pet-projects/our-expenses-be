@@ -72,8 +72,13 @@ func TestGenerateByDateReport(t *testing.T) {
 
 	expenses := []domain.Expense{*expense1, *expense2, *expense3, *expense4, *expense5, *expense6}
 
+	from := time.Date(2021, time.July, 3, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2021, time.August, 3, 0, 0, 0, 0, time.UTC)
+	interval := "day"
+	filter, _ := domain.NewExpenseFilter(from, to, interval)
+
 	// SUT
-	sut := domain.NewReportGenerator(expenses)
+	sut := domain.NewReportGenerator(expenses, *filter)
 
 	// Act
 	result := sut.GenerateByDateReport()
