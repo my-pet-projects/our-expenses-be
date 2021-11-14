@@ -23,12 +23,11 @@ func InternalError(err error) ErrResponse {
 }
 
 // BadRequest prepares bad request error.
-func BadRequest(err error) ErrResponse {
+func BadRequest(message string) ErrResponse {
 	return ErrResponse{
-		Err:            err,
 		HTTPStatusCode: http.StatusBadRequest,
 		StatusText:     "Bad request",
-		ErrorText:      err.Error(),
+		ErrorText:      message,
 	}
 }
 

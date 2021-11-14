@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/auth"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 )
@@ -51,6 +52,18 @@ func NewServer(logger logger.LogInterface, config config.Server, registerHandler
 }
 
 func registerMiddleware(config config.Server, e *echo.Echo) {
+	crypto := auth.NewAppCrypto(config.Security)
+	e.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		Skipper: func(e echo.Context) bool {
+			return strings.Contains(e.Path(), "login")
+		},
+		ContextKey:  "user",
+		TokenLookup: "header:" + echo.HeaderAuthorization,
+		AuthScheme:  "Bearer",
+		ParseTokenFunc: func(auth string, c echo.Context) (interface{}, error) {
+			return crypto.ValidateToken(auth)
+		},
+	}))
 	e.Use(otelecho.Middleware(config.Name))
 	// TODO: read CORS settings from the config
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

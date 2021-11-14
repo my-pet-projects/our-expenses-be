@@ -10,11 +10,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var configPath = os.Getenv("CONFIG_PATH")
+// nolint:gochecknoglobals
 var readFileFn = ioutil.ReadFile
 
 // NewConfig provides application configuration based on yaml config file.
 func NewConfig() (*Config, error) {
+	configPath := os.Getenv("CONFIG_PATH")
 	bytes, err := readFileFn(configPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "read config file")

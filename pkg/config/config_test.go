@@ -8,6 +8,7 @@ import (
 )
 
 func TestNewConfig_InvalidFilePath_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	origReadFileFn := readFileFn
 	defer func() { readFileFn = origReadFileFn }()
@@ -24,6 +25,7 @@ func TestNewConfig_InvalidFilePath_ThrowsError(t *testing.T) {
 }
 
 func TestNewConfig_InvalidYamlFormat_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	invalidYaml := "invalid yaml file content"
 
@@ -42,6 +44,7 @@ func TestNewConfig_InvalidYamlFormat_ThrowsError(t *testing.T) {
 }
 
 func TestNewConfig_ValidYamlStructure_ReturnsConfigStruct(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	validYaml := `
     application:
@@ -64,6 +67,7 @@ func TestNewConfig_ValidYamlStructure_ReturnsConfigStruct(t *testing.T) {
 }
 
 func TestValidate_InvalidConfig_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	cfg := new(Config)
 
@@ -75,6 +79,7 @@ func TestValidate_InvalidConfig_ThrowsError(t *testing.T) {
 }
 
 func TestValidate_ValidConfig_DoesNotThrowError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	cfg := &Config{
 		Server: Server{
@@ -86,6 +91,13 @@ func TestValidate_ValidConfig_DoesNotThrowError(t *testing.T) {
 				Write:    10,
 				Read:     10,
 				Idle:     10,
+			},
+			Security: Security{
+				Jwt: Jwt{
+					SecretKey:              "key",
+					TokenExpiration:        10,
+					RefreshTokenExpiration: 100,
+				},
 			},
 		},
 		Logger: Logger{

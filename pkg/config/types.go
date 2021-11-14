@@ -10,10 +10,11 @@ type Config struct {
 
 // Server holds data necessary for server configuration.
 type Server struct {
-	Name    string  `yaml:"name" validate:"required"`
-	Host    string  `yaml:"host" validate:"required,gt=0"`
-	Port    int     `yaml:"port" validate:"required,gt=0"`
-	Timeout Timeout `yaml:"timeout" validate:"required"`
+	Name     string   `yaml:"name" validate:"required"`
+	Host     string   `yaml:"host" validate:"required,gt=0"`
+	Port     int      `yaml:"port" validate:"required,gt=0"`
+	Timeout  Timeout  `yaml:"timeout" validate:"required"`
+	Security Security `yaml:"security" validate:"required"`
 }
 
 // Timeout holds server timeout settings.
@@ -62,4 +63,16 @@ type Telemetry struct {
 	ServiceName string `yaml:"name" validate:"required"`
 	Level       string `yaml:"level" validate:"required"`
 	AccessToken string `yaml:"token" validate:"required"`
+}
+
+// Security holds security specific configuration.
+type Security struct {
+	Jwt Jwt `yaml:"jwt" validate:"required"`
+}
+
+// Jwt holds jwt specific configuration.
+type Jwt struct {
+	SecretKey              string `yaml:"secretKey" validate:"required"`
+	TokenExpiration        int    `yaml:"tokenExpiration" validate:"required"`
+	RefreshTokenExpiration int    `yaml:"refreshTokenExpiration" validate:"required"`
 }
