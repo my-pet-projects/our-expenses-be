@@ -13,6 +13,8 @@ import (
 	categoriesPorts "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/ports"
 	expensesApp "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app"
 	expensesPorts "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/ports"
+	usersApp "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/users/app"
+	usersPorts "dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/users/ports"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
@@ -37,6 +39,7 @@ func main() {
 		os.Exit(1)
 	}
 	appTracer := tracer.NewTracer(appConfig.Telemetry)
+	defer appTracer.Shutdown()
 
 	appLogger.Info(ctx, "Application starting ...")
 
@@ -60,6 +63,11 @@ func main() {
 		appLogger.Errorf(ctx, "Failed to instantiate Expenses application: %v", expensesAppErr)
 		os.Exit(1)
 	}
+	usersApp, usersAppErr := usersApp.NewApplication(ctx, cancel, appConfig, appLogger, appTracer, mongoClient)
+	if usersAppErr != nil {
+		appLogger.Errorf(ctx, "Failed to instantiate Users application: %v", usersAppErr)
+		os.Exit(1)
+	}
 
 	signChan := make(chan os.Signal, 1)
 	signal.Notify(signChan, os.Interrupt, syscall.SIGTERM)
@@ -74,6 +82,7 @@ func main() {
 		func(router *echo.Echo) {
 			categoriesPorts.RegisterHandlersWithBaseURL(router, categoriesPorts.NewHTTPServer(categoriesApp), "api")
 			expensesPorts.RegisterHandlersWithBaseURL(router, expensesPorts.NewHTTPServer(expensesApp), "api")
+			usersPorts.RegisterHandlersWithBaseURL(router, usersPorts.NewHTTPServer(usersApp), "api")
 		})
 	if err := server.Start(ctx); err != nil {
 		categoriesApp.Logger.Error(ctx, "Failed to start HTTP server", err)

@@ -22,6 +22,10 @@ openapi:
 	oapi-codegen -generate server -o internal/expenses/ports/openapi_api.gen.go -package ports api/openapi/expenses.yaml
 	oapi-codegen -generate spec -o internal/expenses/ports/openapi_spec.gen.go -package ports api/openapi/expenses.yaml
 
+	oapi-codegen -generate types -o internal/users/ports/openapi_types.gen.go -package ports api/openapi/users.yaml
+	oapi-codegen -generate server -o internal/users/ports/openapi_api.gen.go -package ports api/openapi/users.yaml
+	oapi-codegen -generate spec -o internal/users/ports/openapi_spec.gen.go -package ports api/openapi/users.yaml
+	
 mocks:
 	mockery --all --output testing/mocks  
 
