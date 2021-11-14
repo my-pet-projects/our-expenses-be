@@ -23,12 +23,13 @@ func NewTracer(config config.Telemetry) *Tracer {
 		launcher.WithAccessToken(config.AccessToken),
 		launcher.WithLogLevel(config.Level),
 	)
+
 	return &Tracer{
 		launcher: launcher,
 	}
 }
 
-// Shutdown shutsdown tracer.
+// Shutdown shutsdowns the tracer.
 func (t Tracer) Shutdown() {
 	t.launcher.Shutdown()
 }
