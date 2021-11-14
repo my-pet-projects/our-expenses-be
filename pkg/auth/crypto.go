@@ -76,17 +76,19 @@ func (c AppCrypto) GenerateTokens(id string, user string) (signedToken string, s
 
 // ValidateToken validates the JWT token.
 func (c AppCrypto) ValidateToken(signedToken string) (*SignedDetails, error) {
-	token, tokenErr := jwt.ParseWithClaims(
-		signedToken,
-		&SignedDetails{},
-		func(token *jwt.Token) (interface{}, error) {
-			return []byte(c.config.Jwt.SecretKey), nil
-		},
-	)
+	keyFunc := func(token *jwt.Token) (interface{}, error) {
+		return []byte(c.config.Jwt.SecretKey), nil
+	}
 
+	token, tokenErr := jwt.ParseWithClaims(signedToken, &SignedDetails{}, keyFunc)
 	if tokenErr != nil {
 		return nil, errors.Wrap(tokenErr, "invalid token")
 	}
 
-	return token.Claims.(*SignedDetails), nil
+	payload, ok := token.Claims.(*SignedDetails)
+	if !ok {
+		return nil, errors.New("invalid token")
+	}
+
+	return payload, nil
 }
