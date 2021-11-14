@@ -7,6 +7,11 @@ server:
     read: 15
     write: 10
     idle: 5
+  security:
+    jwt:
+      secretKey: "#{jwt-key}#"
+      tokenExpiration: 24
+      refreshTokenExpiration: 168
 
 logger:
   name: our-expenses
