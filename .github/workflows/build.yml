@@ -10,13 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      BRANCH: ${GITHUB_REF##*/}
+      SHORT_SHA: ${GITHUB_SHA::12}
       SERVICE_NAME: our-expenses-be
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Set environment variables
+        run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
 
       - name: Configure GCloud in Github Actions environment
         uses: google-github-actions/setup-gcloud@master
@@ -30,9 +33,9 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t "eu.gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME:$(git rev-parse --short=4 "$GITHUB_SHA")" \
+          docker build -t "eu.gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME:$SHORT_SHA" \
             --build-arg GITHUB_SHA="$GITHUB_SHA" \
             --build-arg GITHUB_REF="$GITHUB_REF" .
 
       - name: Push image
-        run: docker push eu.gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
+        run: docker push eu.gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME:$SHORT_SHA
