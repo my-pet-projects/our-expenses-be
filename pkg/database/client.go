@@ -56,13 +56,13 @@ func NewMongoClient(log logger.LogInterface, config config.Database) (*MongoClie
 func (c MongoClient) OpenConnection(ctx context.Context, cancel context.CancelFunc) error {
 	c.logger.Info(ctx, "Initializing MongoDB connection ...")
 
-	connectCtx, connectCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	connectCtx, connectCancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer connectCancel()
 	if connectErr := c.client.Connect(connectCtx); connectErr != nil {
 		return errors.Wrap(connectErr, "connection failed")
 	}
 
-	pingCtx, pingCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	pingCtx, pingCancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer pingCancel()
 	if pingErr := c.client.Ping(pingCtx, readpref.Primary()); pingErr != nil {
 		return errors.Wrap(pingErr, "cluster ping")
