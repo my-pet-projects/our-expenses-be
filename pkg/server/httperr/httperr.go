@@ -40,3 +40,12 @@ func NotFoundRequest(err error) ErrResponse {
 		ErrorText:      err.Error(),
 	}
 }
+
+// Unauthorized prepares unauthorized server error.
+func Unauthorized(message string) ErrResponse {
+	return ErrResponse{
+		HTTPStatusCode: http.StatusUnauthorized,
+		StatusText:     "Unauthorized",
+		ErrorText:      message,
+	}
+}

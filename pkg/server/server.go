@@ -52,7 +52,12 @@ func NewServer(logger logger.LogInterface, config config.Server, registerHandler
 }
 
 func registerMiddleware(config config.Server, e *echo.Echo) {
-	crypto := auth.NewAppCrypto(config.Security)
+	crypto := auth.NewAppCrypto(config.Security) // TODO: read CORS settings from the config
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPost, http.MethodPut, http.MethodDelete},
+	}))
 	e.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 		Skipper: func(e echo.Context) bool {
 			return strings.Contains(e.Path(), "login")
@@ -65,12 +70,7 @@ func registerMiddleware(config config.Server, e *echo.Echo) {
 		},
 	}))
 	e.Use(otelecho.Middleware(config.Name))
-	// TODO: read CORS settings from the config
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
-		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPost, http.MethodPut, http.MethodDelete},
-	}))
+
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Skipper: func(e echo.Context) bool {
 			return strings.Contains(e.Path(), "health")

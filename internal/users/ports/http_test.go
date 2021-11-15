@@ -111,6 +111,7 @@ func TestSignUp_CommandFails_Returns500(t *testing.T) {
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
 
+// nolint:dupl
 func TestSignUp_HappyPath_Returns200(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -238,6 +239,50 @@ func TestLogin_CommandFails_Returns500(t *testing.T) {
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
 
+func TestLogin_CommandFailsWithWrongPassword_Returns401(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	loginHandler := new(mocks.LoginHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			Login: loginHandler,
+		},
+		Queries: app.Queries{},
+		Logger:  logger,
+	}
+	username := "user3"
+	password := "pass3"
+	credentialsJSON := fmt.Sprintf(`{"username":"%s","password":"%s"}`, username, password)
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+
+	matchCredFn := func(cmd command.LoginCommand) bool {
+		return cmd.Username == username && cmd.Password == password
+	}
+	loginHandler.On("Handle", mock.Anything, mock.MatchedBy(matchCredFn)).Return(nil, domain.ErrWrongPassword)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/users", strings.NewReader(credentialsJSON))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.Login(ctx)
+
+	// Assert
+	logger.AssertExpectations(t)
+	loginHandler.AssertExpectations(t)
+	assert.Equal(t, http.StatusUnauthorized, response.Code, "HTTP status should be 401.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+// nolint:dupl
 func TestLogin_HappyPath_Returns200(t *testing.T) {
 	t.Parallel()
 	// Arrange

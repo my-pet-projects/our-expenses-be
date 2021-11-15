@@ -55,13 +55,13 @@ func (h LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (*domain.Use
 	}
 
 	if user == nil {
-		return nil, errors.New("user not found")
+		return nil, domain.ErrUserNotFound
 	}
 
 	validPassErr := h.crypto.VerifyPassword(user.Password(), cmd.Password)
 	if validPassErr != nil {
 		tracer.AddSpanError(span, validPassErr)
-		return nil, errors.New("password or user is incorrect")
+		return nil, domain.ErrWrongPassword
 	}
 
 	token, refreshToken, tokenErr := h.crypto.GenerateTokens(user.ID(), user.Username())

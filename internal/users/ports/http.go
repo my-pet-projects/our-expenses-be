@@ -1,12 +1,14 @@
 package ports
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/users/app"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/users/app/command"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/users/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/server/httperr"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
@@ -34,7 +36,8 @@ func (h HTTPServer) Signup(echoCtx echo.Context) error {
 	if bindErr != nil {
 		tracer.AddSpanError(span, bindErr)
 		h.app.Logger.Error(ctx, "Invalid user credentials format", bindErr)
-		return echoCtx.JSON(http.StatusBadRequest, httperr.BadRequest("Credentials has invalid format"))
+		return echoCtx.JSON(http.StatusBadRequest,
+			httperr.BadRequest("Credentials has invalid format"))
 	}
 
 	cmdArgs := command.SignUpCommand{
@@ -46,7 +49,8 @@ func (h HTTPServer) Signup(echoCtx echo.Context) error {
 	if userErr != nil {
 		tracer.AddSpanError(span, userErr)
 		h.app.Logger.Error(ctx, "Failed to sign-up a user", userErr)
-		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(userErr))
+		return echoCtx.JSON(http.StatusInternalServerError,
+			httperr.InternalError(userErr))
 	}
 
 	return echoCtx.JSON(http.StatusOK, userToResponse(user))
@@ -63,7 +67,8 @@ func (h HTTPServer) Login(echoCtx echo.Context) error {
 	if bindErr != nil {
 		tracer.AddSpanError(span, bindErr)
 		h.app.Logger.Error(ctx, "Invalid user credentials format", bindErr)
-		return echoCtx.JSON(http.StatusBadRequest, httperr.BadRequest("Credentials has invalid format"))
+		return echoCtx.JSON(http.StatusBadRequest,
+			httperr.BadRequest("Credentials has invalid format"))
 	}
 
 	cmdArgs := command.LoginCommand{
@@ -73,8 +78,13 @@ func (h HTTPServer) Login(echoCtx echo.Context) error {
 
 	user, userErr := h.app.Commands.Login.Handle(ctx, cmdArgs)
 	if userErr != nil {
+		if errors.Is(userErr, domain.ErrWrongPassword) {
+			return echoCtx.JSON(http.StatusUnauthorized,
+				httperr.Unauthorized("Wrong user or password"))
+		}
 		h.app.Logger.Error(ctx, "Failed to login", userErr)
-		return echoCtx.JSON(http.StatusInternalServerError, httperr.InternalError(userErr))
+		return echoCtx.JSON(http.StatusInternalServerError,
+			httperr.InternalError(userErr))
 	}
 
 	return echoCtx.JSON(http.StatusOK, userToResponse(user))
