@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      HASH: $(git rev-parse --short "$GITHUB_SHA")
       BRANCH: ${GITHUB_REF##*/}
       SERVICE_NAME: our-expenses-be
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -31,7 +30,7 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t "eu.gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME:$HASH" \
+          docker build -t "eu.gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME:$(git rev-parse --short=4 "$GITHUB_SHA")" \
             --build-arg GITHUB_SHA="$GITHUB_SHA" \
             --build-arg GITHUB_REF="$GITHUB_REF" .
 
