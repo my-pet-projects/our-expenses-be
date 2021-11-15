@@ -1,10 +1,8 @@
-SERVICE_ENV_VARIABLES=CONFIG_PATH=./config/config.yaml
-
 default: run-server
 
 run-server: build
 	@echo "\nService is starting ...\n"
-	$(SERVICE_ENV_VARIABLES) ./build/our-expenses-server 2> ./build/our-expenses-server.log
+	./build/our-expenses-server
 
 .PHONY: build
 build:

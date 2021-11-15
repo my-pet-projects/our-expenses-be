@@ -4,6 +4,7 @@ package config
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
@@ -11,12 +12,17 @@ import (
 )
 
 // nolint:gochecknoglobals
-var readFileFn = ioutil.ReadFile
+var (
+	readFileFn = ioutil.ReadFile
+	getwdFn    = os.Getwd
+)
+
+const configPath = "config/config.yaml"
 
 // NewConfig provides application configuration based on yaml config file.
 func NewConfig() (*Config, error) {
-	configPath := os.Getenv("CONFIG_PATH")
-	bytes, err := readFileFn(configPath)
+	workingDir, _ := getwdFn()
+	bytes, err := readFileFn(filepath.Join(workingDir, configPath))
 	if err != nil {
 		return nil, errors.Wrap(err, "read config file")
 	}
