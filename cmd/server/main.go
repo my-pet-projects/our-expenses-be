@@ -45,27 +45,27 @@ func main() {
 
 	mongoClient, mongoClientErr := database.NewMongoClient(appLogger, appConfig.Database)
 	if mongoClientErr != nil {
-		appLogger.Errorf(ctx, "Failed to create MongoDB client: %v", mongoClientErr)
+		appLogger.Error(ctx, "Failed to create MongoDB client!", mongoClientErr)
 		os.Exit(1)
 	}
 	if mongoConErr := mongoClient.OpenConnection(ctx, cancel); mongoConErr != nil {
-		appLogger.Errorf(ctx, "Failed to open MongoDB connection: %v", mongoConErr)
+		appLogger.Error(ctx, "Failed to open MongoDB connection!", mongoConErr)
 		os.Exit(1)
 	}
 
 	categoriesApp, categoriesAppErr := categoriesApp.NewApplication(ctx, cancel, appConfig, appLogger, appTracer, mongoClient)
 	if categoriesAppErr != nil {
-		appLogger.Errorf(ctx, "Failed to instantiate Categories application: %v", categoriesAppErr)
+		appLogger.Error(ctx, "Failed to instantiate Categories application!", categoriesAppErr)
 		os.Exit(1)
 	}
 	expensesApp, expensesAppErr := expensesApp.NewApplication(ctx, cancel, appConfig, appLogger, appTracer, mongoClient)
 	if expensesAppErr != nil {
-		appLogger.Errorf(ctx, "Failed to instantiate Expenses application: %v", expensesAppErr)
+		appLogger.Error(ctx, "Failed to instantiate Expenses application!", expensesAppErr)
 		os.Exit(1)
 	}
 	usersApp, usersAppErr := usersApp.NewApplication(ctx, cancel, appConfig, appLogger, appTracer, mongoClient)
 	if usersAppErr != nil {
-		appLogger.Errorf(ctx, "Failed to instantiate Users application: %v", usersAppErr)
+		appLogger.Error(ctx, "Failed to instantiate Users application!", usersAppErr)
 		os.Exit(1)
 	}
 
