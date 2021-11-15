@@ -21,6 +21,17 @@ jobs:
       - name: Set environment variables
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
 
+      - uses: microsoft/variable-substitution@v1
+        with:
+          files: "config/config.yaml"
+        env:
+          logger.jsonFormat: true
+          server.security.jwt.secretKey: ${{ secrets.JWT_SECRET_KEY }}
+          database.mongo.uri: ${{ secrets.MONGO_URI }}
+          database.mongo.user: ${{ secrets.MONGO_USER }}
+          database.mongo.pass: ${{ secrets.MONGO_PASSWORD }}
+          database.mongo.database: ${{ secrets.MONGO_DATABASE }}
+
       - name: Configure GCloud in Github Actions environment
         uses: google-github-actions/setup-gcloud@master
         with:
@@ -42,6 +53,6 @@ jobs:
 
       - name: Deploy Docker image
         run: |
-          gcloud run deploy ${{ secrets.GCP_PROJECT_ID }} --image $IMAGE_NAME:$SHORT_SHA \
-                                                          --region europe-west1 \
-                                                          --platform managed
+          gcloud run deploy $SERVICE_NAME --image $IMAGE_NAME:$SHORT_SHA \
+                                          --region europe-west1 \
+                                          --platform managed
