@@ -1,0 +1,39 @@
+name: Build and Push image
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build image
+    runs-on: ubuntu-latest
+
+    env:
+      HASH: $(git rev-parse --short "$GITHUB_SHA")
+      BRANCH: ${GITHUB_REF##*/}
+      SERVICE_NAME: our-expenses-be
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure GCloud in Github Actions environment
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          export_default_credentials: true
+
+      - name: Configure Docker to use GCloud CLI
+        run: gcloud auth configure-docker -q
+
+      - name: Build image
+        run: |
+          docker build -t "eu.gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME:$HASH" \
+            --build-arg GITHUB_SHA="$GITHUB_SHA" \
+            --build-arg GITHUB_REF="$GITHUB_REF" .
+
+      - name: Push image
+        run: docker push eu.gcr.io/$GCP_PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
