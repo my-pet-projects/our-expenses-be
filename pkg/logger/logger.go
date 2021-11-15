@@ -42,9 +42,12 @@ type LogInterface interface {
 // FieldsSet is a struct that describes log entry fields.
 type FieldsSet map[string]interface{}
 
-var logEntry *logrus.Entry
-var openFileFn = os.OpenFile
-var runtimeCallerFn = runtime.Caller
+// nolint:gochecknoglobals
+var (
+	logEntry        *logrus.Entry
+	openFileFn      = os.OpenFile
+	runtimeCallerFn = runtime.Caller
+)
 
 // NewLogger returns a new initialized logger with the level, formatter, and output set.
 func NewLogger(config config.Logger) (*Logger, error) {
@@ -125,23 +128,23 @@ func (logger *Logger) WarnWithFields(ctx context.Context, msg string, fields Fie
 	log(ctx, logrus.WarnLevel, msg, nil, fields)
 }
 
-// Error logs a message at level Info.
+// Error logs a message at level Error.
 func (logger *Logger) Error(ctx context.Context, msg string, err error) {
 	log(ctx, logrus.ErrorLevel, msg, err, nil)
 }
 
-// Errorf logs a formatted message at level Info.
+// Errorf logs a formatted message at level Error.
 func (logger *Logger) Errorf(ctx context.Context, format string, err error, args ...interface{}) {
 	log(ctx, logrus.ErrorLevel, fmt.Sprintf(format, args...), err, nil)
 }
 
-// ErrorfWithFields logs a formatted message with additional fields at level Info.
+// ErrorfWithFields logs a formatted message with additional fields at level Error.
 func (logger *Logger) ErrorfWithFields(ctx context.Context, format string, err error,
 	fields FieldsSet, args ...interface{}) {
 	log(ctx, logrus.ErrorLevel, fmt.Sprintf(format, args...), nil, fields)
 }
 
-// ErrorWithFields logs a message with additional fields at level Info.
+// ErrorWithFields logs a message with additional fields at level Error.
 func (logger *Logger) ErrorWithFields(ctx context.Context, msg string, err error, fields FieldsSet) {
 	log(ctx, logrus.ErrorLevel, msg, err, fields)
 }

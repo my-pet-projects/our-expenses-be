@@ -14,6 +14,7 @@ import (
 )
 
 func TestNewLogger_InvalidLogLevel_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	cfg := config.Logger{
 		Level: "invalid",
@@ -28,6 +29,7 @@ func TestNewLogger_InvalidLogLevel_ThrowsError(t *testing.T) {
 }
 
 func TestNewLogger_InvalidWriters_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	cfg := config.Logger{
 		Level: "DEBUG",
@@ -45,14 +47,15 @@ func TestNewLogger_InvalidWriters_ThrowsError(t *testing.T) {
 	}
 
 	// Act
-	result, error := NewLogger(cfg)
+	result, err := NewLogger(cfg)
 
 	// Assert
 	assert.Nil(t, result, "Result should be nil.")
-	assert.NotNil(t, error, "Error should not be nil.")
+	assert.NotNil(t, err, "Error should not be nil.")
 }
 
 func TestNewLogger_ReturnsLogger(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	cfg := config.Logger{
 		Level:      "DEBUG",
@@ -65,14 +68,15 @@ func TestNewLogger_ReturnsLogger(t *testing.T) {
 	}
 
 	// Act
-	result, error := NewLogger(cfg)
+	result, err := NewLogger(cfg)
 
 	// Assert
 	assert.NotNil(t, result, "Result should be nil.")
-	assert.Nil(t, error, "Error should not be nil.")
+	assert.Nil(t, err, "Error should not be nil.")
 }
 
 func TestLog_DoNotThrowsException(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	cfg := config.Logger{
 		Level: "DEBUG",
@@ -110,6 +114,7 @@ func TestLog_DoNotThrowsException(t *testing.T) {
 }
 
 func TestSetupWriters_ReturnsSingleWriter_WhenLogToFileDisabled(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	cfg := config.Logger{
 		Writers: config.Writers{
@@ -120,15 +125,16 @@ func TestSetupWriters_ReturnsSingleWriter_WhenLogToFileDisabled(t *testing.T) {
 	}
 
 	// Act
-	results, error := setupWriters(cfg.Writers)
+	results, err := setupWriters(cfg.Writers)
 
 	// Assert
 	assert.Len(t, results, 1)
 	assert.Contains(t, results, os.Stdout)
-	assert.Nil(t, error, "Error should be nil.")
+	assert.Nil(t, err, "Error should be nil.")
 }
 
 func TestSetupWriters_ReturnsMultipleWriters_WhenLogToFileEnabled(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	cfg := config.Logger{
 		Writers: config.Writers{
@@ -146,16 +152,17 @@ func TestSetupWriters_ReturnsMultipleWriters_WhenLogToFileEnabled(t *testing.T) 
 	}
 
 	// Act
-	results, error := setupWriters(cfg.Writers)
+	results, err := setupWriters(cfg.Writers)
 
 	// Assert
 	assert.Len(t, results, 2)
 	assert.Contains(t, results, os.Stdout)
 	assert.Contains(t, results, file)
-	assert.Nil(t, error, "Error should be nil.")
+	assert.Nil(t, err, "Error should be nil.")
 }
 
 func TestLoggerWriters_ThrowsError_WhenFailedToOpenFile(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	cfg := config.Logger{
 		Writers: config.Writers{
@@ -172,14 +179,15 @@ func TestLoggerWriters_ThrowsError_WhenFailedToOpenFile(t *testing.T) {
 	}
 
 	// Act
-	results, error := setupWriters(cfg.Writers)
+	results, err := setupWriters(cfg.Writers)
 
 	// Assert
 	assert.Nil(t, results, "Result should be nil.")
-	assert.NotNil(t, error, "Error should not be nil.")
+	assert.NotNil(t, err, "Error should not be nil.")
 }
 
 func TestGetCallerInfo_CanGetCallerInfo_ReturnsFileNameWithLineNum(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	fileName := "file.go"
 	lineNum := 10
@@ -199,6 +207,7 @@ func TestGetCallerInfo_CanGetCallerInfo_ReturnsFileNameWithLineNum(t *testing.T)
 }
 
 func TestGetCallerInfo_FailedGetCallerInfo_ReturnsFileNameWithLineNum(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	fileName := "file.go"
 	lineNum := 10
