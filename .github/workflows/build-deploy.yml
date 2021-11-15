@@ -31,6 +31,7 @@ jobs:
           database.mongo.user: ${{ secrets.MONGO_USER }}
           database.mongo.pass: ${{ secrets.MONGO_PASSWORD }}
           database.mongo.database: ${{ secrets.MONGO_DATABASE }}
+          telemetry.token: ${{ secrets.TELEMETRY_TOKEN }}
 
       - name: Configure GCloud in Github Actions environment
         uses: google-github-actions/setup-gcloud@master
