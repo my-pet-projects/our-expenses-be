@@ -56,4 +56,5 @@ jobs:
         run: |
           gcloud run deploy $SERVICE_NAME --image $IMAGE_NAME:$SHORT_SHA \
                                           --region europe-west1 \
-                                          --platform managed
+                                          --platform managed \
+                                          --allow-unauthenticated
