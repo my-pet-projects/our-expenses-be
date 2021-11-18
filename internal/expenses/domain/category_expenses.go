@@ -4,22 +4,22 @@ type CategoryExpenses struct {
 	Category      Category
 	Expenses      *[]Expense
 	SubCategories []*CategoryExpenses
-	Total         Total
+	GrandTotal    GrandTotal
 }
 
-func (c *CategoryExpenses) CalculateTotal() Total {
-	var total Total
+func (c *CategoryExpenses) CalculateTotal() GrandTotal {
+	var grandTotal GrandTotal
 	if c.Expenses != nil {
 		for _, expense := range *c.Expenses {
 			expenseTotal := expense.CalculateTotal()
-			total = total.Add(expenseTotal)
+			grandTotal = grandTotal.Add(expenseTotal)
 		}
 	}
 
 	for _, subCategory := range c.SubCategories {
 		subCategoryTotal := subCategory.CalculateTotal()
-		total = total.Add(subCategoryTotal)
+		grandTotal = grandTotal.Combine(subCategoryTotal)
 	}
-	c.Total = total
-	return c.Total
+	c.GrandTotal = grandTotal
+	return c.GrandTotal
 }

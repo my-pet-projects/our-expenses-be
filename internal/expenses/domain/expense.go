@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -23,6 +22,9 @@ type Expense struct {
 	updatedAt *time.Time
 	updatedBy *string
 }
+
+// Currency holds currency string representation.
+type Currency string
 
 // SetCreateMetadata sets expense create metadata.
 func SetCreateMetadata(createdBy string, createdAt time.Time) func(*Expense) {
@@ -145,7 +147,6 @@ func (e Expense) CalculateTotal() Total {
 	totalPrice := e.price.Mul(e.quantity)
 	return Total{
 		Sum:      totalPrice,
-		Currency: e.currency,
-		SumDebug: fmt.Sprintf("%s:%s*%s=%s %s", e.category.name, e.price, e.quantity, totalPrice, e.currency),
+		Currency: Currency(e.currency),
 	}
 }

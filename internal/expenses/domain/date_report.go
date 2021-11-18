@@ -10,15 +10,15 @@ type Report struct {
 type ReportByDate struct {
 	Report
 	CategoryByDate []*DateExpenses
-	Total          Total
+	GrandTotal     GrandTotal
 }
 
-func (c *ReportByDate) CalculateTotal() Total {
-	var total Total
+func (c *ReportByDate) CalculateTotal() GrandTotal {
+	var grandTotal GrandTotal
 	for _, byDate := range c.CategoryByDate {
 		dateTotal := byDate.CalculateTotal()
-		total = total.Add(dateTotal)
+		grandTotal = grandTotal.Combine(dateTotal)
 	}
-	c.Total = total
-	return c.Total
+	c.GrandTotal = grandTotal
+	return c.GrandTotal
 }

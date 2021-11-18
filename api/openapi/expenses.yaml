@@ -11,7 +11,7 @@ servers:
 security:
   # - bearerAuth: []
 paths:
-  /expenses:    
+  /expenses:
     post:
       summary: Creates a new expense
       description: Creates a new expense in the system.
@@ -22,21 +22,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewExpense'
+              $ref: "#/components/schemas/NewExpense"
       responses:
-        '200':
+        "200":
           description: Expense response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NewExpenseResponse'
+                $ref: "#/components/schemas/NewExpenseResponse"
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /reports:    
+                $ref: "#/components/schemas/Error"
+  /reports:
     get:
       summary: Generates expense repose
       description: Generates expense report.
@@ -61,20 +61,20 @@ paths:
           description: results interval
           required: true
           schema:
-            $ref: '#/components/schemas/Interval'
+            $ref: "#/components/schemas/Interval"
       responses:
-        '200':
+        "200":
           description: Expense report response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExpenseReport'
+                $ref: "#/components/schemas/ExpenseReport"
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'  
+                $ref: "#/components/schemas/Error"
 components:
   securitySchemes:
     bearerAuth:
@@ -84,13 +84,13 @@ components:
   schemas:
     Interval:
       type: string
-      enum: 
+      enum:
         - day
         - month
         - year
     Expense:
       allOf:
-        - $ref: '#/components/schemas/NewExpense'
+        - $ref: "#/components/schemas/NewExpense"
         - required:
             - id
           properties:
@@ -99,7 +99,7 @@ components:
               format: uuid
               description: Unique id of the expense
             category:
-              $ref: '#/components/schemas/Category'
+              $ref: "#/components/schemas/Category"
     NewExpense:
       type: object
       required:
@@ -141,20 +141,20 @@ components:
       type: object
       required:
         - dateReports
-        - total
+        - grandTotal
       properties:
         dateReports:
           type: array
           items:
-            $ref: '#/components/schemas/DateCategoryReport'
-        total:
-          $ref: '#/components/schemas/Total'
+            $ref: "#/components/schemas/DateCategoryReport"
+        grandTotal:
+          $ref: "#/components/schemas/GrandTotal"
     DateCategoryReport:
       type: object
       required:
         - date
         - categoryExpenses
-        - total
+        - grandTotal
       properties:
         date:
           type: string
@@ -162,27 +162,27 @@ components:
         categoryExpenses:
           type: array
           items:
-            $ref: '#/components/schemas/CategoryExpenses'
-        total:
-          $ref: '#/components/schemas/Total'
+            $ref: "#/components/schemas/CategoryExpenses"
+        grandTotal:
+          $ref: "#/components/schemas/GrandTotal"
     CategoryExpenses:
       type: object
       required:
         - category
-        - total
+        - grandTotal
       properties:
         category:
-          $ref: '#/components/schemas/Category'
+          $ref: "#/components/schemas/Category"
         expenses:
           type: array
           items:
-            $ref: '#/components/schemas/Expense'
+            $ref: "#/components/schemas/Expense"
         subCategories:
           type: array
           items:
-            $ref: '#/components/schemas/CategoryExpenses'
-        total:
-          $ref: '#/components/schemas/Total'
+            $ref: "#/components/schemas/CategoryExpenses"
+        grandTotal:
+          $ref: "#/components/schemas/GrandTotal"
     Category:
       type: object
       required:
@@ -205,13 +205,12 @@ components:
         parents:
           type: array
           items:
-            $ref: '#/components/schemas/Category'
+            $ref: "#/components/schemas/Category"
     Total:
       type: object
       required:
         - sum
         - currency
-        - debug
       properties:
         sum:
           type: string
@@ -219,9 +218,15 @@ components:
         currency:
           type: string
           description: Total currency
-        debug:
-          type: string
-          description: Property to debug sum 
+    GrandTotal:
+      type: object
+      required:
+        - totals
+      properties:
+        totals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Total"
     Error:
       type: object
       required:
@@ -235,7 +240,3 @@ components:
         message:
           type: string
           description: Error message
-
-
-
-

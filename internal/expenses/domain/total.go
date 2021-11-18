@@ -1,16 +1,13 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/shopspring/decimal"
 )
 
 // Total holds amount and currency data.
 type Total struct {
 	Sum      decimal.Decimal
-	Currency string
-	SumDebug string
+	Currency Currency
 }
 
 // Add combines two total structs together.
@@ -21,13 +18,6 @@ func (t Total) Add(total Total) Total {
 
 	t.Sum = t.Sum.Add(total.Sum)
 	t.Currency = total.Currency
-
-	// TODO: remove after stabilized.
-	if t.SumDebug == "" {
-		t.SumDebug = total.SumDebug
-	} else {
-		t.SumDebug = fmt.Sprintf("%s || %s ", t.SumDebug, total.SumDebug)
-	}
 
 	return t
 }

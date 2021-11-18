@@ -33,15 +33,15 @@ type Category struct {
 type CategoryExpenses struct {
 	Category      Category            `json:"category"`
 	Expenses      *[]Expense          `json:"expenses,omitempty"`
+	GrandTotal    GrandTotal          `json:"grandTotal"`
 	SubCategories *[]CategoryExpenses `json:"subCategories,omitempty"`
-	Total         Total               `json:"total"`
 }
 
 // DateCategoryReport defines model for DateCategoryReport.
 type DateCategoryReport struct {
 	CategoryExpenses []CategoryExpenses `json:"categoryExpenses"`
 	Date             time.Time          `json:"date"`
-	Total            Total              `json:"total"`
+	GrandTotal       GrandTotal         `json:"grandTotal"`
 }
 
 // Error defines model for Error.
@@ -67,7 +67,12 @@ type Expense struct {
 // ExpenseReport defines model for ExpenseReport.
 type ExpenseReport struct {
 	DateReports []DateCategoryReport `json:"dateReports"`
-	Total       Total                `json:"total"`
+	GrandTotal  GrandTotal           `json:"grandTotal"`
+}
+
+// GrandTotal defines model for GrandTotal.
+type GrandTotal struct {
+	Totals []Total `json:"totals"`
 }
 
 // Interval defines model for Interval.
@@ -95,9 +100,6 @@ type NewExpenseResponse struct {
 type Total struct {
 	// Total currency
 	Currency string `json:"currency"`
-
-	// Property to debug sum
-	Debug string `json:"debug"`
 
 	// Total sum amount
 	Sum string `json:"sum"`

@@ -5,15 +5,15 @@ import "time"
 type DateExpenses struct {
 	Date          time.Time
 	SubCategories []*CategoryExpenses
-	Total         Total
+	GrandTotal    GrandTotal
 }
 
-func (c *DateExpenses) CalculateTotal() Total {
-	var total Total
+func (c *DateExpenses) CalculateTotal() GrandTotal {
+	var multiTotal GrandTotal
 	for _, children := range c.SubCategories {
 		childTotal := children.CalculateTotal()
-		total = total.Add(childTotal)
+		multiTotal = multiTotal.Combine(childTotal)
 	}
-	c.Total = total
-	return c.Total
+	c.GrandTotal = multiTotal
+	return c.GrandTotal
 }

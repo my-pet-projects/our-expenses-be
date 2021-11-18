@@ -13,13 +13,13 @@ func reportToResponse(domainObj domain.ReportByDate) ExpenseReport {
 		dateCategoryReport = append(dateCategoryReport, DateCategoryReport{
 			Date:             categoryByDate.Date,
 			CategoryExpenses: categoryExpenses,
-			Total:            totalToResponse(categoryByDate.Total),
+			GrandTotal:       grandTotalToResponse(categoryByDate.GrandTotal),
 		})
 	}
 
 	report := ExpenseReport{
 		DateReports: dateCategoryReport,
-		Total:       totalToResponse(domainObj.Total),
+		GrandTotal:  grandTotalToResponse(domainObj.GrandTotal),
 	}
 	return report
 }
@@ -38,8 +38,8 @@ func categoryExpensesToResponse(domainObj domain.CategoryExpenses) CategoryExpen
 	}
 
 	response := CategoryExpenses{
-		Category: categoryToResponse(domainObj.Category),
-		Total:    totalToResponse(domainObj.Total),
+		Category:   categoryToResponse(domainObj.Category),
+		GrandTotal: grandTotalToResponse(domainObj.GrandTotal),
 	}
 
 	if len(expenses) != 0 {
@@ -75,10 +75,19 @@ func expenseToResponse(domainObj domain.Expense) Expense {
 	}
 }
 
+func grandTotalToResponse(domainObj domain.GrandTotal) GrandTotal {
+	totals := []Total{}
+	for _, total := range domainObj.Totals {
+		totals = append(totals, totalToResponse(total))
+	}
+	return GrandTotal{
+		Totals: totals,
+	}
+}
+
 func totalToResponse(domainTotal domain.Total) Total {
 	return Total{
-		Debug:    domainTotal.SumDebug,
-		Sum:      domainTotal.Sum.String(),
-		Currency: domainTotal.Currency,
+		Sum:      domainTotal.Sum.Round(2).String(),
+		Currency: string(domainTotal.Currency),
 	}
 }

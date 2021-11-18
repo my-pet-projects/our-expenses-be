@@ -69,6 +69,6 @@ func TestDateReport_CalculateTotal_ReturnsTotalAmountIncludingChildren(t *testin
 
 	// Assert
 	assert.NotNil(t, result)
-	assert.True(t, total.Equal(result))
-	assert.True(t, total.Equal(sut.Total))
+	assert.True(t, total.Equal(result.Totals["EUR"]))
+	assert.True(t, total.Equal(sut.GrandTotal.Totals["EUR"]))
 }
