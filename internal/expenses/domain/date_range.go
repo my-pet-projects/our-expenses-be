@@ -24,18 +24,28 @@ func NewDateRange(from time.Time, to time.Time) (*DateRange, error) {
 	return dr, nil
 }
 
+// From returns from date
+func (dr DateRange) From() time.Time {
+	return dr.from
+}
+
+// To returns to date
+func (dr DateRange) To() time.Time {
+	return dr.to
+}
+
 // DatesInBetween returns all dates between from and to dates.
 func (dr DateRange) DatesInBetween() []time.Time {
 	var dates []time.Time
 	from := dr.from
 	for {
 		dates = append(dates, from)
-		from = from.Add(1 * 24 * time.Hour)
 		fromYear, fromMonth, fromDay := from.Date()
 		toYear, toMonth, toDay := dr.to.Date()
 		if fromYear == toYear && fromMonth == toMonth && fromDay == toDay {
 			break
 		}
+		from = from.Add(1 * 24 * time.Hour)
 	}
 	return dates
 }

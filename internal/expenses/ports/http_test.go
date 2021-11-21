@@ -254,22 +254,33 @@ func TestGenerateReport_SuccessfulQuery_Returns200(t *testing.T) {
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	handler := new(mocks.FindExpensesHandlerInterface)
+	findExpenses := new(mocks.FindExpensesHandlerInterface)
+	fetchRates := new(mocks.FetchExchangeRatesHandlerInterface)
 	app := &app.Application{
-		Commands: app.Commands{},
+		Commands: app.Commands{
+			FetchExchangeRates: fetchRates,
+		},
 		Queries: app.Queries{
-			FindExpenses: handler,
+			FindExpenses: findExpenses,
 		},
 		Logger: logger,
 	}
 	from := time.Date(2021, time.July, 3, 0, 0, 0, 0, time.UTC)
 	to := time.Date(2021, time.August, 3, 0, 0, 0, 0, time.UTC)
 	report := &domain.ReportByDate{}
+	rate1 := domain.NewExchageRate(time.Now(), "EUR", make(map[string]float32))
+	rate2 := domain.NewExchageRate(time.Now(), "EUR", make(map[string]float32))
+	rates := []domain.ExchangeRate{rate1, rate2}
 
-	matchFn := func(query query.FindExpensesQuery) bool {
+	matchFetchFn := func(cmd command.FetchExchangeRatesCommand) bool {
+		return cmd.DateRange.From() == from && cmd.DateRange.To() == to
+	}
+	fetchRates.On("Handle", mock.Anything, mock.MatchedBy(matchFetchFn)).Return(rates, nil)
+
+	matchFindFn := func(query query.FindExpensesQuery) bool {
 		return query.From == from && query.To == to
 	}
-	handler.On("Handle", mock.Anything, mock.MatchedBy(matchFn)).Return(report, nil)
+	findExpenses.On("Handle", mock.Anything, mock.MatchedBy(matchFindFn)).Return(report, nil)
 
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 
@@ -290,28 +301,29 @@ func TestGenerateReport_SuccessfulQuery_Returns200(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	handler.AssertExpectations(t)
+	findExpenses.AssertExpectations(t)
 	assert.Equal(t, http.StatusOK, response.Code, "HTTP status should be 200.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
 
-func TestGenerateReport_FailedQuery_Returns500(t *testing.T) {
+func TestGenerateReport_InvalidDateRanges_Returns400(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
-	handler := new(mocks.FindExpensesHandlerInterface)
+	findExpenses := new(mocks.FindExpensesHandlerInterface)
+	fetchRates := new(mocks.FetchExchangeRatesHandlerInterface)
 	app := &app.Application{
-		Commands: app.Commands{},
+		Commands: app.Commands{
+			FetchExchangeRates: fetchRates,
+		},
 		Queries: app.Queries{
-			FindExpenses: handler,
+			FindExpenses: findExpenses,
 		},
 		Logger: logger,
 	}
 
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
-	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
-	handler.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/reports", nil)
@@ -330,7 +342,109 @@ func TestGenerateReport_FailedQuery_Returns500(t *testing.T) {
 
 	// Assert
 	logger.AssertExpectations(t)
-	handler.AssertExpectations(t)
+	findExpenses.AssertExpectations(t)
+	assert.Equal(t, http.StatusBadRequest, response.Code, "HTTP status should be 400.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestGenerateReport_FailedFetchCommand_Returns500(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	findExpenses := new(mocks.FindExpensesHandlerInterface)
+	fetchRates := new(mocks.FetchExchangeRatesHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			FetchExchangeRates: fetchRates,
+		},
+		Queries: app.Queries{
+			FindExpenses: findExpenses,
+		},
+		Logger: logger,
+	}
+	to := time.Now()
+	from := to.Add(-1 * 24 * time.Hour)
+
+	matchFetchFn := func(cmd command.FetchExchangeRatesCommand) bool {
+		return cmd.DateRange.From() == from && cmd.DateRange.To() == to
+	}
+	fetchRates.On("Handle", mock.Anything, mock.MatchedBy(matchFetchFn)).Return(nil, errors.New("error"))
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/reports", nil)
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+	params := ports.GenerateReportParams{
+		To:   to,
+		From: from,
+	}
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.GenerateReport(ctx, params)
+
+	// Assert
+	logger.AssertExpectations(t)
+	findExpenses.AssertExpectations(t)
+	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
+	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
+}
+
+func TestGenerateReport_FailedFindQuery_Returns500(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	e := echo.New()
+	logger := new(mocks.LogInterface)
+	findExpenses := new(mocks.FindExpensesHandlerInterface)
+	fetchRates := new(mocks.FetchExchangeRatesHandlerInterface)
+	app := &app.Application{
+		Commands: app.Commands{
+			FetchExchangeRates: fetchRates,
+		},
+		Queries: app.Queries{
+			FindExpenses: findExpenses,
+		},
+		Logger: logger,
+	}
+	to := time.Now()
+	from := time.Now().Add(-1 * 24 * time.Hour)
+	rate1 := domain.NewExchageRate(time.Now(), "EUR", make(map[string]float32))
+	rate2 := domain.NewExchageRate(time.Now(), "EUR", make(map[string]float32))
+	rates := []domain.ExchangeRate{rate1, rate2}
+
+	matchFetchFn := func(cmd command.FetchExchangeRatesCommand) bool {
+		return cmd.DateRange.From() == from && cmd.DateRange.To() == to
+	}
+	fetchRates.On("Handle", mock.Anything, mock.MatchedBy(matchFetchFn)).Return(rates, nil)
+
+	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
+	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
+	findExpenses.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/reports", nil)
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	ctx := e.NewContext(request, response)
+	params := ports.GenerateReportParams{
+		To:   to,
+		From: from,
+	}
+
+	// SUT
+	server := ports.NewHTTPServer(app)
+
+	// Act
+	server.GenerateReport(ctx, params)
+
+	// Assert
+	logger.AssertExpectations(t)
+	findExpenses.AssertExpectations(t)
 	assert.Equal(t, http.StatusInternalServerError, response.Code, "HTTP status should be 500.")
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }

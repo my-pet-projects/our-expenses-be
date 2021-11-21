@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,17 +12,12 @@ import (
 	"github.com/pkg/errors"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
 
 type exchangeRateResponse struct {
 	Base  string             `json:"base"`
 	Rates map[string]float32 `json:"rates"`
-}
-
-// ExchangeRateFetcherConfig hold exchange rate fetcher config.
-type ExchangeRateFetcherConfig struct {
-	Url    string
-	ApiKey string
 }
 
 // ExchangeRateFetcher represent exchange rate fetcher.
@@ -31,7 +27,7 @@ type ExchangeRateFetcher struct {
 
 // ExchangeRateFetcherInterface defines a contract to fetch rates.
 type ExchangeRateFetcherInterface interface {
-	Fetch(dates []time.Time) ([]domain.ExchangeRate, error)
+	Fetch(ctx context.Context, dates []time.Time) ([]domain.ExchangeRate, error)
 }
 
 // NewExchangeRateFetcher returns a ExchangeRateFetcher.
@@ -42,12 +38,16 @@ func NewExchangeRateFetcher(config ExchangeRateFetcherConfig) ExchangeRateFetche
 }
 
 // Fetch fetches exchange rate data.
-func (f ExchangeRateFetcher) Fetch(dates []time.Time) ([]domain.ExchangeRate, error) {
+func (f ExchangeRateFetcher) Fetch(ctx context.Context, dates []time.Time) ([]domain.ExchangeRate, error) {
+	_, span := tracer.NewSpan(ctx, "fetch exchange rates from the provider")
+	defer span.End()
+
 	exchangeRates := make([]domain.ExchangeRate, 0)
 	for _, date := range dates {
 		url := fmt.Sprintf("%s/%s.json?app_id=%s", f.config.Url, date.Format("2006-01-02"), f.config.ApiKey)
 		resp, respErr := http.Get(url)
 		if respErr != nil {
+			tracer.AddSpanError(span, respErr)
 			return nil, errors.Wrap(respErr, "failed response")
 		}
 		defer resp.Body.Close()
@@ -70,6 +70,7 @@ func (f ExchangeRateFetcher) Fetch(dates []time.Time) ([]domain.ExchangeRate, er
 
 		var response exchangeRateResponse
 		if jsonErr := json.NewDecoder(resp.Body).Decode(&response); jsonErr != nil {
+			tracer.AddSpanError(span, jsonErr)
 			return nil, errors.Wrap(jsonErr, "response decode")
 		}
 

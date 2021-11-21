@@ -1,6 +1,7 @@
 package adapters_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -25,6 +26,7 @@ func TestExchangeRateFetcher_NewExchangeRateFetcher_ReturnsInstance(t *testing.T
 	assert.NotNil(t, result)
 }
 
+// nolint:dupl
 func TestFetch_FailedRequestWith401_ThrowsError(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -48,13 +50,14 @@ func TestFetch_FailedRequestWith401_ThrowsError(t *testing.T) {
 	sut := adapters.NewExchangeRateFetcher(config)
 
 	// Act
-	res, resErr := sut.Fetch(datesRange)
+	res, resErr := sut.Fetch(context.Background(), datesRange)
 
 	// Assert
 	assert.Nil(t, res)
 	assert.NotNil(t, resErr)
 }
 
+// nolint:dupl
 func TestFetch_FailedRequestWith500_ThrowsError(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -78,7 +81,7 @@ func TestFetch_FailedRequestWith500_ThrowsError(t *testing.T) {
 	sut := adapters.NewExchangeRateFetcher(config)
 
 	// Act
-	res, resErr := sut.Fetch(datesRange)
+	res, resErr := sut.Fetch(context.Background(), datesRange)
 
 	// Assert
 	assert.Nil(t, res)
@@ -107,7 +110,7 @@ func TestFetch_ResponseDecodeFails_ThrowsError(t *testing.T) {
 	sut := adapters.NewExchangeRateFetcher(config)
 
 	// Act
-	res, resErr := sut.Fetch(datesRange)
+	res, resErr := sut.Fetch(context.Background(), datesRange)
 
 	// Assert
 	assert.Nil(t, res)
@@ -131,7 +134,7 @@ func TestFetch_ResponseFails_ThrowsError(t *testing.T) {
 	sut := adapters.NewExchangeRateFetcher(config)
 
 	// Act
-	res, resErr := sut.Fetch(datesRange)
+	res, resErr := sut.Fetch(context.Background(), datesRange)
 
 	// Assert
 	assert.Nil(t, res)
@@ -159,7 +162,7 @@ func TestFetch_Response_ReturnsExchangeRates(t *testing.T) {
 	sut := adapters.NewExchangeRateFetcher(config)
 
 	// Act
-	res, resErr := sut.Fetch(datesRange)
+	res, resErr := sut.Fetch(context.Background(), datesRange)
 
 	// Assert
 	assert.NotNil(t, res)

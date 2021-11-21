@@ -23,7 +23,8 @@ type Application struct {
 
 // Commands struct holds available application commands.
 type Commands struct {
-	AddExpense command.AddExpenseHandlerInterface
+	AddExpense         command.AddExpenseHandlerInterface
+	FetchExchangeRates command.FetchExchangeRatesHandlerInterface
 }
 
 // Queries struct holds available application queries.
@@ -41,13 +42,17 @@ func NewApplication(
 	tracer *tracer.Tracer,
 	mongoClient *database.MongoClient,
 ) (*Application, error) {
+	rateConfig := adapters.NewExchangeRateFetcherConfig()
 	expenseRepo := adapters.NewExpenseRepo(mongoClient, logger)
 	reportRepo := adapters.NewReportRepo(mongoClient, logger)
 	categoryRepo := adapters.NewCategoryRepo(mongoClient, logger)
+	rateRepo := adapters.NewExchangeRateRepo(mongoClient, logger)
+	rateFetcher := adapters.NewExchangeRateFetcher(rateConfig)
 
 	return &Application{
 		Commands: Commands{
-			AddExpense: command.NewAddExpenseHandler(expenseRepo, logger),
+			AddExpense:         command.NewAddExpenseHandler(expenseRepo, logger),
+			FetchExchangeRates: command.NewFetchExchangeRatesHandler(rateFetcher, rateRepo, logger),
 		},
 		Queries: Queries{
 			FindExpenses: query.NewFindExpensesHandler(reportRepo, logger),
