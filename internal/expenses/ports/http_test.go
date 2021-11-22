@@ -278,7 +278,7 @@ func TestGenerateReport_SuccessfulQuery_Returns200(t *testing.T) {
 	fetchRates.On("Handle", mock.Anything, mock.MatchedBy(matchFetchFn)).Return(rates, nil)
 
 	matchFindFn := func(query query.FindExpensesQuery) bool {
-		return query.From == from && query.To == to
+		return query.DateRange.From() == from && query.DateRange.To() == to
 	}
 	findExpenses.On("Handle", mock.Anything, mock.MatchedBy(matchFindFn)).Return(report, nil)
 

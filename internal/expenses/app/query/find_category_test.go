@@ -15,6 +15,7 @@ import (
 )
 
 func TestNewFindCategoryHandler_ReturnsHandler(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.ExpenseCategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -27,11 +28,12 @@ func TestNewFindCategoryHandler_ReturnsHandler(t *testing.T) {
 }
 
 func TestFindCategoryHandle_RepoError_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.ExpenseCategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId"
+	categoryId := "categoryId1"
 	findQuery := query.FindCategoryQuery{
 		CategoryID: categoryId,
 	}
@@ -55,11 +57,12 @@ func TestFindCategoryHandle_RepoError_ThrowsError(t *testing.T) {
 }
 
 func TestFindCategoryHandle_RepoSuccess_CategoryHasNoPath_ReturnsCategory(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.ExpenseCategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId"
+	categoryId := "categoryId2"
 	parentId1 := "parentId1"
 	path := ""
 	icon := "icon"
@@ -88,11 +91,12 @@ func TestFindCategoryHandle_RepoSuccess_CategoryHasNoPath_ReturnsCategory(t *tes
 }
 
 func TestFindCategoryHandle_RepoSuccess_ReturnsCategory(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.ExpenseCategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId"
+	categoryId := "categoryId3"
 	parentId1 := "parentId1"
 	parentId2 := "parentId2"
 	icon := "icon"

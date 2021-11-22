@@ -103,9 +103,8 @@ func (h HTTPServer) GenerateReport(echoCtx echo.Context, params GenerateReportPa
 	}
 
 	queryArgs := query.FindExpensesQuery{
-		From:     params.From,
-		To:       params.To,
-		Interval: string(params.Interval),
+		DateRange: *dateRange,
+		Interval:  string(params.Interval),
 	}
 
 	expenseRpt, expenseRptErr := h.app.Queries.FindExpenses.Handle(ctx, queryArgs)

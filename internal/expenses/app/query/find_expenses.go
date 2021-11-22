@@ -2,24 +2,19 @@ package query
 
 import (
 	"context"
-	"time"
 
 	"github.com/pkg/errors"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
-
-var findExpensesTracer trace.Tracer
 
 // FindExpensesQuery defines an expense query.
 type FindExpensesQuery struct {
-	From     time.Time
-	To       time.Time
-	Interval string
+	DateRange domain.DateRange
+	Interval  string
 }
 
 // FindExpensesHandler defines a handler to fetch expenses.
@@ -38,7 +33,6 @@ func NewFindExpensesHandler(
 	repo adapters.ReportRepoInterface,
 	logger logger.LogInterface,
 ) FindExpensesHandler {
-	findExpensesTracer = otel.Tracer("app.query.find_expenses")
 	return FindExpensesHandler{
 		repo:   repo,
 		logger: logger,
@@ -50,16 +44,18 @@ func (h FindExpensesHandler) Handle(
 	ctx context.Context,
 	query FindExpensesQuery,
 ) (*domain.ReportByDate, error) {
-	ctx, span := findExpensesTracer.Start(ctx, "execute find expenses query")
+	ctx, span := tracer.NewSpan(ctx, "execute find expenses query")
 	defer span.End()
 
-	filter, filterErr := domain.NewExpenseFilter(query.From, query.To, query.Interval)
+	filter, filterErr := domain.NewExpenseFilter(query.DateRange.From(), query.DateRange.To(), query.Interval)
 	if filterErr != nil {
+		tracer.AddSpanError(span, filterErr)
 		return nil, errors.Wrap(filterErr, "prepare filter")
 	}
 
 	expenses, expensesErr := h.repo.GetAll(ctx, *filter)
 	if expensesErr != nil {
+		tracer.AddSpanError(span, expensesErr)
 		return nil, errors.Wrap(expensesErr, "fetch expenses")
 	}
 

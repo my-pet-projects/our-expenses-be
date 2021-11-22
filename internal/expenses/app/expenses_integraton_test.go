@@ -5,12 +5,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/app/query"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/config"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
-	"github.com/stretchr/testify/assert"
 )
 
 func setupApp(t *testing.T) *Application {
@@ -51,9 +53,9 @@ func TestNewServer_ReturnsServerInstanceWithSettingsFromConfig(t *testing.T) {
 	ctx := context.Background()
 	from := time.Date(2021, 8, 2, 0, 0, 0, 0, time.UTC)
 	to := time.Date(2021, 8, 2, 23, 59, 59, 999, time.UTC)
+	dateRange, _ := domain.NewDateRange(from, to)
 	findQuery := query.FindExpensesQuery{
-		From: from,
-		To:   to,
+		DateRange: *dateRange,
 	}
 
 	// SUT
