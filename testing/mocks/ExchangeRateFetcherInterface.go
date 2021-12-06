@@ -17,15 +17,15 @@ type ExchangeRateFetcherInterface struct {
 }
 
 // Fetch provides a mock function with given fields: ctx, dates
-func (_m *ExchangeRateFetcherInterface) Fetch(ctx context.Context, dates []time.Time) ([]domain.ExchangeRate, error) {
+func (_m *ExchangeRateFetcherInterface) Fetch(ctx context.Context, dates []time.Time) ([]domain.ExchangeRates, error) {
 	ret := _m.Called(ctx, dates)
 
-	var r0 []domain.ExchangeRate
-	if rf, ok := ret.Get(0).(func(context.Context, []time.Time) []domain.ExchangeRate); ok {
+	var r0 []domain.ExchangeRates
+	if rf, ok := ret.Get(0).(func(context.Context, []time.Time) []domain.ExchangeRates); ok {
 		r0 = rf(ctx, dates)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]domain.ExchangeRate)
+			r0 = ret.Get(0).([]domain.ExchangeRates)
 		}
 	}
 

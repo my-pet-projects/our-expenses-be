@@ -14,6 +14,7 @@ func reportToResponse(domainObj domain.ReportByDate) ExpenseReport {
 			Date:             categoryByDate.Date,
 			CategoryExpenses: categoryExpenses,
 			GrandTotal:       grandTotalToResponse(categoryByDate.GrandTotal),
+			ExchangeRates:    exchangeRatesToResponse(categoryByDate.ExchangeRate),
 		})
 	}
 
@@ -71,23 +72,58 @@ func expenseToResponse(domainObj domain.Expense) Expense {
 			Date:       domainObj.Date(),
 			Price:      domainObj.Price(),
 			Quantity:   domainObj.Quantity(),
+			TotalInfo:  totalInfoToResponse(domainObj.TotalInfo()),
 		},
 	}
 }
 
 func grandTotalToResponse(domainObj domain.GrandTotal) GrandTotal {
-	totals := []Total{}
-	for _, total := range domainObj.Totals {
-		totals = append(totals, totalToResponse(total))
+	totalInfos := []TotalInfo{}
+	for _, totalInfo := range domainObj.TotalInfos {
+		totalInfos = append(totalInfos, totalInfoToResponse(totalInfo))
 	}
+	convertedTotal := &domainObj.ConvertedTotal
 	return GrandTotal{
-		Totals: totals,
+		Totals:    totalInfos,
+		Converted: *totalToResponse(convertedTotal),
 	}
 }
 
-func totalToResponse(domainTotal domain.Total) Total {
-	return Total{
+func totalToResponse(domainTotal *domain.Total) *Total {
+	if domainTotal == nil {
+		return nil
+	}
+	return &Total{
 		Sum:      domainTotal.Sum.Round(2).String(),
 		Currency: string(domainTotal.Currency),
 	}
+}
+
+func totalInfoToResponse(domainObj domain.TotalInfo) TotalInfo {
+	convertedTotal := domainObj.ConvertedTotal
+	ti := TotalInfo{
+		Converted: totalToResponse(convertedTotal),
+		Original:  *totalToResponse(&domainObj.OriginalTotal),
+	}
+	if domainObj.ExchangeRate != nil {
+		rates := exchangeRatesToResponse(*domainObj.ExchangeRate)
+		ti.Rates = &rates
+	}
+	return ti
+}
+
+func exchangeRatesToResponse(domainObj domain.ExchangeRates) ExchangeRates {
+	rates := make([]Rate, 0)
+	for currency, rate := range domainObj.Rates() {
+		rates = append(rates, Rate{
+			Currency: string(currency),
+			Price:    rate.Round(2).String(),
+		})
+	}
+	exchRate := ExchangeRates{
+		Date:     domainObj.Date(),
+		Currency: string(domainObj.BaseCurrency()),
+		Rates:    rates,
+	}
+	return exchRate
 }

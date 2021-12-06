@@ -41,6 +41,7 @@ type CategoryExpenses struct {
 type DateCategoryReport struct {
 	CategoryExpenses []CategoryExpenses `json:"categoryExpenses"`
 	Date             time.Time          `json:"date"`
+	ExchangeRates    ExchangeRates      `json:"exchangeRates"`
 	GrandTotal       GrandTotal         `json:"grandTotal"`
 }
 
@@ -51,6 +52,13 @@ type Error struct {
 
 	// Error message
 	Message string `json:"message"`
+}
+
+// ExchangeRates defines model for ExchangeRates.
+type ExchangeRates struct {
+	Currency string    `json:"currency"`
+	Date     time.Time `json:"date"`
+	Rates    []Rate    `json:"rates"`
 }
 
 // Expense defines model for Expense.
@@ -72,7 +80,8 @@ type ExpenseReport struct {
 
 // GrandTotal defines model for GrandTotal.
 type GrandTotal struct {
-	Totals []Total `json:"totals"`
+	Converted Total       `json:"converted"`
+	Totals    []TotalInfo `json:"totals"`
 }
 
 // Interval defines model for Interval.
@@ -87,6 +96,7 @@ type NewExpense struct {
 	Date       time.Time `json:"date"`
 	Price      float64   `json:"price"`
 	Quantity   float64   `json:"quantity"`
+	TotalInfo  TotalInfo `json:"totalInfo"`
 	Trip       *string   `json:"trip,omitempty"`
 }
 
@@ -96,6 +106,12 @@ type NewExpenseResponse struct {
 	Id string `json:"id"`
 }
 
+// Rate defines model for Rate.
+type Rate struct {
+	Currency string `json:"currency"`
+	Price    string `json:"price"`
+}
+
 // Total defines model for Total.
 type Total struct {
 	// Total currency
@@ -103,6 +119,13 @@ type Total struct {
 
 	// Total sum amount
 	Sum string `json:"sum"`
+}
+
+// TotalInfo defines model for TotalInfo.
+type TotalInfo struct {
+	Converted *Total         `json:"converted,omitempty"`
+	Original  Total          `json:"original"`
+	Rates     *ExchangeRates `json:"rates,omitempty"`
 }
 
 // AddExpenseJSONBody defines parameters for AddExpense.

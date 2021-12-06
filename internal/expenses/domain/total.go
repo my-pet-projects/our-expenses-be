@@ -11,15 +11,17 @@ type Total struct {
 }
 
 // Add combines two total structs together.
-func (t Total) Add(total Total) Total {
-	if total.Sum == decimal.Zero {
+func (t Total) Add(total *Total) Total {
+	if total == nil || total.Sum == decimal.Zero {
 		return t
 	}
 
-	t.Sum = t.Sum.Add(total.Sum)
-	t.Currency = total.Currency
+	sum := Total{
+		Sum:      t.Sum.Add(total.Sum),
+		Currency: total.Currency,
+	}
 
-	return t
+	return sum
 }
 
 // Equal returns whether the totals are equal.

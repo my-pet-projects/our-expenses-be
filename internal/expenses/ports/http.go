@@ -95,7 +95,7 @@ func (h HTTPServer) GenerateReport(echoCtx echo.Context, params GenerateReportPa
 	fetchCmdArgs := command.FetchExchangeRatesCommand{
 		DateRange: *dateRange,
 	}
-	_, ratesErr := h.app.Commands.FetchExchangeRates.Handle(ctx, fetchCmdArgs)
+	rates, ratesErr := h.app.Commands.FetchExchangeRates.Handle(ctx, fetchCmdArgs)
 	if ratesErr != nil {
 		tracer.AddSpanError(span, ratesErr)
 		h.app.Logger.Error(ctx, "Failed to fetch exchange rates", ratesErr)
@@ -103,8 +103,9 @@ func (h HTTPServer) GenerateReport(echoCtx echo.Context, params GenerateReportPa
 	}
 
 	queryArgs := query.FindExpensesQuery{
-		DateRange: *dateRange,
-		Interval:  string(params.Interval),
+		DateRange:     *dateRange,
+		Interval:      string(params.Interval),
+		ExchangeRates: rates,
 	}
 
 	expenseRpt, expenseRptErr := h.app.Queries.FindExpenses.Handle(ctx, queryArgs)

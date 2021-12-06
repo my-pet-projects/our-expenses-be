@@ -21,6 +21,8 @@ func TestDateRange_NewDateRange_ReturnsInstance(t *testing.T) {
 	// Assert
 	assert.NotNil(t, res)
 	assert.Nil(t, resErr)
+	assert.Equal(t, to, res.To())
+	assert.Equal(t, from, res.From())
 }
 
 func TestDateRange_NewDateRange_InvalidDates_ThrowsError(t *testing.T) {
@@ -40,7 +42,7 @@ func TestDateRange_NewDateRange_InvalidDates_ThrowsError(t *testing.T) {
 func TestDateRange_DatesInBetween_ReturnsDates(t *testing.T) {
 	t.Parallel()
 	// Arrange
-	to := time.Now()
+	to := time.Date(2021, time.July, 20, 0, 0, 0, 0, time.UTC)
 	from := to.Add(-10 * 24 * time.Hour)
 
 	// SUT
@@ -51,5 +53,5 @@ func TestDateRange_DatesInBetween_ReturnsDates(t *testing.T) {
 
 	// Assert
 	assert.NotNil(t, res)
-	assert.Len(t, res, 10)
+	assert.Len(t, res, 11)
 }

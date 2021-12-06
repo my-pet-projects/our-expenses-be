@@ -14,8 +14,14 @@ type ExpenseFilter struct {
 	interval Interval
 }
 
+// NewExpenseFilter instantiates expense filter.
 func NewExpenseFilter(from time.Time, to time.Time, intervalString string) (*ExpenseFilter, error) {
-	// TODO: from/to validation
+	if from.After(to) {
+		return nil, errors.New("'from' date could not be after 'to' date")
+	}
+	if from.Equal(to) {
+		return nil, errors.New("'from' is equal to 'to' date")
+	}
 
 	var interval Interval
 	switch intervalString {
@@ -36,7 +42,6 @@ func NewExpenseFilter(from time.Time, to time.Time, intervalString string) (*Exp
 	}
 
 	return filter, nil
-
 }
 
 // Interval returns expense filter interval.

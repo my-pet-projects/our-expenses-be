@@ -108,6 +108,7 @@ components:
         - quantity
         - currency
         - date
+        - totalInfo
       properties:
         categoryId:
           type: string
@@ -128,6 +129,8 @@ components:
         date:
           type: string
           format: date-time
+        totalInfo:
+          $ref: "#/components/schemas/TotalInfo"
     NewExpenseResponse:
       type: object
       required:
@@ -155,6 +158,7 @@ components:
         - date
         - categoryExpenses
         - grandTotal
+        - exchangeRates
       properties:
         date:
           type: string
@@ -165,6 +169,8 @@ components:
             $ref: "#/components/schemas/CategoryExpenses"
         grandTotal:
           $ref: "#/components/schemas/GrandTotal"
+        exchangeRates:
+          $ref: "#/components/schemas/ExchangeRates"
     CategoryExpenses:
       type: object
       required:
@@ -218,15 +224,74 @@ components:
         currency:
           type: string
           description: Total currency
+    TotalInfo:
+      type: object
+      required:
+        - original
+      properties:
+        original:
+          type: object
+          $ref: "#/components/schemas/Total"
+        rates:
+          type: object
+          $ref: "#/components/schemas/ExchangeRates"
+        converted:
+          type: object
+          $ref: "#/components/schemas/Total"
     GrandTotal:
       type: object
       required:
         - totals
+        - converted
       properties:
         totals:
           type: array
           items:
-            $ref: "#/components/schemas/Total"
+            $ref: "#/components/schemas/TotalInfo"
+        converted:
+          type: object
+          $ref: "#/components/schemas/Total"
+    ExchangeRate:
+      type: object
+      required:
+        - date
+        - currency
+        - rate
+      properties:
+        rate:
+          type: object
+          $ref: "#/components/schemas/Rate"
+        currency:
+          type: string
+        date:
+          type: string
+          format: date-time
+    ExchangeRates:
+      type: object
+      required:
+        - date
+        - currency
+        - rates
+      properties:
+        rates:
+          type: array
+          items:
+            $ref: "#/components/schemas/Rate"
+        currency:
+          type: string
+        date:
+          type: string
+          format: date-time
+    Rate:
+      type: object
+      required:
+        - currency
+        - price
+      properties:
+        currency:
+          type: string
+        price:
+          type: string
     Error:
       type: object
       required:

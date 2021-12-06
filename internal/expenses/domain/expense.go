@@ -21,26 +21,11 @@ type Expense struct {
 	createdBy string
 	updatedAt *time.Time
 	updatedBy *string
+	totalInfo TotalInfo
 }
 
 // Currency holds currency string representation.
 type Currency string
-
-// SetCreateMetadata sets expense create metadata.
-func SetCreateMetadata(createdBy string, createdAt time.Time) func(*Expense) {
-	return func(e *Expense) {
-		e.createdBy = createdBy
-		e.createdAt = createdAt
-	}
-}
-
-// SetUpdateMetadata sets expense update metadata.
-func SetUpdateMetadata(updatedBy string, updatedAt time.Time) func(*Expense) {
-	return func(e *Expense) {
-		e.updatedBy = &updatedBy
-		e.updatedAt = &updatedAt
-	}
-}
 
 // NewExpense creates a new expense domain object.
 func NewExpense(
@@ -54,11 +39,15 @@ func NewExpense(
 	date time.Time,
 	opts ...func(*Expense),
 ) (*Expense, error) {
-	if price == 0 {
-		return nil, errors.New("price could not be empty")
+	if price <= 0 {
+		return nil, errors.New("price should be grater than zero")
 	}
-
-	// TODO: add more business checks.
+	if quantity <= 0 {
+		return nil, errors.New("quantity should be grater than zero")
+	}
+	if currency == "" {
+		return nil, errors.New("currency should not be empty")
+	}
 
 	decPrice := decimal.NewFromFloat(price)
 	decQuantity := decimal.NewFromFloat(quantity)
@@ -143,10 +132,50 @@ func (e Expense) UpdatedBy() *string {
 	return e.updatedBy
 }
 
-func (e Expense) CalculateTotal() Total {
-	totalPrice := e.price.Mul(e.quantity)
-	return Total{
-		Sum:      totalPrice,
-		Currency: Currency(e.currency),
+// TotalInfo returns total.
+func (e Expense) TotalInfo() TotalInfo {
+	return e.totalInfo
+}
+
+// SetCreateMetadata sets expense create metadata.
+func SetCreateMetadata(createdBy string, createdAt time.Time) func(*Expense) {
+	return func(e *Expense) {
+		e.createdBy = createdBy
+		e.createdAt = createdAt
 	}
+}
+
+// SetUpdateMetadata sets expense update metadata.
+func SetUpdateMetadata(updatedBy string, updatedAt time.Time) func(*Expense) {
+	return func(e *Expense) {
+		e.updatedBy = &updatedBy
+		e.updatedAt = &updatedAt
+	}
+}
+
+// CalculateTotal calculates expense totals values.
+func (e *Expense) CalculateTotal(exchangeRate *ExchangeRates) TotalInfo {
+	e.totalInfo = TotalInfo{
+		OriginalTotal: Total{
+			Sum:      e.price.Mul(e.quantity),
+			Currency: Currency(e.currency),
+		},
+	}
+
+	if exchangeRate == nil {
+		return e.totalInfo
+	}
+
+	rate, ok := exchangeRate.rates[Currency(e.currency)]
+	if !ok {
+		return e.totalInfo
+	}
+
+	e.totalInfo.ExchangeRate = exchangeRate
+	e.totalInfo.ConvertedTotal = &Total{
+		Currency: exchangeRate.baseCurrency,
+		Sum:      e.totalInfo.OriginalTotal.Sum.Div(rate),
+	}
+
+	return e.totalInfo
 }

@@ -55,6 +55,7 @@ func TestGenerateByDateReport(t *testing.T) {
 		fmt.Sprintf("|%s", id3))
 
 	date1 := time.Date(2021, time.July, 10, 0, 0, 0, 0, time.UTC)
+	rates, _ := domain.NewExchageRate(date1, "EUR", map[string]float64{"USD": 2})
 
 	expense1, _ := domain.NewExpense(uuid.NewString(), *category111, 10, "EUR", 1, nil, nil, date1)
 	expense2, _ := domain.NewExpense(uuid.NewString(), *category111, 20, "EUR", 2, nil, nil, date1)
@@ -63,12 +64,12 @@ func TestGenerateByDateReport(t *testing.T) {
 	expense5, _ := domain.NewExpense(uuid.NewString(), *category21, 100, "EUR", 5, nil, nil, date1)
 	expense6, _ := domain.NewExpense(uuid.NewString(), *category3, 1000, "EUR", 5, nil, nil, date1)
 
-	expense1Total := expense1.CalculateTotal()
-	expense2Total := expense2.CalculateTotal()
-	expense3Total := expense3.CalculateTotal()
-	expense4Total := expense4.CalculateTotal()
-	expense5Total := expense5.CalculateTotal()
-	expense6Total := expense6.CalculateTotal()
+	expense1Total := expense1.CalculateTotal(rates)
+	expense2Total := expense2.CalculateTotal(rates)
+	expense3Total := expense3.CalculateTotal(rates)
+	expense4Total := expense4.CalculateTotal(rates)
+	expense5Total := expense5.CalculateTotal(rates)
+	expense6Total := expense6.CalculateTotal(rates)
 
 	expenses := []domain.Expense{*expense1, *expense2, *expense3, *expense4, *expense5, *expense6}
 
@@ -78,7 +79,7 @@ func TestGenerateByDateReport(t *testing.T) {
 	filter, _ := domain.NewExpenseFilter(from, to, interval)
 
 	// SUT
-	sut := domain.NewReportGenerator(expenses, *filter)
+	sut := domain.NewReportGenerator(expenses, *filter, []domain.ExchangeRates{*rates})
 
 	// Act
 	result := sut.GenerateByDateReport()
@@ -95,13 +96,13 @@ func TestGenerateByDateReport(t *testing.T) {
 			Add(expense4Total).Add(expense5Total).Add(expense6Total)
 		assert.Equal(t, date1, firstCategoryByDate.Date)
 		assert.Len(t, firstCategoryByDate.SubCategories, 3)
-		assert.True(t, expectedTotal.Equal(firstCategoryByDate.GrandTotal.Totals["EUR"]))
+		assert.True(t, expectedTotal.OriginalTotal.Equal(firstCategoryByDate.GrandTotal.TotalInfos["EUR"].OriginalTotal))
 
 		for _, catLevel1 := range firstCategoryByDate.SubCategories {
 			if catLevel1.Category.ID() == category1.ID() {
 				expectedTotal := expense1Total.Add(expense2Total).Add(expense3Total).Add(expense4Total)
 				assert.Equal(t, category1, &catLevel1.Category)
-				assert.True(t, expectedTotal.Equal(catLevel1.GrandTotal.Totals["EUR"]))
+				assert.True(t, expectedTotal.OriginalTotal.Equal(catLevel1.GrandTotal.TotalInfos["EUR"].OriginalTotal))
 				assert.Equal(t, &[]domain.Expense{}, catLevel1.Expenses)
 				assert.Len(t, catLevel1.SubCategories, 2)
 
@@ -109,7 +110,7 @@ func TestGenerateByDateReport(t *testing.T) {
 					if catLevel2.Category.ID() == category11.ID() {
 						expectedTotal := expense1Total.Add(expense2Total).Add(expense3Total)
 						assert.Equal(t, category11, &catLevel2.Category)
-						assert.True(t, expectedTotal.Equal(catLevel2.GrandTotal.Totals["EUR"]))
+						assert.True(t, expectedTotal.OriginalTotal.Equal(catLevel2.GrandTotal.TotalInfos["EUR"].OriginalTotal))
 						assert.Equal(t, &[]domain.Expense{}, catLevel2.Expenses)
 						assert.Len(t, catLevel2.SubCategories, 2)
 
@@ -117,7 +118,7 @@ func TestGenerateByDateReport(t *testing.T) {
 							if catLevel3.Category.ID() == category111.ID() {
 								expectedTotal := expense1Total.Add(expense2Total)
 								assert.Equal(t, category111, &catLevel3.Category)
-								assert.True(t, expectedTotal.Equal(catLevel3.GrandTotal.Totals["EUR"]))
+								assert.True(t, expectedTotal.OriginalTotal.Equal(catLevel3.GrandTotal.TotalInfos["EUR"].OriginalTotal))
 								assert.Len(t, *catLevel3.Expenses, 2)
 								assert.Contains(t, *catLevel3.Expenses, *expense1)
 								assert.Contains(t, *catLevel3.Expenses, *expense2)
@@ -127,7 +128,7 @@ func TestGenerateByDateReport(t *testing.T) {
 							if catLevel3.Category.ID() == category112.ID() {
 								expectedTotal := expense3Total
 								assert.Equal(t, category112, &catLevel3.Category)
-								assert.True(t, expectedTotal.Equal(catLevel3.GrandTotal.Totals["EUR"]))
+								assert.True(t, expectedTotal.OriginalTotal.Equal(catLevel3.GrandTotal.TotalInfos["EUR"].OriginalTotal))
 								assert.Len(t, *catLevel3.Expenses, 1)
 								assert.Contains(t, *catLevel3.Expenses, *expense3)
 								assert.Nil(t, catLevel3.SubCategories)
@@ -138,7 +139,7 @@ func TestGenerateByDateReport(t *testing.T) {
 					if catLevel2.Category.ID() == category12.ID() {
 						expectedTotal := expense4Total
 						assert.Equal(t, category12, &catLevel2.Category)
-						assert.True(t, expectedTotal.Equal(catLevel2.GrandTotal.Totals["EUR"]))
+						assert.True(t, expectedTotal.OriginalTotal.Equal(catLevel2.GrandTotal.TotalInfos["EUR"].OriginalTotal))
 						assert.Len(t, *catLevel2.Expenses, 1)
 						assert.Contains(t, *catLevel2.Expenses, *expense4)
 						assert.Nil(t, catLevel2.SubCategories)
@@ -149,7 +150,7 @@ func TestGenerateByDateReport(t *testing.T) {
 			if catLevel1.Category.ID() == category2.ID() {
 				expectedTotal := expense5Total
 				assert.Equal(t, category2, &catLevel1.Category)
-				assert.True(t, expectedTotal.Equal(catLevel1.GrandTotal.Totals["EUR"]))
+				assert.True(t, expectedTotal.OriginalTotal.Equal(catLevel1.GrandTotal.TotalInfos["EUR"].OriginalTotal))
 				assert.Equal(t, &[]domain.Expense{}, catLevel1.Expenses)
 				assert.Len(t, catLevel1.SubCategories, 1)
 
@@ -157,7 +158,7 @@ func TestGenerateByDateReport(t *testing.T) {
 					if catLevel2.Category.ID() == category21.ID() {
 						expectedTotal := expense5Total
 						assert.Equal(t, category21, &catLevel2.Category)
-						assert.True(t, expectedTotal.Equal(catLevel2.GrandTotal.Totals["EUR"]))
+						assert.True(t, expectedTotal.OriginalTotal.Equal(catLevel2.GrandTotal.TotalInfos["EUR"].OriginalTotal))
 						assert.Len(t, *catLevel2.Expenses, 1)
 						assert.Contains(t, *catLevel2.Expenses, *expense5)
 						assert.Nil(t, catLevel2.SubCategories)
@@ -168,7 +169,7 @@ func TestGenerateByDateReport(t *testing.T) {
 			if catLevel1.Category.ID() == category3.ID() {
 				expectedTotal := expense6Total
 				assert.Equal(t, category3, &catLevel1.Category)
-				assert.True(t, expectedTotal.Equal(catLevel1.GrandTotal.Totals["EUR"]))
+				assert.True(t, expectedTotal.OriginalTotal.Equal(catLevel1.GrandTotal.TotalInfos["EUR"].OriginalTotal))
 				assert.Len(t, *catLevel1.Expenses, 1)
 				assert.Contains(t, *catLevel1.Expenses, *expense6)
 				assert.Nil(t, catLevel1.SubCategories)

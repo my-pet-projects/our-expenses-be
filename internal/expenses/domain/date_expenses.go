@@ -6,14 +6,15 @@ type DateExpenses struct {
 	Date          time.Time
 	SubCategories []*CategoryExpenses
 	GrandTotal    GrandTotal
+	ExchangeRate  ExchangeRates
 }
 
 func (c *DateExpenses) CalculateTotal() GrandTotal {
-	var multiTotal GrandTotal
+	var grandTotal GrandTotal
 	for _, children := range c.SubCategories {
 		childTotal := children.CalculateTotal()
-		multiTotal = multiTotal.Combine(childTotal)
+		grandTotal = grandTotal.Combine(childTotal)
 	}
-	c.GrandTotal = multiTotal
+	c.GrandTotal = grandTotal
 	return c.GrandTotal
 }

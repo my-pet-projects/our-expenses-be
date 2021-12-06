@@ -11,8 +11,7 @@ func (c *CategoryExpenses) CalculateTotal() GrandTotal {
 	var grandTotal GrandTotal
 	if c.Expenses != nil {
 		for _, expense := range *c.Expenses {
-			expenseTotal := expense.CalculateTotal()
-			grandTotal = grandTotal.Add(expenseTotal)
+			grandTotal = grandTotal.Add(expense.totalInfo)
 		}
 	}
 
@@ -20,6 +19,7 @@ func (c *CategoryExpenses) CalculateTotal() GrandTotal {
 		subCategoryTotal := subCategory.CalculateTotal()
 		grandTotal = grandTotal.Combine(subCategoryTotal)
 	}
+
 	c.GrandTotal = grandTotal
 	return c.GrandTotal
 }

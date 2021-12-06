@@ -24,12 +24,12 @@ func NewDateRange(from time.Time, to time.Time) (*DateRange, error) {
 	return dr, nil
 }
 
-// From returns from date
+// From returns from date.
 func (dr DateRange) From() time.Time {
 	return dr.from
 }
 
-// To returns to date
+// To returns to date.
 func (dr DateRange) To() time.Time {
 	return dr.to
 }

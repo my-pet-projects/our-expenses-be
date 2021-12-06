@@ -26,7 +26,7 @@ type FetchExchangeRatesHandler struct {
 
 // FetchExchangeRatesHandlerInterface defines a contract to handle command.
 type FetchExchangeRatesHandlerInterface interface {
-	Handle(ctx context.Context, cmd FetchExchangeRatesCommand) ([]domain.ExchangeRate, error)
+	Handle(ctx context.Context, cmd FetchExchangeRatesCommand) ([]domain.ExchangeRates, error)
 }
 
 // NewFetchExchangeRatesHandler returns command handler.
@@ -46,7 +46,7 @@ func NewFetchExchangeRatesHandler(
 func (h FetchExchangeRatesHandler) Handle(
 	ctx context.Context,
 	cmd FetchExchangeRatesCommand,
-) ([]domain.ExchangeRate, error) {
+) ([]domain.ExchangeRates, error) {
 	ctx, span := tracer.NewSpan(ctx, "execute fetch exchange rates command")
 	defer span.End()
 
@@ -80,7 +80,7 @@ func (h FetchExchangeRatesHandler) Handle(
 	return rates, nil
 }
 
-func getMissingRateDates(dates []time.Time, rates []domain.ExchangeRate) []time.Time {
+func getMissingRateDates(dates []time.Time, rates []domain.ExchangeRates) []time.Time {
 	missingDates := make([]time.Time, 0)
 	rateDatesSet := make(map[time.Time]struct{})
 	for _, rate := range rates {

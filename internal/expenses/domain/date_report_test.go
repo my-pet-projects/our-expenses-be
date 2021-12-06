@@ -15,6 +15,7 @@ func TestDateReport_CalculateTotal_ReturnsTotalAmountIncludingChildren(t *testin
 	cat, _ := NewCategory("id1", nil, "category 1", nil, 1, "path")
 	date1 := time.Date(2021, time.July, 10, 0, 0, 0, 0, time.UTC)
 	date2 := time.Date(2021, time.July, 20, 0, 0, 0, 0, time.UTC)
+	rates, _ := NewExchageRate(date1, "USD", map[string]float64{"EUR": 2})
 	expense1, _ := NewExpense(uuid.NewString(), *cat, 10, "EUR", 1, nil, nil, date1)
 	expense2, _ := NewExpense(uuid.NewString(), *cat, 20, "EUR", 2, nil, nil, date1)
 	expense3, _ := NewExpense(uuid.NewString(), *cat, 30, "EUR", 3, nil, nil, date1)
@@ -22,13 +23,13 @@ func TestDateReport_CalculateTotal_ReturnsTotalAmountIncludingChildren(t *testin
 	expense5, _ := NewExpense(uuid.NewString(), *cat, 100, "EUR", 5, nil, nil, date1)
 	expense6, _ := NewExpense(uuid.NewString(), *cat, 200, "EUR", 5, nil, nil, date2)
 	expense7, _ := NewExpense(uuid.NewString(), *cat, 300, "EUR", 5, nil, nil, date2)
-	total := expense1.CalculateTotal().
-		Add(expense2.CalculateTotal()).
-		Add(expense3.CalculateTotal()).
-		Add(expense4.CalculateTotal()).
-		Add(expense5.CalculateTotal()).
-		Add(expense6.CalculateTotal()).
-		Add(expense7.CalculateTotal())
+	total := expense1.CalculateTotal(rates).
+		Add(expense2.CalculateTotal(rates)).
+		Add(expense3.CalculateTotal(rates)).
+		Add(expense4.CalculateTotal(rates)).
+		Add(expense5.CalculateTotal(rates)).
+		Add(expense6.CalculateTotal(rates)).
+		Add(expense7.CalculateTotal(rates))
 
 	// SUT
 	sut := ReportByDate{
@@ -69,6 +70,6 @@ func TestDateReport_CalculateTotal_ReturnsTotalAmountIncludingChildren(t *testin
 
 	// Assert
 	assert.NotNil(t, result)
-	assert.True(t, total.Equal(result.Totals["EUR"]))
-	assert.True(t, total.Equal(sut.GrandTotal.Totals["EUR"]))
+	assert.True(t, total.OriginalTotal.Equal(result.TotalInfos["EUR"].OriginalTotal))
+	assert.True(t, total.ConvertedTotal.Equal(result.ConvertedTotal))
 }

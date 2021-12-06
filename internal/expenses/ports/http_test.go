@@ -268,9 +268,9 @@ func TestGenerateReport_SuccessfulQuery_Returns200(t *testing.T) {
 	from := time.Date(2021, time.July, 3, 0, 0, 0, 0, time.UTC)
 	to := time.Date(2021, time.August, 3, 0, 0, 0, 0, time.UTC)
 	report := &domain.ReportByDate{}
-	rate1 := domain.NewExchageRate(time.Now(), "EUR", make(map[string]float32))
-	rate2 := domain.NewExchageRate(time.Now(), "EUR", make(map[string]float32))
-	rates := []domain.ExchangeRate{rate1, rate2}
+	rate1, _ := domain.NewExchageRate(time.Now(), "EUR", map[string]float64{"USD": 2})
+	rate2, _ := domain.NewExchageRate(time.Now(), "EUR", map[string]float64{"USD": 2})
+	rates := []domain.ExchangeRates{*rate1, *rate2}
 
 	matchFetchFn := func(cmd command.FetchExchangeRatesCommand) bool {
 		return cmd.DateRange.From() == from && cmd.DateRange.To() == to
@@ -414,9 +414,9 @@ func TestGenerateReport_FailedFindQuery_Returns500(t *testing.T) {
 	}
 	to := time.Now()
 	from := time.Now().Add(-1 * 24 * time.Hour)
-	rate1 := domain.NewExchageRate(time.Now(), "EUR", make(map[string]float32))
-	rate2 := domain.NewExchageRate(time.Now(), "EUR", make(map[string]float32))
-	rates := []domain.ExchangeRate{rate1, rate2}
+	rate1, _ := domain.NewExchageRate(time.Now(), "EUR", map[string]float64{"USD": 2})
+	rate2, _ := domain.NewExchageRate(time.Now(), "EUR", map[string]float64{"USD": 2})
+	rates := []domain.ExchangeRates{*rate1, *rate2}
 
 	matchFetchFn := func(cmd command.FetchExchangeRatesCommand) bool {
 		return cmd.DateRange.From() == from && cmd.DateRange.To() == to

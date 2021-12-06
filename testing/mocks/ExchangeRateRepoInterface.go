@@ -15,15 +15,15 @@ type ExchangeRateRepoInterface struct {
 }
 
 // GetAll provides a mock function with given fields: ctx, dateRange
-func (_m *ExchangeRateRepoInterface) GetAll(ctx context.Context, dateRange domain.DateRange) ([]domain.ExchangeRate, error) {
+func (_m *ExchangeRateRepoInterface) GetAll(ctx context.Context, dateRange domain.DateRange) ([]domain.ExchangeRates, error) {
 	ret := _m.Called(ctx, dateRange)
 
-	var r0 []domain.ExchangeRate
-	if rf, ok := ret.Get(0).(func(context.Context, domain.DateRange) []domain.ExchangeRate); ok {
+	var r0 []domain.ExchangeRates
+	if rf, ok := ret.Get(0).(func(context.Context, domain.DateRange) []domain.ExchangeRates); ok {
 		r0 = rf(ctx, dateRange)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]domain.ExchangeRate)
+			r0 = ret.Get(0).([]domain.ExchangeRates)
 		}
 	}
 
@@ -38,11 +38,11 @@ func (_m *ExchangeRateRepoInterface) GetAll(ctx context.Context, dateRange domai
 }
 
 // InsertAll provides a mock function with given fields: ctx, rates
-func (_m *ExchangeRateRepoInterface) InsertAll(ctx context.Context, rates []domain.ExchangeRate) (*domain.InsertResult, error) {
+func (_m *ExchangeRateRepoInterface) InsertAll(ctx context.Context, rates []domain.ExchangeRates) (*domain.InsertResult, error) {
 	ret := _m.Called(ctx, rates)
 
 	var r0 *domain.InsertResult
-	if rf, ok := ret.Get(0).(func(context.Context, []domain.ExchangeRate) *domain.InsertResult); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, []domain.ExchangeRates) *domain.InsertResult); ok {
 		r0 = rf(ctx, rates)
 	} else {
 		if ret.Get(0) != nil {
@@ -51,7 +51,7 @@ func (_m *ExchangeRateRepoInterface) InsertAll(ctx context.Context, rates []doma
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, []domain.ExchangeRate) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, []domain.ExchangeRates) error); ok {
 		r1 = rf(ctx, rates)
 	} else {
 		r1 = ret.Error(1)

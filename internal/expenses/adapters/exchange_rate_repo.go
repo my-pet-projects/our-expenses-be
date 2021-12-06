@@ -18,7 +18,7 @@ type rateDbModel struct {
 	ID    int64              `bson:"_id,omitempty"`
 	Date  time.Time          `bson:"date"`
 	Base  string             `bson:"base"`
-	Rates map[string]float32 `bson:"rates"`
+	Rates map[string]float64 `bson:"rates"`
 }
 
 // ExchangeRateRepository represents a struct to access exchange rates MongoDB collection.
@@ -29,8 +29,8 @@ type ExchangeRateRepository struct {
 
 // ExchangeRateRepoInterface defines a contract to persist exchange rates in the database.
 type ExchangeRateRepoInterface interface {
-	InsertAll(ctx context.Context, rates []domain.ExchangeRate) (*domain.InsertResult, error)
-	GetAll(ctx context.Context, dateRange domain.DateRange) ([]domain.ExchangeRate, error)
+	InsertAll(ctx context.Context, rates []domain.ExchangeRates) (*domain.InsertResult, error)
+	GetAll(ctx context.Context, dateRange domain.DateRange) ([]domain.ExchangeRates, error)
 }
 
 // NewExchangeRateRepo returns repository.
@@ -49,7 +49,7 @@ func (r *ExchangeRateRepository) collection() *mongo.Collection {
 // InsertAll insert all rates into the database.
 func (r *ExchangeRateRepository) InsertAll(
 	ctx context.Context,
-	rates []domain.ExchangeRate,
+	rates []domain.ExchangeRates,
 ) (*domain.InsertResult, error) {
 	ctx, span := tracer.NewSpan(ctx, "insert exchange rates to the database")
 	defer span.End()
@@ -81,7 +81,7 @@ func (r *ExchangeRateRepository) InsertAll(
 func (r *ExchangeRateRepository) GetAll(
 	ctx context.Context,
 	dateRange domain.DateRange,
-) ([]domain.ExchangeRate, error) {
+) ([]domain.ExchangeRates, error) {
 	ctx, span := tracer.NewSpan(ctx, "fetch exchange rates from the database")
 	defer span.End()
 
@@ -104,19 +104,22 @@ func (r *ExchangeRateRepository) GetAll(
 		return nil, errors.Wrap(cursorErr, "cursor iteration")
 	}
 
-	rates := []domain.ExchangeRate{}
+	rates := []domain.ExchangeRates{}
 	for _, rateDbModel := range rateDbModels {
-		rate := r.unmarshalRate(rateDbModel)
-		rates = append(rates, rate)
+		rate, rateErr := r.unmarshalRate(rateDbModel)
+		if rateErr != nil {
+			return nil, errors.Wrap(rateErr, "unmarshall rate")
+		}
+		rates = append(rates, *rate)
 	}
 
 	return rates, nil
 }
 
-func (r ExchangeRateRepository) marshalRate(exchangeRate domain.ExchangeRate) rateDbModel {
-	rates := make(map[string]float32, len(exchangeRate.Rates()))
+func (r ExchangeRateRepository) marshalRate(exchangeRate domain.ExchangeRates) rateDbModel {
+	rates := make(map[string]float64, len(exchangeRate.Rates()))
 	for currency, rate := range exchangeRate.Rates() {
-		rates[string(currency)], _ = rate.BigFloat().Float32()
+		rates[string(currency)], _ = rate.Float64()
 	}
 	dbModel := rateDbModel{
 		ID:    exchangeRate.Date().Unix(),
@@ -127,7 +130,6 @@ func (r ExchangeRateRepository) marshalRate(exchangeRate domain.ExchangeRate) ra
 	return dbModel
 }
 
-func (r ExchangeRateRepository) unmarshalRate(rateDbModel rateDbModel) domain.ExchangeRate {
-	rate := domain.NewExchageRate(rateDbModel.Date, rateDbModel.Base, rateDbModel.Rates)
-	return rate
+func (r ExchangeRateRepository) unmarshalRate(rateDbModel rateDbModel) (*domain.ExchangeRates, error) {
+	return domain.NewExchageRate(rateDbModel.Date, rateDbModel.Base, rateDbModel.Rates)
 }

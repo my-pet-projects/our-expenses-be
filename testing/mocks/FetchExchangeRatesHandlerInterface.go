@@ -18,15 +18,15 @@ type FetchExchangeRatesHandlerInterface struct {
 }
 
 // Handle provides a mock function with given fields: ctx, cmd
-func (_m *FetchExchangeRatesHandlerInterface) Handle(ctx context.Context, cmd command.FetchExchangeRatesCommand) ([]domain.ExchangeRate, error) {
+func (_m *FetchExchangeRatesHandlerInterface) Handle(ctx context.Context, cmd command.FetchExchangeRatesCommand) ([]domain.ExchangeRates, error) {
 	ret := _m.Called(ctx, cmd)
 
-	var r0 []domain.ExchangeRate
-	if rf, ok := ret.Get(0).(func(context.Context, command.FetchExchangeRatesCommand) []domain.ExchangeRate); ok {
+	var r0 []domain.ExchangeRates
+	if rf, ok := ret.Get(0).(func(context.Context, command.FetchExchangeRatesCommand) []domain.ExchangeRates); ok {
 		r0 = rf(ctx, cmd)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]domain.ExchangeRate)
+			r0 = ret.Get(0).([]domain.ExchangeRates)
 		}
 	}
 

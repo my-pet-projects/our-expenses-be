@@ -13,8 +13,9 @@ import (
 
 // FindExpensesQuery defines an expense query.
 type FindExpensesQuery struct {
-	DateRange domain.DateRange
-	Interval  string
+	DateRange     domain.DateRange
+	Interval      string
+	ExchangeRates []domain.ExchangeRates
 }
 
 // FindExpensesHandler defines a handler to fetch expenses.
@@ -59,7 +60,7 @@ func (h FindExpensesHandler) Handle(
 		return nil, errors.Wrap(expensesErr, "fetch expenses")
 	}
 
-	reportGenerator := domain.NewReportGenerator(expenses, *filter)
+	reportGenerator := domain.NewReportGenerator(expenses, *filter, query.ExchangeRates)
 	report := reportGenerator.GenerateByDateReport()
 
 	return &report, nil

@@ -88,35 +88,6 @@ func TestFetch_FailedRequestWith500_ThrowsError(t *testing.T) {
 	assert.NotNil(t, resErr)
 }
 
-func TestFetch_ResponseDecodeFails_ThrowsError(t *testing.T) {
-	t.Parallel()
-	// Arrange
-	datesRange := []time.Time{
-		time.Now(),
-		time.Now().Add(-10 * 24 * time.Hour),
-		time.Now().Add(-2 * 24 * time.Hour),
-	}
-	expected := "unexpected response"
-	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(expected))
-	}))
-	defer svr.Close()
-	config := adapters.ExchangeRateFetcherConfig{
-		Url:    svr.URL,
-		ApiKey: "key",
-	}
-
-	// SUT
-	sut := adapters.NewExchangeRateFetcher(config)
-
-	// Act
-	res, resErr := sut.Fetch(context.Background(), datesRange)
-
-	// Assert
-	assert.Nil(t, res)
-	assert.NotNil(t, resErr)
-}
-
 func TestFetch_ResponseFails_ThrowsError(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -141,7 +112,66 @@ func TestFetch_ResponseFails_ThrowsError(t *testing.T) {
 	assert.NotNil(t, resErr)
 }
 
-func TestFetch_Response_ReturnsExchangeRates(t *testing.T) {
+func TestFetch_FailedToReadRequestBody_ThrowsError(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	datesRange := []time.Time{
+		time.Now(),
+		time.Now().Add(-10 * 24 * time.Hour),
+		time.Now().Add(-2 * 24 * time.Hour),
+	}
+	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// invalid content length will fail body read
+		w.Header().Set("Content-Length", "1")
+	}))
+	defer svr.Close()
+	config := adapters.ExchangeRateFetcherConfig{
+		Url:    svr.URL,
+		ApiKey: "key",
+	}
+
+	// SUT
+	sut := adapters.NewExchangeRateFetcher(config)
+
+	// Act
+	res, resErr := sut.Fetch(context.Background(), datesRange)
+
+	// Assert
+	assert.Nil(t, res)
+	assert.NotNil(t, resErr)
+}
+
+func TestFetch_ResponseDecodeFails_ThrowsError(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	datesRange := []time.Time{
+		time.Now(),
+		time.Now().Add(-10 * 24 * time.Hour),
+		time.Now().Add(-2 * 24 * time.Hour),
+	}
+	expected := "unexpected response"
+	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(expected))
+		w.Header()
+	}))
+	defer svr.Close()
+	config := adapters.ExchangeRateFetcherConfig{
+		Url:    svr.URL,
+		ApiKey: "key",
+	}
+
+	// SUT
+	sut := adapters.NewExchangeRateFetcher(config)
+
+	// Act
+	res, resErr := sut.Fetch(context.Background(), datesRange)
+
+	// Assert
+	assert.Nil(t, res)
+	assert.NotNil(t, resErr)
+}
+
+func TestFetch_Response_ValidRate_ReturnsExchangeRates(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	datesRange := []time.Time{
@@ -170,4 +200,32 @@ func TestFetch_Response_ReturnsExchangeRates(t *testing.T) {
 	assert.Equal(t, map[domain.Currency]decimal.Decimal{domain.Currency("EUR"): decimal.NewFromFloat(1.123)},
 		res[0].Rates())
 	assert.Nil(t, resErr)
+}
+
+func TestFetch_Response_InvalidRate_ThrowsError(t *testing.T) {
+	t.Parallel()
+	// Arrange
+	datesRange := []time.Time{
+		time.Now(),
+	}
+	expected := "{ \"base\":\"USD\", \"rates\": { } }"
+	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte(expected))
+	}))
+	defer svr.Close()
+	config := adapters.ExchangeRateFetcherConfig{
+		Url:    svr.URL,
+		ApiKey: "key",
+	}
+
+	// SUT
+	sut := adapters.NewExchangeRateFetcher(config)
+
+	// Act
+	res, resErr := sut.Fetch(context.Background(), datesRange)
+
+	// Assert
+	assert.Nil(t, res)
+	assert.NotNil(t, resErr)
 }

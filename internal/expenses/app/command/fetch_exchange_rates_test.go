@@ -74,10 +74,10 @@ func TestFetchExchangeRatesHandler_NoMissingRates_ReturnsRates(t *testing.T) {
 	cmd := command.FetchExchangeRatesCommand{
 		DateRange: *dateRange,
 	}
-	rate1 := domain.NewExchageRate(time1, "EUR", make(map[string]float32))
-	rate2 := domain.NewExchageRate(time2, "EUR", make(map[string]float32))
-	rate3 := domain.NewExchageRate(time3, "EUR", make(map[string]float32))
-	rates := []domain.ExchangeRate{rate1, rate2, rate3}
+	rate1, _ := domain.NewExchageRate(time1, "EUR", map[string]float64{"USD": 1})
+	rate2, _ := domain.NewExchageRate(time2, "EUR", map[string]float64{"USD": 1})
+	rate3, _ := domain.NewExchageRate(time3, "EUR", map[string]float64{"USD": 1})
+	rates := []domain.ExchangeRates{*rate1, *rate2, *rate3}
 
 	matchDateRangeFn := func(dr domain.DateRange) bool {
 		return dr == *dateRange
@@ -113,10 +113,10 @@ func TestFetchExchangeRatesHandler_MissingRates_FetcherFails_ReturnRatesThatHave
 	cmd := command.FetchExchangeRatesCommand{
 		DateRange: *dateRange,
 	}
-	rate1 := domain.NewExchageRate(time1, "EUR", make(map[string]float32))
-	rate2 := domain.NewExchageRate(time2, "EUR", make(map[string]float32))
-	rate3 := domain.NewExchageRate(time3, "EUR", make(map[string]float32))
-	rates := []domain.ExchangeRate{rate1, rate2, rate3}
+	rate1, _ := domain.NewExchageRate(time1, "EUR", map[string]float64{"USD": 1})
+	rate2, _ := domain.NewExchageRate(time2, "EUR", map[string]float64{"USD": 1})
+	rate3, _ := domain.NewExchageRate(time3, "EUR", map[string]float64{"USD": 1})
+	rates := []domain.ExchangeRates{*rate1, *rate2, *rate3}
 
 	matchDateRangeFn := func(dr domain.DateRange) bool {
 		return dr == *dateRange
@@ -160,13 +160,13 @@ func TestFetchExchangeRatesHandler_MissingRates_RepoFails_ThrowsError(t *testing
 	cmd := command.FetchExchangeRatesCommand{
 		DateRange: *dateRange,
 	}
-	rate1 := domain.NewExchageRate(time1, "EUR", make(map[string]float32))
-	rate2 := domain.NewExchageRate(time2, "EUR", make(map[string]float32))
-	rate3 := domain.NewExchageRate(time3, "EUR", make(map[string]float32))
-	rate4 := domain.NewExchageRate(time4, "EUR", make(map[string]float32))
-	rate5 := domain.NewExchageRate(time5, "EUR", make(map[string]float32))
-	rates := []domain.ExchangeRate{rate1, rate2, rate3}
-	missingRates := []domain.ExchangeRate{rate4, rate5}
+	rate1, _ := domain.NewExchageRate(time1, "EUR", map[string]float64{"USD": 1})
+	rate2, _ := domain.NewExchageRate(time2, "EUR", map[string]float64{"USD": 1})
+	rate3, _ := domain.NewExchageRate(time3, "EUR", map[string]float64{"USD": 1})
+	rate4, _ := domain.NewExchageRate(time4, "EUR", map[string]float64{"USD": 1})
+	rate5, _ := domain.NewExchageRate(time5, "EUR", map[string]float64{"USD": 1})
+	rates := []domain.ExchangeRates{*rate1, *rate2, *rate3}
+	missingRates := []domain.ExchangeRates{*rate4, *rate5}
 
 	matchDateRangeFn := func(dr domain.DateRange) bool {
 		return dr == *dateRange
@@ -180,7 +180,7 @@ func TestFetchExchangeRatesHandler_MissingRates_RepoFails_ThrowsError(t *testing
 	fetcher.On("Fetch", mock.Anything,
 		mock.MatchedBy(matchMissingDatesFn)).Return(missingRates, nil)
 
-	matchMissingRatesFn := func(r []domain.ExchangeRate) bool {
+	matchMissingRatesFn := func(r []domain.ExchangeRates) bool {
 		return reflect.DeepEqual(r, missingRates)
 	}
 	repo.On("InsertAll", mock.Anything,
@@ -213,13 +213,13 @@ func TestFetchExchangeRatesHandler_MissingRates_ReturnCombinedRates(t *testing.T
 	cmd := command.FetchExchangeRatesCommand{
 		DateRange: *dateRange,
 	}
-	rate1 := domain.NewExchageRate(time1, "EUR", make(map[string]float32))
-	rate2 := domain.NewExchageRate(time2, "EUR", make(map[string]float32))
-	rate3 := domain.NewExchageRate(time3, "EUR", make(map[string]float32))
-	rate4 := domain.NewExchageRate(time4, "EUR", make(map[string]float32))
-	rate5 := domain.NewExchageRate(time5, "EUR", make(map[string]float32))
-	rates := []domain.ExchangeRate{rate1, rate2, rate3}
-	missingRates := []domain.ExchangeRate{rate4, rate5}
+	rate1, _ := domain.NewExchageRate(time1, "EUR", map[string]float64{"USD": 1})
+	rate2, _ := domain.NewExchageRate(time2, "EUR", map[string]float64{"USD": 1})
+	rate3, _ := domain.NewExchageRate(time3, "EUR", map[string]float64{"USD": 1})
+	rate4, _ := domain.NewExchageRate(time4, "EUR", map[string]float64{"USD": 1})
+	rate5, _ := domain.NewExchageRate(time5, "EUR", map[string]float64{"USD": 1})
+	rates := []domain.ExchangeRates{*rate1, *rate2, *rate3}
+	missingRates := []domain.ExchangeRates{*rate4, *rate5}
 
 	matchDateRangeFn := func(dr domain.DateRange) bool {
 		return dr == *dateRange
@@ -233,7 +233,7 @@ func TestFetchExchangeRatesHandler_MissingRates_ReturnCombinedRates(t *testing.T
 	fetcher.On("Fetch", mock.Anything,
 		mock.MatchedBy(matchMissingDatesFn)).Return(missingRates, nil)
 
-	matchMissingRatesFn := func(r []domain.ExchangeRate) bool {
+	matchMissingRatesFn := func(r []domain.ExchangeRates) bool {
 		return reflect.DeepEqual(r, missingRates)
 	}
 	repo.On("InsertAll", mock.Anything,

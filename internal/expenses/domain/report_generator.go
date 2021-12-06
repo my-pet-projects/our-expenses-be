@@ -8,27 +8,36 @@ import (
 type ReportGenerator struct {
 	expenses []Expense
 	filter   ExpenseFilter
+	rates    []ExchangeRates
 }
 
 // NewReportGenerator instantiates a new report.
-func NewReportGenerator(expenses []Expense, filter ExpenseFilter) ReportGenerator {
+func NewReportGenerator(expenses []Expense, filter ExpenseFilter, rates []ExchangeRates) ReportGenerator {
 	return ReportGenerator{
 		expenses: expenses,
 		filter:   filter,
+		rates:    rates,
 	}
 }
 
 // GenerateByDateReport generates report.
 func (r ReportGenerator) GenerateByDateReport() ReportByDate {
+	dateRatesMap := make(map[time.Time]ExchangeRates, 0)
+	for _, rate := range r.rates {
+		dateRatesMap[rate.Date()] = rate
+	}
+
 	dateCategoryExpenses := make([]*DateExpenses, 0)
-	dateExpensesMap := r.prepareDateExpensesMap(r.expenses, r.filter.Interval())
+	dateExpensesMap := r.prepareDateExpensesMap(r.expenses, r.filter.Interval(), dateRatesMap)
 	for date, expenses := range dateExpensesMap {
 		categoryExpensesMap := r.buildCategoryFlatMap(expenses)
 		rootCategoryExpense := r.buildCategoryHierarchy(categoryExpensesMap)
+		dateRates := dateRatesMap[date]
 
 		dateExpense := &DateExpenses{
 			Date:          date,
 			SubCategories: rootCategoryExpense.SubCategories,
+			ExchangeRate:  dateRates.ChangeBaseCurrency("EUR"),
 		}
 		dateCategoryExpenses = append(dateCategoryExpenses, dateExpense)
 	}
@@ -41,14 +50,21 @@ func (r ReportGenerator) GenerateByDateReport() ReportByDate {
 	return report
 }
 
-func (r ReportGenerator) prepareDateExpensesMap(expenses []Expense, interval Interval) map[time.Time][]Expense {
+func (r ReportGenerator) prepareDateExpensesMap(
+	expenses []Expense,
+	interval Interval,
+	rates map[time.Time]ExchangeRates,
+) map[time.Time][]Expense {
 	dateExpensesMap := make(map[time.Time][]Expense)
 	for _, expense := range expenses {
 		date := expense.date
+		rate := rates[date]
+		rate = rate.ChangeBaseCurrency("EUR")
+		expense.CalculateTotal(&rate)
 		if interval == IntervalMonth {
-			date = time.Date(expense.date.Year(), expense.date.Month(), 1, 0, 0, 0, 0, time.Local)
+			date = time.Date(expense.date.Year(), expense.date.Month(), 1, 0, 0, 0, 0, time.UTC)
 		} else if interval == IntervalYear {
-			date = time.Date(expense.date.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+			date = time.Date(expense.date.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
 		}
 		dateExpenses := dateExpensesMap[date]
 		if dateExpenses == nil {
