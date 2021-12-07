@@ -11,16 +11,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
-
-var categoriesRepoTracer trace.Tracer
 
 const collectionName string = "categories"
 
@@ -56,7 +54,6 @@ type CategoryRepoInterface interface {
 
 // NewCategoryRepo returns a CategoryRepository.
 func NewCategoryRepo(client *database.MongoClient, logger logger.LogInterface) *CategoryRepository {
-	categoriesRepoTracer = otel.Tracer("app.repository.categories")
 	return &CategoryRepository{
 		logger: logger,
 		client: client,
@@ -69,8 +66,11 @@ func (r *CategoryRepository) collection() *mongo.Collection {
 }
 
 // GetAll returns all categories from the database that matches the filter.
-func (r *CategoryRepository) GetAll(ctx context.Context, filter domain.CategoryFilter) ([]domain.Category, error) {
-	ctx, span := categoriesRepoTracer.Start(ctx, "find categories in the database")
+func (r *CategoryRepository) GetAll(
+	ctx context.Context,
+	filter domain.CategoryFilter,
+) ([]domain.Category, error) {
+	ctx, span := tracer.NewSpan(ctx, "find categories in the database")
 	// span.SetAttributes(attribute.Any("filter", filter)) TODO: trace attributes?
 	defer span.End()
 
@@ -140,7 +140,7 @@ func (r *CategoryRepository) GetAll(ctx context.Context, filter domain.CategoryF
 
 // GetOne returns a single category from the database.
 func (r *CategoryRepository) GetOne(ctx context.Context, id string) (*domain.Category, error) {
-	ctx, span := categoriesRepoTracer.Start(ctx, "find categories in the database")
+	ctx, span := tracer.NewSpan(ctx, "find categories in the database")
 	span.SetAttributes(attribute.String("id", id))
 	defer span.End()
 
@@ -150,10 +150,10 @@ func (r *CategoryRepository) GetOne(ctx context.Context, id string) (*domain.Cat
 	categoryDbModel := categoryModel{}
 	findError := r.collection().FindOne(ctx, filter).Decode(&categoryDbModel)
 	if findError != nil {
-		if findError == mongo.ErrNoDocuments {
+		if errors.Is(findError, mongo.ErrNoDocuments) {
 			return nil, nil
 		}
-		return nil, findError
+		return nil, errors.Wrap(findError, "find category")
 	}
 
 	category, categoryErr := r.unmarshalCategory(categoryDbModel)
@@ -166,7 +166,7 @@ func (r *CategoryRepository) GetOne(ctx context.Context, id string) (*domain.Cat
 
 // Insert a category into the database.
 func (r *CategoryRepository) Insert(ctx context.Context, category domain.Category) (*string, error) {
-	ctx, span := categoriesRepoTracer.Start(ctx, "add category to the database")
+	ctx, span := tracer.NewSpan(ctx, "add category to the database")
 	defer span.End()
 
 	categoryDbModel := r.marshalCategory(category)
@@ -187,7 +187,7 @@ func (r *CategoryRepository) Insert(ctx context.Context, category domain.Categor
 
 // Update updates a category in the database.
 func (r *CategoryRepository) Update(ctx context.Context, category domain.Category) (*domain.UpdateResult, error) {
-	ctx, span := categoriesRepoTracer.Start(ctx, "update category in the database")
+	ctx, span := tracer.NewSpan(ctx, "update category in the database")
 	defer span.End()
 
 	categoryDbModel := r.marshalCategory(category)
@@ -212,8 +212,6 @@ func (r *CategoryRepository) Update(ctx context.Context, category domain.Categor
 	// 		"parentId": "",
 	// 	}
 	// }
-
-	fmt.Print(updater)
 
 	mongoUpdResult, mongoUpdErr := r.collection().UpdateOne(ctx, filter, updater, opts)
 	if mongoUpdErr != nil {
@@ -245,7 +243,10 @@ func (r *CategoryRepository) DeleteOne(ctx context.Context, id string) (*domain.
 }
 
 // DeleteAll deletes all categories in the database.
-func (r *CategoryRepository) DeleteAll(ctx context.Context, filter domain.CategoryFilter) (*domain.DeleteResult, error) {
+func (r *CategoryRepository) DeleteAll(
+	ctx context.Context,
+	filter domain.CategoryFilter,
+) (*domain.DeleteResult, error) {
 	query := bson.M{}
 
 	// TODO: little safety net to prevent deleting all items

@@ -22,7 +22,7 @@ func NewReportGenerator(expenses []Expense, filter ExpenseFilter, rates []Exchan
 
 // GenerateByDateReport generates report.
 func (r ReportGenerator) GenerateByDateReport() ReportByDate {
-	dateRatesMap := make(map[time.Time]ExchangeRates, 0)
+	dateRatesMap := make(map[time.Time]ExchangeRates)
 	for _, rate := range r.rates {
 		dateRatesMap[rate.Date()] = rate
 	}
@@ -73,6 +73,7 @@ func (r ReportGenerator) prepareDateExpensesMap(
 		dateExpenses = append(dateExpenses, expense)
 		dateExpensesMap[date] = dateExpenses
 	}
+
 	return dateExpensesMap
 }
 
@@ -105,6 +106,7 @@ func (r ReportGenerator) buildCategoryFlatMap(expenses []Expense) map[string]*Ca
 			categoryExpensesMap[parentCategory.id] = parentExpenses
 		}
 	}
+
 	return categoryExpensesMap
 }
 
@@ -114,7 +116,7 @@ func (r ReportGenerator) buildCategoryHierarchy(flatCategoryExpensesMap map[stri
 		if categoryExpenses.Category.IsRoot() {
 			rootCategories = append(rootCategories, categoryExpenses)
 		} else {
-			category := flatCategoryExpensesMap[*categoryExpenses.Category.parentId]
+			category := flatCategoryExpensesMap[*categoryExpenses.Category.parentID]
 			category.SubCategories = append(category.SubCategories, categoryExpenses)
 		}
 	}
@@ -122,5 +124,6 @@ func (r ReportGenerator) buildCategoryHierarchy(flatCategoryExpensesMap map[stri
 	rootElement := CategoryExpenses{
 		SubCategories: rootCategories,
 	}
+
 	return rootElement
 }

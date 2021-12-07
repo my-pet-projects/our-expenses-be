@@ -1,5 +1,6 @@
 package domain
 
+// SystemUser returns system user name.
 const SystemUser string = "system"
 
 // InsertResult represents a struct with new entity ID.

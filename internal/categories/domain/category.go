@@ -84,7 +84,7 @@ func (c Category) ParentIDs() []string {
 		return []string{}
 	}
 
-	var parentIDs []string
+	parentIDs := make([]string, 0)
 	for _, parentID := range strings.Split(c.path, "|") {
 		if parentID == c.id || len(parentID) == 0 {
 			continue
@@ -115,7 +115,7 @@ func (c Category) UpdatedAt() *time.Time {
 }
 
 // SetMetadata sets category metadata.
-func (c Category) SetMetadata(createdBy string, createdAt time.Time, updatedBy *string, updatedAt *time.Time) {
+func (c *Category) SetMetadata(createdBy string, createdAt time.Time, updatedBy *string, updatedAt *time.Time) {
 	c.createdBy = createdBy
 	c.createdAt = createdAt
 	c.updatedBy = updatedBy
@@ -127,6 +127,7 @@ func (c *Category) SetParents(parents []Category) {
 	c.parents = parents
 }
 
+// AssignNewParent assigns a new parent.
 func (c *Category) AssignNewParent(parent *Category) {
 	var newParentID *string
 	var newLevel int
@@ -147,8 +148,9 @@ func (c *Category) AssignNewParent(parent *Category) {
 	c.level = newLevel
 }
 
+// ReplaceAncestor replaces all ancestors.
 func (c *Category) ReplaceAncestor(oldPath string, newPath string) {
-	path := strings.Replace(c.path, oldPath, newPath, -1)
+	path := strings.ReplaceAll(c.path, oldPath, newPath)
 	level := strings.Count(path, "|")
 	c.path = path
 	c.level = level

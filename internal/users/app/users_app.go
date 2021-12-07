@@ -28,8 +28,7 @@ type Commands struct {
 }
 
 // Queries struct holds available application queries.
-type Queries struct {
-}
+type Queries struct{}
 
 // NewApplication returns application instance.
 func NewApplication(

@@ -8,15 +8,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
-
-var expenseRepoTracer trace.Tracer
 
 const expenseCollectionName string = "expenses"
 
@@ -50,7 +47,6 @@ type ExpenseRepoInterface interface {
 
 // NewExpenseRepo returns a Expenseadapters.
 func NewExpenseRepo(client *database.MongoClient, logger logger.LogInterface) *ExpenseRepository {
-	expenseRepoTracer = otel.Tracer("app.adapters.expenses")
 	return &ExpenseRepository{
 		logger: logger,
 		client: client,
@@ -64,7 +60,7 @@ func (r *ExpenseRepository) collection() *mongo.Collection {
 
 // Insert insert a new record into database.
 func (r *ExpenseRepository) Insert(ctx context.Context, category domain.Expense) (*string, error) {
-	ctx, span := categoriesRepoTracer.Start(ctx, "add expense to the database")
+	ctx, span := tracer.NewSpan(ctx, "add expense to the database")
 	defer span.End()
 
 	dbModel := r.marshalExpense(category)

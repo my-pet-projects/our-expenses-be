@@ -16,6 +16,7 @@ import (
 )
 
 func TestMoveCategoryHandler_ReturnsHandler(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -28,6 +29,7 @@ func TestMoveCategoryHandler_ReturnsHandler(t *testing.T) {
 }
 
 func TestMoveCategoryHandler_FailedToGetCategory_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -39,11 +41,11 @@ func TestMoveCategoryHandler_FailedToGetCategory_ThrowsError(t *testing.T) {
 		DestinationID: destinationID,
 	}
 
-	matchIdFn := func(id string) bool {
+	matchIDFn := func(id string) bool {
 		return categoryID == id
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(nil, errors.New("error"))
+		mock.MatchedBy(matchIDFn)).Return(nil, errors.New("error"))
 
 	// SUT
 	sut := command.NewMoveCategoryHandler(repo, log)
@@ -58,6 +60,7 @@ func TestMoveCategoryHandler_FailedToGetCategory_ThrowsError(t *testing.T) {
 }
 
 func TestMoveCategoryHandler_NoCategoryFound_ReturnsEmptyResult(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -69,11 +72,11 @@ func TestMoveCategoryHandler_NoCategoryFound_ReturnsEmptyResult(t *testing.T) {
 		DestinationID: destinationID,
 	}
 
-	matchIdFn := func(id string) bool {
+	matchIDFn := func(id string) bool {
 		return categoryID == id
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(nil, nil)
+		mock.MatchedBy(matchIDFn)).Return(nil, nil)
 
 	// SUT
 	sut := command.NewMoveCategoryHandler(repo, log)
@@ -88,6 +91,7 @@ func TestMoveCategoryHandler_NoCategoryFound_ReturnsEmptyResult(t *testing.T) {
 }
 
 func TestMoveCategoryHandler_FailedToGetCategoryUsages_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -106,11 +110,11 @@ func TestMoveCategoryHandler_FailedToGetCategoryUsages_ThrowsError(t *testing.T)
 	path := fmt.Sprintf("|%s", parentID)
 	category, _ := domain.NewCategory(categoryID, "name", &parentID, path, nil, 1)
 
-	matchIdFn := func(id string) bool {
+	matchIDFn := func(id string) bool {
 		return categoryID == id
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(category, nil)
+		mock.MatchedBy(matchIDFn)).Return(category, nil)
 	matchFilterFn := func(filter domain.CategoryFilter) bool {
 		return reflect.DeepEqual(filter, pathFilter)
 	}
@@ -130,6 +134,7 @@ func TestMoveCategoryHandler_FailedToGetCategoryUsages_ThrowsError(t *testing.T)
 }
 
 func TestMoveCategoryHandler_FailedToGetDestinationCategory_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -149,18 +154,18 @@ func TestMoveCategoryHandler_FailedToGetDestinationCategory_ThrowsError(t *testi
 	category, _ := domain.NewCategory(categoryID, "name", &parentID, path, nil, 1)
 	categories := []domain.Category{{}}
 
-	matchIdFn := func(id string) bool {
+	matchIDFn := func(id string) bool {
 		return categoryID == id
 	}
-	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchIdFn)).Return(category, nil)
+	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchIDFn)).Return(category, nil)
 	matchFilterFn := func(filter domain.CategoryFilter) bool {
 		return reflect.DeepEqual(filter, pathFilter)
 	}
 	repo.On("GetAll", mock.Anything, mock.MatchedBy(matchFilterFn)).Return(categories, nil)
-	matchDestIdFn := func(id string) bool {
+	matchDestIDFn := func(id string) bool {
 		return id == destinationID
 	}
-	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchDestIdFn)).Return(nil, errors.New("error"))
+	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchDestIDFn)).Return(nil, errors.New("error"))
 
 	// SUT
 	sut := command.NewMoveCategoryHandler(repo, log)
@@ -175,6 +180,7 @@ func TestMoveCategoryHandler_FailedToGetDestinationCategory_ThrowsError(t *testi
 }
 
 func TestMoveCategoryHandler_NoDestinationCategory_ReturnsEmptyResult(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -194,18 +200,18 @@ func TestMoveCategoryHandler_NoDestinationCategory_ReturnsEmptyResult(t *testing
 	category, _ := domain.NewCategory(categoryID, "name", &parentID, path, nil, 1)
 	categories := []domain.Category{{}}
 
-	matchIdFn := func(id string) bool {
+	matchIDFn := func(id string) bool {
 		return categoryID == id
 	}
-	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchIdFn)).Return(category, nil)
+	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchIDFn)).Return(category, nil)
 	matchFilterFn := func(filter domain.CategoryFilter) bool {
 		return reflect.DeepEqual(filter, pathFilter)
 	}
 	repo.On("GetAll", mock.Anything, mock.MatchedBy(matchFilterFn)).Return(categories, nil)
-	matchDestIdFn := func(id string) bool {
+	matchDestIDFn := func(id string) bool {
 		return id == destinationID
 	}
-	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchDestIdFn)).Return(nil, nil)
+	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchDestIDFn)).Return(nil, nil)
 
 	// SUT
 	sut := command.NewMoveCategoryHandler(repo, log)
@@ -220,6 +226,7 @@ func TestMoveCategoryHandler_NoDestinationCategory_ReturnsEmptyResult(t *testing
 }
 
 func TestMoveCategoryHandler_FailedToUpdateCategory_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -240,18 +247,18 @@ func TestMoveCategoryHandler_FailedToUpdateCategory_ThrowsError(t *testing.T) {
 	destCategory, _ := domain.NewCategory(destinationID, "dest name", &parentID, path, nil, 1)
 	categories := []domain.Category{{}}
 
-	matchIdFn := func(id string) bool {
+	matchIDFn := func(id string) bool {
 		return categoryID == id
 	}
-	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchIdFn)).Return(category, nil)
+	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchIDFn)).Return(category, nil)
 	matchFilterFn := func(filter domain.CategoryFilter) bool {
 		return reflect.DeepEqual(filter, pathFilter)
 	}
 	repo.On("GetAll", mock.Anything, mock.MatchedBy(matchFilterFn)).Return(categories, nil)
-	matchDestIdFn := func(id string) bool {
+	matchDestIDFn := func(id string) bool {
 		return id == destinationID
 	}
-	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchDestIdFn)).Return(destCategory, nil)
+	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchDestIDFn)).Return(destCategory, nil)
 	matchUpdFn := func(category domain.Category) bool {
 		return category.ID() == categoryID
 	}
@@ -270,6 +277,7 @@ func TestMoveCategoryHandler_FailedToUpdateCategory_ThrowsError(t *testing.T) {
 }
 
 func TestMoveCategoryHandler_UpdateCategory_ReturnsResult(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -303,19 +311,19 @@ func TestMoveCategoryHandler_UpdateCategory_ReturnsResult(t *testing.T) {
 		UpdateCount: 5,
 	}
 
-	matchIdFn := func(id string) bool {
+	matchIDFn := func(id string) bool {
 		return targetID == id
 	}
-	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchIdFn)).Return(targetCat, nil)
+	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchIDFn)).Return(targetCat, nil)
 	matchFilterFn := func(filter domain.CategoryFilter) bool {
 		return reflect.DeepEqual(filter, pathFilter)
 	}
 	repo.On("GetAll", mock.Anything, mock.MatchedBy(matchFilterFn)).Return(categories, nil)
-	matchDestIdFn := func(id string) bool {
+	matchDestIDFn := func(id string) bool {
 		return id == destinationID
 	}
 
-	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchDestIdFn)).Return(destCategory, nil)
+	repo.On("GetOne", mock.Anything, mock.MatchedBy(matchDestIDFn)).Return(destCategory, nil)
 	matchUpdTargetFn := func(category domain.Category) bool {
 		return category.ID() == targetID && category.Path() == fmt.Sprintf("%s|%s", destinationPath, targetID) &&
 			category.Level() == destinationLevel+1

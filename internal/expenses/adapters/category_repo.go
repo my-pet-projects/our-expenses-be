@@ -7,16 +7,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/database"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
-
-var categoriesRepoTracer trace.Tracer
 
 const categoriesCollectionName string = "categories"
 
@@ -44,7 +41,6 @@ type ExpenseCategoryRepoInterface interface {
 
 // NewCategoryRepo returns a CategoryRepository.
 func NewCategoryRepo(client *database.MongoClient, logger logger.LogInterface) *CategoryRepository {
-	categoriesRepoTracer = otel.Tracer("app.repository.categories")
 	return &CategoryRepository{
 		logger: logger,
 		client: client,
@@ -58,23 +54,23 @@ func (r *CategoryRepository) collection() *mongo.Collection {
 
 // GetOne returns a single category from the database.
 func (r *CategoryRepository) GetOne(ctx context.Context, id string) (*domain.Category, error) {
-	ctx, span := categoriesRepoTracer.Start(ctx, "find categories in the database")
+	ctx, span := tracer.NewSpan(ctx, "find categories in the database")
 	span.SetAttributes(attribute.String("id", id))
 	defer span.End()
 
 	objID, _ := primitive.ObjectIDFromHex(id)
 
 	filter := bson.M{"_id": objID}
-	categoryDbModel := categoryDbModel{}
-	findError := r.collection().FindOne(ctx, filter).Decode(&categoryDbModel)
+	catDbModel := categoryDbModel{}
+	findError := r.collection().FindOne(ctx, filter).Decode(&catDbModel)
 	if findError != nil {
-		if findError == mongo.ErrNoDocuments {
+		if errors.Is(findError, mongo.ErrNoDocuments) {
 			return nil, nil
 		}
-		return nil, findError
+		return nil, errors.Wrap(findError, "find category")
 	}
 
-	category, categoryErr := r.unmarshalCategory(categoryDbModel)
+	category, categoryErr := r.unmarshalCategory(catDbModel)
 	if categoryErr != nil {
 		return nil, categoryErr
 	}

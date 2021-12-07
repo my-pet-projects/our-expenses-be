@@ -20,6 +20,7 @@ import (
 )
 
 func TestNewHTTPServer_ReturnsServer(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	app := &app.Application{}
 
@@ -31,6 +32,7 @@ func TestNewHTTPServer_ReturnsServer(t *testing.T) {
 }
 
 func TestFindCategories_SuccessfulQuery_Returns200(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -73,6 +75,7 @@ func TestFindCategories_SuccessfulQuery_Returns200(t *testing.T) {
 }
 
 func TestFindCategories_FailedQuery_Returns500(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -108,6 +111,7 @@ func TestFindCategories_FailedQuery_Returns500(t *testing.T) {
 }
 
 func TestFindCategory_SuccessfulQuery_Returns200(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -119,15 +123,15 @@ func TestFindCategory_SuccessfulQuery_Returns200(t *testing.T) {
 		},
 		Logger: logger,
 	}
-	categoryId := "categoryId"
+	categoryID := "categoryID"
 	category := domain.Category{}
 	category.SetParents([]domain.Category{{}})
 
-	matchIdFn := func(q query.FindCategoryQuery) bool {
-		return q.CategoryID == categoryId
+	matchIDFn := func(q query.FindCategoryQuery) bool {
+		return q.CategoryID == categoryID
 	}
 	logger.On("Infof", mock.Anything, mock.Anything, mock.Anything).Return()
-	handler.On("Handle", mock.Anything, mock.MatchedBy(matchIdFn)).Return(&category, nil)
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchIDFn)).Return(&category, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
@@ -137,7 +141,7 @@ func TestFindCategory_SuccessfulQuery_Returns200(t *testing.T) {
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.FindCategoryByID(ctx, categoryId)
+	server.FindCategoryByID(ctx, categoryID)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -147,6 +151,7 @@ func TestFindCategory_SuccessfulQuery_Returns200(t *testing.T) {
 }
 
 func TestFindCategory_FailedQuery_Returns500(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -158,7 +163,7 @@ func TestFindCategory_FailedQuery_Returns500(t *testing.T) {
 		},
 		Logger: logger,
 	}
-	categoryID := "categoryId"
+	categoryID := "categoryID"
 
 	logger.On("Infof", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
@@ -182,6 +187,7 @@ func TestFindCategory_FailedQuery_Returns500(t *testing.T) {
 }
 
 func TestFindCategory_NilQueryResult_Returns404(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -193,13 +199,13 @@ func TestFindCategory_NilQueryResult_Returns404(t *testing.T) {
 		},
 		Logger: logger,
 	}
-	categoryId := "categoryId"
+	categoryID := "categoryID"
 
-	matchIdFn := func(q query.FindCategoryQuery) bool {
-		return q.CategoryID == categoryId
+	matchIDFn := func(q query.FindCategoryQuery) bool {
+		return q.CategoryID == categoryID
 	}
 	logger.On("Infof", mock.Anything, mock.Anything, mock.Anything).Return()
-	handler.On("Handle", mock.Anything, mock.MatchedBy(matchIdFn)).Return(nil, nil)
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchIDFn)).Return(nil, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
@@ -209,7 +215,7 @@ func TestFindCategory_NilQueryResult_Returns404(t *testing.T) {
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.FindCategoryByID(ctx, categoryId)
+	server.FindCategoryByID(ctx, categoryID)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -219,6 +225,7 @@ func TestFindCategory_NilQueryResult_Returns404(t *testing.T) {
 }
 
 func TestAddCategory_SuccessfulCommand_Returns201(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -231,13 +238,13 @@ func TestAddCategory_SuccessfulCommand_Returns201(t *testing.T) {
 		Logger:  logger,
 	}
 	categoryJSON := `{"name":"category"}`
-	categoryId := "categoryId"
+	categoryID := "categoryID"
 
 	matchCatFn := func(command command.AddCategoryCommand) bool {
 		return command.Name == "category"
 	}
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
-	handler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(&categoryId, nil)
+	handler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(&categoryID, nil)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", strings.NewReader(categoryJSON))
@@ -258,6 +265,7 @@ func TestAddCategory_SuccessfulCommand_Returns201(t *testing.T) {
 }
 
 func TestAddCategory_FailedCommand_Returns500(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -294,6 +302,7 @@ func TestAddCategory_FailedCommand_Returns500(t *testing.T) {
 }
 
 func TestAddCategory_InvalidPayload_Returns400(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -329,6 +338,7 @@ func TestAddCategory_InvalidPayload_Returns400(t *testing.T) {
 }
 
 func TestUpdateCategory_SuccessfulCommand_Returns200(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -341,7 +351,7 @@ func TestUpdateCategory_SuccessfulCommand_Returns200(t *testing.T) {
 		Logger:  logger,
 	}
 	categoryJSON := `{"name":"category"}`
-	categoryId := "categoryId"
+	categoryID := "categoryID"
 	updateResult := &domain.UpdateResult{UpdateCount: 10}
 
 	matchCatFn := func(args command.UpdateCategoryCommand) bool {
@@ -359,7 +369,7 @@ func TestUpdateCategory_SuccessfulCommand_Returns200(t *testing.T) {
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.UpdateCategory(ctx, categoryId)
+	server.UpdateCategory(ctx, categoryID)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -369,6 +379,7 @@ func TestUpdateCategory_SuccessfulCommand_Returns200(t *testing.T) {
 }
 
 func TestUpdateCategory_FailedCommand_Returns500(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -381,7 +392,7 @@ func TestUpdateCategory_FailedCommand_Returns500(t *testing.T) {
 		Logger:  logger,
 	}
 	categoryJSON := `{"name":"category"}`
-	categoryId := "categoryId"
+	categoryID := "categoryID"
 
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	handler.On("Handle", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
@@ -396,7 +407,7 @@ func TestUpdateCategory_FailedCommand_Returns500(t *testing.T) {
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.UpdateCategory(ctx, categoryId)
+	server.UpdateCategory(ctx, categoryID)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -406,6 +417,7 @@ func TestUpdateCategory_FailedCommand_Returns500(t *testing.T) {
 }
 
 func TestUpdateCategory_InvalidPayload_Returns400(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -418,7 +430,7 @@ func TestUpdateCategory_InvalidPayload_Returns400(t *testing.T) {
 		Logger:  logger,
 	}
 	categoryJSON := "invalid"
-	categoryId := "categoryId"
+	categoryID := "categoryID"
 
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
@@ -432,7 +444,7 @@ func TestUpdateCategory_InvalidPayload_Returns400(t *testing.T) {
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.UpdateCategory(ctx, categoryId)
+	server.UpdateCategory(ctx, categoryID)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -442,6 +454,7 @@ func TestUpdateCategory_InvalidPayload_Returns400(t *testing.T) {
 }
 
 func TestDeleteCategory_SuccessfulCommand_Returns204(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -453,11 +466,11 @@ func TestDeleteCategory_SuccessfulCommand_Returns204(t *testing.T) {
 		Queries: app.Queries{},
 		Logger:  logger,
 	}
-	categoryId := "categoryId"
+	categoryID := "categoryID"
 	deleteResult := &domain.DeleteResult{DeleteCount: 10}
 
 	matchCatFn := func(cmd command.DeleteCategoryCommand) bool {
-		return cmd.CategoryID == categoryId
+		return cmd.CategoryID == categoryID
 	}
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	handler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(deleteResult, nil)
@@ -470,7 +483,7 @@ func TestDeleteCategory_SuccessfulCommand_Returns204(t *testing.T) {
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.DeleteCategory(ctx, categoryId)
+	server.DeleteCategory(ctx, categoryID)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -480,6 +493,7 @@ func TestDeleteCategory_SuccessfulCommand_Returns204(t *testing.T) {
 }
 
 func TestDeleteCategory_FailedCommand_Returns500(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -491,10 +505,10 @@ func TestDeleteCategory_FailedCommand_Returns500(t *testing.T) {
 		Queries: app.Queries{},
 		Logger:  logger,
 	}
-	categoryId := "categoryId"
+	categoryID := "categoryID"
 
 	matchCatFn := func(cmd command.DeleteCategoryCommand) bool {
-		return cmd.CategoryID == categoryId
+		return cmd.CategoryID == categoryID
 	}
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	handler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(nil, errors.New("error"))
@@ -508,7 +522,7 @@ func TestDeleteCategory_FailedCommand_Returns500(t *testing.T) {
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.DeleteCategory(ctx, categoryId)
+	server.DeleteCategory(ctx, categoryID)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -518,6 +532,7 @@ func TestDeleteCategory_FailedCommand_Returns500(t *testing.T) {
 }
 
 func TestDeleteCategory_EmptyDeleteResult_Returns404(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -529,10 +544,10 @@ func TestDeleteCategory_EmptyDeleteResult_Returns404(t *testing.T) {
 		Queries: app.Queries{},
 		Logger:  logger,
 	}
-	categoryId := "categoryId"
+	categoryID := "categoryID"
 
 	matchCatFn := func(cmd command.DeleteCategoryCommand) bool {
-		return cmd.CategoryID == categoryId
+		return cmd.CategoryID == categoryID
 	}
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	handler.On("Handle", mock.Anything, mock.MatchedBy(matchCatFn)).Return(nil, nil)
@@ -545,7 +560,7 @@ func TestDeleteCategory_EmptyDeleteResult_Returns404(t *testing.T) {
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.DeleteCategory(ctx, categoryId)
+	server.DeleteCategory(ctx, categoryID)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -555,6 +570,7 @@ func TestDeleteCategory_EmptyDeleteResult_Returns404(t *testing.T) {
 }
 
 func TestFindCategoryUsages_SuccessfulQuery_Returns200(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -574,13 +590,13 @@ func TestFindCategoryUsages_SuccessfulQuery_Returns200(t *testing.T) {
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
 	ctx := e.NewContext(request, response)
-	categoryId := "categoryId"
+	categoryID := "categoryID"
 
 	// SUT
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.FindCategoryUsages(ctx, categoryId)
+	server.FindCategoryUsages(ctx, categoryID)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -590,6 +606,7 @@ func TestFindCategoryUsages_SuccessfulQuery_Returns200(t *testing.T) {
 }
 
 func TestFindCategoryUsages_FailedQuery_Returns500(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -601,7 +618,7 @@ func TestFindCategoryUsages_FailedQuery_Returns500(t *testing.T) {
 		},
 		Logger: logger,
 	}
-	categoryId := "categoryId"
+	categoryID := "categoryID"
 
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
@@ -615,7 +632,7 @@ func TestFindCategoryUsages_FailedQuery_Returns500(t *testing.T) {
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.FindCategoryUsages(ctx, categoryId)
+	server.FindCategoryUsages(ctx, categoryID)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -625,6 +642,7 @@ func TestFindCategoryUsages_FailedQuery_Returns500(t *testing.T) {
 }
 
 func TestMoveCategory_SuccessfulCommand_Returns200(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -646,17 +664,17 @@ func TestMoveCategory_SuccessfulCommand_Returns200(t *testing.T) {
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/categories", nil)
 	ctx := e.NewContext(request, response)
-	categoryId := "categoryId"
-	destinationId := "destinationId"
+	categoryID := "categoryID"
+	destinationID := "destinationId"
 	params := ports.MoveCategoryParams{
-		DestinationId: destinationId,
+		DestinationId: destinationID,
 	}
 
 	// SUT
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.MoveCategory(ctx, categoryId, params)
+	server.MoveCategory(ctx, categoryID, params)
 
 	// Assert
 	logger.AssertExpectations(t)
@@ -666,6 +684,7 @@ func TestMoveCategory_SuccessfulCommand_Returns200(t *testing.T) {
 }
 
 func TestMoveCategory_FailedCommand_Returns500(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	e := echo.New()
 	logger := new(mocks.LogInterface)
@@ -677,10 +696,10 @@ func TestMoveCategory_FailedCommand_Returns500(t *testing.T) {
 		Queries: app.Queries{},
 		Logger:  logger,
 	}
-	categoryId := "categoryId"
-	destinationId := "destinationId"
+	categoryID := "categoryID"
+	destinationID := "destinationId"
 	params := ports.MoveCategoryParams{
-		DestinationId: destinationId,
+		DestinationId: destinationID,
 	}
 
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
@@ -695,7 +714,7 @@ func TestMoveCategory_FailedCommand_Returns500(t *testing.T) {
 	server := ports.NewHTTPServer(app)
 
 	// Act
-	server.MoveCategory(ctx, categoryId, params)
+	server.MoveCategory(ctx, categoryID, params)
 
 	// Assert
 	logger.AssertExpectations(t)

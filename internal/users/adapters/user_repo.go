@@ -64,17 +64,17 @@ func (r *UserRepository) GetOne(ctx context.Context, username string) (*domain.U
 	defer span.End()
 
 	filter := bson.M{"username": username}
-	userDbModel := userDbModel{}
-	findErr := r.collection().FindOne(ctx, filter).Decode(&userDbModel)
+	usrDbModel := userDbModel{}
+	findErr := r.collection().FindOne(ctx, filter).Decode(&usrDbModel)
 	if findErr != nil {
-		if findErr == mongo.ErrNoDocuments {
+		if errors.Is(findErr, mongo.ErrNoDocuments) {
 			return nil, nil
 		}
 		tracer.AddSpanError(span, findErr)
 		return nil, errors.Wrap(findErr, "mongodb find user")
 	}
 
-	user, userErr := r.unmarshalUser(userDbModel)
+	user, userErr := r.unmarshalUser(usrDbModel)
 	if userErr != nil {
 		tracer.AddSpanError(span, userErr)
 		return nil, errors.Wrap(userErr, "unmarshall user")
@@ -88,11 +88,11 @@ func (r *UserRepository) Insert(ctx context.Context, user *domain.User) (*domain
 	ctx, span := tracer.NewSpan(ctx, "add user to the database")
 	defer span.End()
 
-	userDbModel := r.marshalUser(user)
-	userDbModel.CreatedBy = domain.SystemUser
-	userDbModel.CreatedAt = time.Now()
+	usrDbModel := r.marshalUser(user)
+	usrDbModel.CreatedBy = domain.SystemUser
+	usrDbModel.CreatedAt = time.Now()
 
-	insRes, insErr := r.collection().InsertOne(ctx, userDbModel)
+	insRes, insErr := r.collection().InsertOne(ctx, usrDbModel)
 	if insErr != nil {
 		tracer.AddSpanError(span, insErr)
 		return nil, errors.Wrap(insErr, "mongodb insert user")
@@ -111,14 +111,14 @@ func (r *UserRepository) Update(ctx context.Context, user *domain.User) (*domain
 	ctx, span := tracer.NewSpan(ctx, "update user in the database")
 	defer span.End()
 
-	userDbModel := r.marshalUser(user)
+	usrDbModel := r.marshalUser(user)
 	sysUser := domain.SystemUser
 	now := time.Now()
-	userDbModel.UpdatedBy = &sysUser
-	userDbModel.UpdatedAt = &now
+	usrDbModel.UpdatedBy = &sysUser
+	usrDbModel.UpdatedAt = &now
 
-	filter := bson.M{"_id": userDbModel.ID}
-	updater := bson.M{"$set": userDbModel}
+	filter := bson.M{"_id": usrDbModel.ID}
+	updater := bson.M{"$set": usrDbModel}
 
 	opts := options.Update().SetUpsert(false)
 
@@ -148,5 +148,8 @@ func (r UserRepository) marshalUser(user *domain.User) userDbModel {
 func (r UserRepository) unmarshalUser(userDbModel userDbModel) (*domain.User, error) {
 	user, userErr := domain.NewUser(userDbModel.ID.Hex(), userDbModel.Username, userDbModel.Password,
 		userDbModel.Token, userDbModel.RefreshToken)
-	return user, userErr
+	if userErr != nil {
+		return nil, errors.Wrap(userErr, "new user")
+	}
+	return user, nil
 }

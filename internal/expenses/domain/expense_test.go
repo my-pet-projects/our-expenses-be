@@ -45,7 +45,6 @@ func TestNewExpense_ValidArgs_InstantiatesExpense(t *testing.T) {
 	assert.Equal(t, &updated, res.UpdatedAt())
 }
 
-// nolint:funlen
 func TestNewExpense_InvalidArgs_ThrowsError(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -201,5 +200,5 @@ func TestCalculateTotal_WithExchangeRate_ReturnOriginalAndConvertedTotal(t *test
 	assert.Equal(t, exchangeRates, res.ExchangeRate)
 	assert.Equal(t, decimal.NewFromFloat((price * quantity)).Div(decimal.NewFromFloat(rate)),
 		res.ConvertedTotal.Sum)
-	assert.Equal(t, Currency(exchangeRates.baseCurrency), res.ConvertedTotal.Currency)
+	assert.Equal(t, exchangeRates.baseCurrency, res.ConvertedTotal.Currency)
 }

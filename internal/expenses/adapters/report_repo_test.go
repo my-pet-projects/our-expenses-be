@@ -11,6 +11,7 @@ import (
 )
 
 func TestNewReportRepo_ReturnsRepository(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	client := &database.MongoClient{}
 	log := new(mocks.LogInterface)

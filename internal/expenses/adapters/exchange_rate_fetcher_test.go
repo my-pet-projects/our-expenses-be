@@ -26,7 +26,6 @@ func TestExchangeRateFetcher_NewExchangeRateFetcher_ReturnsInstance(t *testing.T
 	assert.NotNil(t, result)
 }
 
-// nolint:dupl
 func TestFetch_FailedRequestWith401_ThrowsError(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -42,8 +41,8 @@ func TestFetch_FailedRequestWith401_ThrowsError(t *testing.T) {
 	}))
 	defer svr.Close()
 	config := adapters.ExchangeRateFetcherConfig{
-		Url:    svr.URL,
-		ApiKey: "key",
+		URL:    svr.URL,
+		APIKey: "key",
 	}
 
 	// SUT
@@ -57,7 +56,6 @@ func TestFetch_FailedRequestWith401_ThrowsError(t *testing.T) {
 	assert.NotNil(t, resErr)
 }
 
-// nolint:dupl
 func TestFetch_FailedRequestWith500_ThrowsError(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -73,8 +71,8 @@ func TestFetch_FailedRequestWith500_ThrowsError(t *testing.T) {
 	}))
 	defer svr.Close()
 	config := adapters.ExchangeRateFetcherConfig{
-		Url:    svr.URL,
-		ApiKey: "key",
+		URL:    svr.URL,
+		APIKey: "key",
 	}
 
 	// SUT
@@ -97,8 +95,8 @@ func TestFetch_ResponseFails_ThrowsError(t *testing.T) {
 		time.Now().Add(-2 * 24 * time.Hour),
 	}
 	config := adapters.ExchangeRateFetcherConfig{
-		Url:    "url",
-		ApiKey: "key",
+		URL:    "url",
+		APIKey: "key",
 	}
 
 	// SUT
@@ -126,8 +124,8 @@ func TestFetch_FailedToReadRequestBody_ThrowsError(t *testing.T) {
 	}))
 	defer svr.Close()
 	config := adapters.ExchangeRateFetcherConfig{
-		Url:    svr.URL,
-		ApiKey: "key",
+		URL:    svr.URL,
+		APIKey: "key",
 	}
 
 	// SUT
@@ -156,8 +154,8 @@ func TestFetch_ResponseDecodeFails_ThrowsError(t *testing.T) {
 	}))
 	defer svr.Close()
 	config := adapters.ExchangeRateFetcherConfig{
-		Url:    svr.URL,
-		ApiKey: "key",
+		URL:    svr.URL,
+		APIKey: "key",
 	}
 
 	// SUT
@@ -184,8 +182,8 @@ func TestFetch_Response_ValidRate_ReturnsExchangeRates(t *testing.T) {
 	}))
 	defer svr.Close()
 	config := adapters.ExchangeRateFetcherConfig{
-		Url:    svr.URL,
-		ApiKey: "key",
+		URL:    svr.URL,
+		APIKey: "key",
 	}
 
 	// SUT
@@ -215,8 +213,8 @@ func TestFetch_Response_InvalidRate_ThrowsError(t *testing.T) {
 	}))
 	defer svr.Close()
 	config := adapters.ExchangeRateFetcherConfig{
-		Url:    svr.URL,
-		ApiKey: "key",
+		URL:    svr.URL,
+		APIKey: "key",
 	}
 
 	// SUT

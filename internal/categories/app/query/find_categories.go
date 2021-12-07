@@ -3,15 +3,12 @@ package query
 import (
 	"context"
 
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
-
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
+	"github.com/pkg/errors"
 )
-
-var findCategoriesTracer trace.Tracer
 
 // FindCategoriesQuery defines a category query.
 type FindCategoriesQuery struct {
@@ -36,7 +33,6 @@ func NewFindCategoriesHandler(
 	repo adapters.CategoryRepoInterface,
 	logger logger.LogInterface,
 ) FindCategoriesHandler {
-	findCategoriesTracer = otel.Tracer("app.query.find_categories")
 	return FindCategoriesHandler{
 		repo:   repo,
 		logger: logger,
@@ -48,7 +44,7 @@ func (h FindCategoriesHandler) Handle(
 	ctx context.Context,
 	query FindCategoriesQuery,
 ) ([]domain.Category, error) {
-	ctx, span := findCategoriesTracer.Start(ctx, "execute find categories query")
+	ctx, span := tracer.NewSpan(ctx, "execute find categories query")
 	defer span.End()
 
 	filter := domain.CategoryFilter{
@@ -56,5 +52,9 @@ func (h FindCategoriesHandler) Handle(
 		FindChildren: query.FindAllChildren,
 		FindAll:      query.FindAll,
 	}
-	return h.repo.GetAll(ctx, filter)
+	res, resErr := h.repo.GetAll(ctx, filter)
+	if resErr != nil {
+		return nil, errors.Wrap(resErr, "get categories")
+	}
+	return res, nil
 }

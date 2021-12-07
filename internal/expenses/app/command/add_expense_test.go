@@ -16,6 +16,7 @@ import (
 )
 
 func TestAddExpenseHandler_ReturnsHandler(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.ExpenseRepoInterface)
 	log := new(mocks.LogInterface)
@@ -28,6 +29,7 @@ func TestAddExpenseHandler_ReturnsHandler(t *testing.T) {
 }
 
 func TestAddExpenseHandler_ExpenseError_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.ExpenseRepoInterface)
 	log := new(mocks.LogInterface)
@@ -48,6 +50,7 @@ func TestAddExpenseHandler_ExpenseError_ThrowsError(t *testing.T) {
 }
 
 func TestAddExpenseHandler_RepoError_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.ExpenseRepoInterface)
 	log := new(mocks.LogInterface)
@@ -85,6 +88,7 @@ func TestAddExpenseHandler_RepoError_ThrowsError(t *testing.T) {
 }
 
 func TestAddExpenseHandler_RepoSuccess_ReturnsNewId(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.ExpenseRepoInterface)
 	log := new(mocks.LogInterface)

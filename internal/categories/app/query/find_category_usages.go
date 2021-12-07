@@ -4,16 +4,13 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
-
-var findCategoryUsagesTracer trace.Tracer
 
 // FindCategoryUsagesQuery defines a category usages query.
 type FindCategoryUsagesQuery struct {
@@ -36,7 +33,6 @@ func NewFindCategoryUsagesHandler(
 	repo adapters.CategoryRepoInterface,
 	logger logger.LogInterface,
 ) FindCategoryUsagesHandler {
-	findCategoryUsagesTracer = otel.Tracer("app.query.find_category_usages")
 	return FindCategoryUsagesHandler{
 		repo:   repo,
 		logger: logger,
@@ -48,7 +44,7 @@ func (h FindCategoryUsagesHandler) Handle(
 	ctx context.Context,
 	query FindCategoryUsagesQuery,
 ) ([]domain.Category, error) {
-	ctx, span := findCategoryUsagesTracer.Start(ctx, "execute find category usages")
+	ctx, span := tracer.NewSpan(ctx, "execute find category usages")
 	span.SetAttributes(attribute.String("id", query.CategoryID))
 	defer span.End()
 

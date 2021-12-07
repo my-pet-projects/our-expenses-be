@@ -15,6 +15,7 @@ import (
 )
 
 func TestNewServer_ReturnsServerInstanceWithSettingsFromConfig(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	config := config.Server{
 		Host: "localhost",
@@ -41,6 +42,7 @@ func TestNewServer_ReturnsServerInstanceWithSettingsFromConfig(t *testing.T) {
 }
 
 func TestStart_StartsAndGracefullyStopsServer_ShouldNotThrowError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	cfg := config.Config{
 		Server: config.Server{
@@ -89,6 +91,7 @@ func TestStart_StartsAndGracefullyStopsServer_ShouldNotThrowError(t *testing.T) 
 }
 
 func TestStart_InvalidConfig_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	cfg := config.Config{
 		Server: config.Server{

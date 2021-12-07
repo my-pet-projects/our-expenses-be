@@ -4,15 +4,12 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
-
-var findCategoryTracer trace.Tracer
 
 // FindCategoryQuery defines a category query.
 type FindCategoryQuery struct {
@@ -32,7 +29,6 @@ type FindCategoryHandlerInterface interface {
 
 // NewFindCategoryHandler returns query handler.
 func NewFindCategoryHandler(repo adapters.CategoryRepoInterface, logger logger.LogInterface) FindCategoryHandler {
-	findCategoryTracer = otel.Tracer("app.query.find_category")
 	return FindCategoryHandler{
 		repo:   repo,
 		logger: logger,
@@ -41,7 +37,7 @@ func NewFindCategoryHandler(repo adapters.CategoryRepoInterface, logger logger.L
 
 // Handle handles find category query.
 func (h FindCategoryHandler) Handle(ctx context.Context, query FindCategoryQuery) (*domain.Category, error) {
-	ctx, span := findCategoryTracer.Start(ctx, "execute find category query")
+	ctx, span := tracer.NewSpan(ctx, "execute find category query")
 	defer span.End()
 
 	category, categoryErr := h.repo.GetOne(ctx, query.CategoryID)

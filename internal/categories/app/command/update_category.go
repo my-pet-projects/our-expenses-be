@@ -4,15 +4,12 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
-
-var updateCategoryTracer trace.Tracer
 
 // UpdateCategoryCommand defines a category update command.
 type UpdateCategoryCommand struct {
@@ -40,7 +37,6 @@ func NewUpdateCategoryHandler(
 	repo adapters.CategoryRepoInterface,
 	logger logger.LogInterface,
 ) UpdateCategoryHandler {
-	updateCategoryTracer = otel.Tracer("app.command.update_category")
 	return UpdateCategoryHandler{
 		repo:   repo,
 		logger: logger,
@@ -52,7 +48,7 @@ func (h UpdateCategoryHandler) Handle(
 	ctx context.Context,
 	cmd UpdateCategoryCommand,
 ) (*domain.UpdateResult, error) {
-	ctx, span := updateCategoryTracer.Start(ctx, "execute update category command")
+	ctx, span := tracer.NewSpan(ctx, "execute update category command")
 	defer span.End()
 
 	// TODO: get a category from the database and create a new category based on that object.

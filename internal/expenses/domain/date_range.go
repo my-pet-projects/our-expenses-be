@@ -21,6 +21,7 @@ func NewDateRange(from time.Time, to time.Time) (*DateRange, error) {
 		from: from,
 		to:   to,
 	}
+
 	return dr, nil
 }
 
@@ -47,5 +48,6 @@ func (dr DateRange) DatesInBetween() []time.Time {
 		}
 		from = from.Add(1 * 24 * time.Hour)
 	}
+
 	return dates
 }

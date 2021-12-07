@@ -52,7 +52,7 @@ func TestAddExpense_SuccessfulCommand_Returns201(t *testing.T) {
 	}
 	categoryID := "123"
 	expenseJSON := fmt.Sprintf(`{"categoryId":"%s"}`, categoryID)
-	expenseId := "expenseId"
+	expenseID := "expenseId"
 	category, _ := domain.NewCategory(categoryID, nil, "category", nil, 1, "path")
 
 	matchCatFn := func(query query.FindCategoryQuery) bool {
@@ -63,7 +63,7 @@ func TestAddExpense_SuccessfulCommand_Returns201(t *testing.T) {
 	matchExpFn := func(command command.AddExpenseCommand) bool {
 		return reflect.DeepEqual(command.Category, *category)
 	}
-	addExpenseHandler.On("Handle", mock.Anything, mock.MatchedBy(matchExpFn)).Return(&expenseId, nil)
+	addExpenseHandler.On("Handle", mock.Anything, mock.MatchedBy(matchExpFn)).Return(&expenseID, nil)
 
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 

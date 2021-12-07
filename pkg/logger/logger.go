@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/mattn/go-colorable"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/apperror"
@@ -53,7 +54,7 @@ var (
 func NewLogger(config config.Logger) (*Logger, error) {
 	level, levelErr := logrus.ParseLevel(config.Level)
 	if levelErr != nil {
-		return nil, levelErr
+		return nil, errors.Wrap(levelErr, "level parse")
 	}
 
 	writers, writersErr := setupWriters(config.Writers)

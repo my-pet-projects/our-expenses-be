@@ -88,7 +88,7 @@ func (c MongoClient) Collection(name string) *mongo.Collection {
 func (c MongoClient) ListCollections(ctx context.Context) ([]string, error) {
 	col, colErr := c.Database().ListCollectionNames(ctx, bson.M{})
 	if colErr != nil {
-		return nil, colErr
+		return nil, errors.Wrap(colErr, "list collections")
 	}
 	return col, nil
 }

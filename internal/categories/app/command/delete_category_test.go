@@ -14,6 +14,7 @@ import (
 )
 
 func TestDeleteCategoryHandler_ReturnsHandler(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -26,6 +27,7 @@ func TestDeleteCategoryHandler_ReturnsHandler(t *testing.T) {
 }
 
 func TestDeleteCategoryHandler_FailedToGetCategory_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -35,11 +37,11 @@ func TestDeleteCategoryHandler_FailedToGetCategory_ThrowsError(t *testing.T) {
 		CategoryID: categoryID,
 	}
 
-	matchIdFn := func(id string) bool {
+	matchIDFn := func(id string) bool {
 		return categoryID == id
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(nil, errors.New("error"))
+		mock.MatchedBy(matchIDFn)).Return(nil, errors.New("error"))
 
 	// SUT
 	sut := command.NewDeleteCategoryHandler(repo, log)
@@ -54,6 +56,7 @@ func TestDeleteCategoryHandler_FailedToGetCategory_ThrowsError(t *testing.T) {
 }
 
 func TestDeleteCategoryHandler_NoCategoryFound_ReturnsEmptyResult(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -63,11 +66,11 @@ func TestDeleteCategoryHandler_NoCategoryFound_ReturnsEmptyResult(t *testing.T) 
 		CategoryID: categoryID,
 	}
 
-	matchIdFn := func(id string) bool {
+	matchIDFn := func(id string) bool {
 		return categoryID == id
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(nil, nil)
+		mock.MatchedBy(matchIDFn)).Return(nil, nil)
 
 	// SUT
 	sut := command.NewDeleteCategoryHandler(repo, log)
@@ -82,6 +85,7 @@ func TestDeleteCategoryHandler_NoCategoryFound_ReturnsEmptyResult(t *testing.T) 
 }
 
 func TestDeleteCategoryHandler_FailedDeleteCategory_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -93,11 +97,11 @@ func TestDeleteCategoryHandler_FailedDeleteCategory_ThrowsError(t *testing.T) {
 	}
 	category, _ := domain.NewCategory(categoryID, "name", nil, "path", &icon, 1)
 
-	matchIdFn := func(id string) bool {
+	matchIDFn := func(id string) bool {
 		return categoryID == id
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(category, nil)
+		mock.MatchedBy(matchIDFn)).Return(category, nil)
 	matchFilterFn := func(filter domain.CategoryFilter) bool {
 		return filter.Path == category.Path() && filter.FindChildren == true
 	}
@@ -117,6 +121,7 @@ func TestDeleteCategoryHandler_FailedDeleteCategory_ThrowsError(t *testing.T) {
 }
 
 func TestDeleteCategoryHandler_DeletesCategory_ReturnsResult(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -129,11 +134,11 @@ func TestDeleteCategoryHandler_DeletesCategory_ReturnsResult(t *testing.T) {
 	category, _ := domain.NewCategory(categoryID, "name", nil, "path", &icon, 1)
 	deleteResult := &domain.DeleteResult{DeleteCount: 10}
 
-	matchIdFn := func(id string) bool {
+	matchIDFn := func(id string) bool {
 		return categoryID == id
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(category, nil)
+		mock.MatchedBy(matchIDFn)).Return(category, nil)
 	matchFilterFn := func(filter domain.CategoryFilter) bool {
 		return filter.Path == category.Path() && filter.FindChildren == true
 	}

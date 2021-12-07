@@ -11,7 +11,6 @@ import (
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/expenses/domain"
 )
 
-// nolint:funlen,gocognit
 func TestGenerateByDateReport(t *testing.T) {
 	t.Parallel()
 	// Arrange

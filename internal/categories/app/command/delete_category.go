@@ -4,15 +4,12 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
-
-var deleteCategoryTracer trace.Tracer
 
 // DeleteCategoryCommand defines a category delete command.
 type DeleteCategoryCommand struct {
@@ -35,7 +32,6 @@ func NewDeleteCategoryHandler(
 	repo adapters.CategoryRepoInterface,
 	logger logger.LogInterface,
 ) DeleteCategoryHandler {
-	deleteCategoryTracer = otel.Tracer("app.command.delete_category")
 	return DeleteCategoryHandler{
 		repo:   repo,
 		logger: logger,
@@ -44,7 +40,7 @@ func NewDeleteCategoryHandler(
 
 // Handle handles delete category command.
 func (h DeleteCategoryHandler) Handle(ctx context.Context, cmd DeleteCategoryCommand) (*domain.DeleteResult, error) {
-	ctx, span := deleteCategoryTracer.Start(ctx, "execute delete category command")
+	ctx, span := tracer.NewSpan(ctx, "execute delete category command")
 	defer span.End()
 
 	category, categoryErr := h.repo.GetOne(ctx, cmd.CategoryID)

@@ -6,15 +6,12 @@ import (
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
-
-var addCategoryTracer trace.Tracer
 
 // AddCategoryCommand defines a category command.
 type AddCategoryCommand struct {
@@ -42,7 +39,6 @@ func NewAddCategoryHandler(
 	repo adapters.CategoryRepoInterface,
 	logger logger.LogInterface,
 ) AddCategoryHandler {
-	addCategoryTracer = otel.Tracer("app.command.add_category")
 	return AddCategoryHandler{
 		repo:   repo,
 		logger: logger,
@@ -51,7 +47,7 @@ func NewAddCategoryHandler(
 
 // Handle handles add category command.
 func (h AddCategoryHandler) Handle(ctx context.Context, cmd AddCategoryCommand) (*string, error) {
-	ctx, span := addCategoryTracer.Start(ctx, "execute add category command")
+	ctx, span := tracer.NewSpan(ctx, "execute add category command")
 	defer span.End()
 
 	if len(cmd.ID) == 0 {
@@ -63,5 +59,9 @@ func (h AddCategoryHandler) Handle(ctx context.Context, cmd AddCategoryCommand) 
 		return nil, errors.Wrap(categoryErr, "prepare category failed")
 	}
 
-	return h.repo.Insert(ctx, *category)
+	insRes, insResErr := h.repo.Insert(ctx, *category)
+	if insResErr != nil {
+		return nil, errors.Wrap(insResErr, "insert category")
+	}
+	return insRes, nil
 }

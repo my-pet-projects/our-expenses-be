@@ -14,6 +14,7 @@ import (
 )
 
 func TestNewFindCategoriesHandler_ReturnsHandler(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -26,13 +27,14 @@ func TestNewFindCategoriesHandler_ReturnsHandler(t *testing.T) {
 }
 
 func TestFindCategoriesHandle_RepoError_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	parentId := "parentId"
+	parentID := "parentId"
 	findQuery := query.FindCategoriesQuery{
-		ParentID:        &parentId,
+		ParentID:        &parentID,
 		FindAllChildren: true,
 	}
 
@@ -56,13 +58,14 @@ func TestFindCategoriesHandle_RepoError_ThrowsError(t *testing.T) {
 }
 
 func TestFindCategoriesHandle_RepoSuccess_ReturnsCategories(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	parentId := "parentId"
+	parentID := "parentId"
 	findQuery := query.FindCategoriesQuery{
-		ParentID:        &parentId,
+		ParentID:        &parentID,
 		FindAllChildren: true,
 	}
 	categories := []domain.Category{{}}

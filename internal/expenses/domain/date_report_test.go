@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// nolint:funlen
 func TestDateReport_CalculateTotal_ReturnsTotalAmountIncludingChildren(t *testing.T) {
 	t.Parallel()
 	// Arrange

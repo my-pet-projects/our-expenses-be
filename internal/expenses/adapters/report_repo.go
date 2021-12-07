@@ -140,7 +140,6 @@ func (r *ReportRepository) GetAll(ctx context.Context, filter domain.ExpenseFilt
 }
 
 func (r ReportRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain.Expense, error) {
-
 	cat, catErr := r.unmarshalCategory(*expenseModel.Category)
 	if catErr != nil {
 		return nil, errors.Wrap(catErr, "unmarshal category")
@@ -157,11 +156,11 @@ func (r ReportRepository) unmarshalExpense(expenseModel expenseDbModel) (*domain
 }
 
 func (r ReportRepository) unmarshalCategory(categoryModel categoryDbModel) (*domain.Category, error) {
-	var parentId string
+	var parentID string
 	if categoryModel.ParentID != nil && !categoryModel.ParentID.IsZero() {
-		parentId = categoryModel.ParentID.Hex()
+		parentID = categoryModel.ParentID.Hex()
 	}
-	cat, catErr := domain.NewCategory(categoryModel.ID.Hex(), &parentId,
+	cat, catErr := domain.NewCategory(categoryModel.ID.Hex(), &parentID,
 		categoryModel.Name, categoryModel.Icon, categoryModel.Level, categoryModel.Path)
 	if catErr != nil {
 		return nil, errors.Wrap(catErr, "unmarshal category")
@@ -169,11 +168,11 @@ func (r ReportRepository) unmarshalCategory(categoryModel categoryDbModel) (*dom
 
 	parentCategories := make([]domain.Category, 0)
 	for _, parentCat := range categoryModel.Parents {
-		var parentId string
+		var parentID string
 		if parentCat.ParentID != nil {
-			parentId = parentCat.ParentID.Hex()
+			parentID = parentCat.ParentID.Hex()
 		}
-		parent, parentErr := domain.NewCategory(parentCat.ID.Hex(), &parentId, parentCat.Name,
+		parent, parentErr := domain.NewCategory(parentCat.ID.Hex(), &parentID, parentCat.Name,
 			parentCat.Icon, parentCat.Level, parentCat.Path)
 		if parentErr != nil {
 			return nil, errors.Wrap(parentErr, "unmarshal parent category")

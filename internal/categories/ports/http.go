@@ -5,18 +5,15 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/command"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/app/query"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/server/httperr"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
-
-var tracer trace.Tracer
 
 // HTTPServer represents HTTP server with application dependency.
 type HTTPServer struct {
@@ -25,7 +22,6 @@ type HTTPServer struct {
 
 // NewHTTPServer instantiates http server with application.
 func NewHTTPServer(app *app.Application) HTTPServer {
-	tracer = otel.Tracer("ports.http")
 	return HTTPServer{
 		app: *app,
 	}
@@ -33,7 +29,7 @@ func NewHTTPServer(app *app.Application) HTTPServer {
 
 // FindCategories returns categories.
 func (h HTTPServer) FindCategories(echoCtx echo.Context, params FindCategoriesParams) error {
-	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get categories http request")
+	ctx, span := tracer.NewSpan(echoCtx.Request().Context(), "handle get categories http request")
 	defer span.End()
 	h.app.Logger.Info(ctx, "Handling get categories HTTP request")
 
@@ -59,7 +55,7 @@ func (h HTTPServer) FindCategories(echoCtx echo.Context, params FindCategoriesPa
 
 // FindCategoryByID returns categories.
 func (h HTTPServer) FindCategoryByID(echoCtx echo.Context, id string) error {
-	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category http request")
+	ctx, span := tracer.NewSpan(echoCtx.Request().Context(), "handle get category http request")
 	span.SetAttributes(attribute.String("id", id))
 	defer span.End()
 	h.app.Logger.Infof(ctx, "Handling get %s category HTTP request", id)
@@ -87,7 +83,7 @@ func (h HTTPServer) FindCategoryByID(echoCtx echo.Context, id string) error {
 
 // AddCategory adds a new category.
 func (h HTTPServer) AddCategory(echoCtx echo.Context) error {
-	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category http request")
+	ctx, span := tracer.NewSpan(echoCtx.Request().Context(), "handle get category http request")
 	defer span.End()
 	h.app.Logger.Info(ctx, "Handling add categories HTTP request")
 
@@ -120,7 +116,7 @@ func (h HTTPServer) AddCategory(echoCtx echo.Context) error {
 
 // UpdateCategory updates a category.
 func (h HTTPServer) UpdateCategory(echoCtx echo.Context, id string) error {
-	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle update category http request")
+	ctx, span := tracer.NewSpan(echoCtx.Request().Context(), "handle update category http request")
 	defer span.End()
 	h.app.Logger.Info(ctx, "Handling update category HTTP request")
 
@@ -156,7 +152,7 @@ func (h HTTPServer) UpdateCategory(echoCtx echo.Context, id string) error {
 
 // DeleteCategory deletes a category.
 func (h HTTPServer) DeleteCategory(echoCtx echo.Context, id string) error {
-	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle delete category http request")
+	ctx, span := tracer.NewSpan(echoCtx.Request().Context(), "handle delete category http request")
 	span.SetAttributes(attribute.String("id", id))
 	defer span.End()
 	h.app.Logger.Info(ctx, "Handling delete categories HTTP request")
@@ -183,7 +179,7 @@ func (h HTTPServer) DeleteCategory(echoCtx echo.Context, id string) error {
 
 // FindCategoryUsages returns categories.
 func (h HTTPServer) FindCategoryUsages(echoCtx echo.Context, id string) error {
-	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle get category usages http request")
+	ctx, span := tracer.NewSpan(echoCtx.Request().Context(), "handle get category usages http request")
 	span.SetAttributes(attribute.String("id", id))
 	defer span.End()
 	h.app.Logger.Info(ctx, "Handling get category usages HTTP request")
@@ -203,7 +199,7 @@ func (h HTTPServer) FindCategoryUsages(echoCtx echo.Context, id string) error {
 
 // MoveCategory moves category.
 func (h HTTPServer) MoveCategory(echoCtx echo.Context, id string, params MoveCategoryParams) error {
-	ctx, span := tracer.Start(echoCtx.Request().Context(), "handle move category http request")
+	ctx, span := tracer.NewSpan(echoCtx.Request().Context(), "handle move category http request")
 	span.SetAttributes(attribute.String("id", id))
 	span.SetAttributes(attribute.String("destinationId", params.DestinationId))
 	defer span.End()

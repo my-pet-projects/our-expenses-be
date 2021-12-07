@@ -30,7 +30,7 @@ type ExchangeRateFetcherInterface interface {
 }
 
 // NewExchangeRateFetcher returns a ExchangeRateFetcher.
-func NewExchangeRateFetcher(config ExchangeRateFetcherConfig) ExchangeRateFetcherInterface {
+func NewExchangeRateFetcher(config ExchangeRateFetcherConfig) ExchangeRateFetcher {
 	return ExchangeRateFetcher{
 		config: config,
 	}
@@ -43,7 +43,7 @@ func (f ExchangeRateFetcher) Fetch(ctx context.Context, dates []time.Time) ([]do
 
 	exchRates := make([]domain.ExchangeRates, 0)
 	for _, date := range dates {
-		url := fmt.Sprintf("%s/%s.json?app_id=%s", f.config.Url, date.Format("2006-01-02"), f.config.ApiKey)
+		url := fmt.Sprintf("%s/%s.json?app_id=%s", f.config.URL, date.Format("2006-01-02"), f.config.APIKey)
 		resp, respErr := http.Get(url)
 		if respErr != nil {
 			tracer.AddSpanError(span, respErr)
@@ -58,10 +58,10 @@ func (f ExchangeRateFetcher) Fetch(ctx context.Context, dates []time.Time) ([]do
 
 		if resp.StatusCode != http.StatusOK {
 			if resp.StatusCode == http.StatusUnauthorized {
-				return nil, errors.New(fmt.Sprintf("failed to authorize: %s", string(body)))
+				return nil, fmt.Errorf("failed to authorize: %s", string(body))
 			}
 
-			return nil, errors.New(fmt.Sprintf("unsuccessful reply: %s", string(body)))
+			return nil, fmt.Errorf("unsuccessful reply: %s", string(body))
 		}
 
 		var response exchRateResponse

@@ -33,16 +33,16 @@ func TestFindCategoryHandle_RepoError_ThrowsError(t *testing.T) {
 	repo := new(mocks.ExpenseCategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId1"
+	categoryID := "categoryId1"
 	findQuery := query.FindCategoryQuery{
-		CategoryID: categoryId,
+		CategoryID: categoryID,
 	}
 
-	matchIdFn := func(id string) bool {
-		return id == categoryId
+	matchIDFn := func(id string) bool {
+		return id == categoryID
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(nil, errors.New("error"))
+		mock.MatchedBy(matchIDFn)).Return(nil, errors.New("error"))
 
 	// SUT
 	sut := query.NewFindCategoryHandler(repo, log)
@@ -62,20 +62,20 @@ func TestFindCategoryHandle_RepoSuccess_CategoryHasNoPath_ReturnsCategory(t *tes
 	repo := new(mocks.ExpenseCategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId2"
-	parentId1 := "parentId1"
+	categoryID := "categoryId2"
+	parentID1 := "parentId1"
 	path := ""
 	icon := "icon"
-	category, _ := domain.NewCategory(categoryId, &parentId1, "name", &icon, 1, path)
+	category, _ := domain.NewCategory(categoryID, &parentID1, "name", &icon, 1, path)
 	findQuery := query.FindCategoryQuery{
-		CategoryID: categoryId,
+		CategoryID: categoryID,
 	}
 
-	matchIdFn := func(id string) bool {
-		return id == categoryId
+	matchIDFn := func(id string) bool {
+		return id == categoryID
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(category, nil)
+		mock.MatchedBy(matchIDFn)).Return(category, nil)
 
 	// SUT
 	sut := query.NewFindCategoryHandler(repo, log)
@@ -96,21 +96,21 @@ func TestFindCategoryHandle_RepoSuccess_ReturnsCategory(t *testing.T) {
 	repo := new(mocks.ExpenseCategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId3"
-	parentId1 := "parentId1"
-	parentId2 := "parentId2"
+	categoryID := "categoryId3"
+	parentID1 := "parentId1"
+	parentID2 := "parentId2"
 	icon := "icon"
-	path := fmt.Sprintf("|%s|%s", parentId1, parentId2)
-	category, _ := domain.NewCategory(categoryId, &parentId1, "name", &icon, 1, path)
+	path := fmt.Sprintf("|%s|%s", parentID1, parentID2)
+	category, _ := domain.NewCategory(categoryID, &parentID1, "name", &icon, 1, path)
 	findQuery := query.FindCategoryQuery{
-		CategoryID: categoryId,
+		CategoryID: categoryID,
 	}
 
-	matchIdFn := func(id string) bool {
-		return id == categoryId
+	matchIDFn := func(id string) bool {
+		return id == categoryID
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(category, nil)
+		mock.MatchedBy(matchIDFn)).Return(category, nil)
 
 	// SUT
 	sut := query.NewFindCategoryHandler(repo, log)

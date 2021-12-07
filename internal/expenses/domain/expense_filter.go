@@ -32,7 +32,7 @@ func NewExpenseFilter(from time.Time, to time.Time, intervalString string) (*Exp
 	case "year":
 		interval = IntervalYear
 	default:
-		return nil, errors.New(fmt.Sprintf("unknown interval %s", intervalString))
+		return nil, fmt.Errorf("unknown interval %s", intervalString)
 	}
 
 	filter := &ExpenseFilter{

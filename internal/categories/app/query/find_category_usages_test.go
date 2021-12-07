@@ -15,6 +15,7 @@ import (
 )
 
 func TestNewFindCategoryUsagesHandler_ReturnsHandler(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -27,17 +28,18 @@ func TestNewFindCategoryUsagesHandler_ReturnsHandler(t *testing.T) {
 }
 
 func TestFindCategoryUsagesHandle_RepoError_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId"
+	categoryID := "categoryId"
 	filter := domain.CategoryFilter{
-		CategoryID:   categoryId,
+		CategoryID:   categoryID,
 		FindChildren: true,
 	}
 	findQuery := query.FindCategoryUsagesQuery{
-		CategoryID: categoryId,
+		CategoryID: categoryID,
 	}
 
 	matchFilterFn := func(f domain.CategoryFilter) bool {
@@ -59,17 +61,18 @@ func TestFindCategoryUsagesHandle_RepoError_ThrowsError(t *testing.T) {
 }
 
 func TestFindCategoryUsagesHandle_RepoSuccess_ReturnsCategories(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId"
+	categoryID := "categoryId"
 	filter := domain.CategoryFilter{
 		CategoryID:   "categoryId",
 		FindChildren: true,
 	}
 	findQuery := query.FindCategoryUsagesQuery{
-		CategoryID: categoryId,
+		CategoryID: categoryID,
 	}
 	categories := []domain.Category{{}}
 

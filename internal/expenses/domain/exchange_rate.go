@@ -7,12 +7,14 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// ExchangeRates represts currency exchange rates.
 type ExchangeRates struct {
 	date         time.Time
 	baseCurrency Currency
 	rates        map[Currency]decimal.Decimal
 }
 
+// NewExchageRate instantiates currency exchange rates.
 func NewExchageRate(date time.Time, baseCurrency string, rawRates map[string]float64) (*ExchangeRates, error) {
 	if baseCurrency == "" {
 		return nil, errors.New("base currency should not be empty")
@@ -34,18 +36,22 @@ func NewExchageRate(date time.Time, baseCurrency string, rawRates map[string]flo
 	return &er, nil
 }
 
+// Date returns exchange rates date.
 func (er ExchangeRates) Date() time.Time {
 	return er.date
 }
 
+// BaseCurrency returns exchange rates base currency.
 func (er ExchangeRates) BaseCurrency() Currency {
 	return er.baseCurrency
 }
 
+// Rates returns exchange rates.
 func (er ExchangeRates) Rates() map[Currency]decimal.Decimal {
 	return er.rates
 }
 
+// ChangeBaseCurrency sets a new base currency and recalculates exchange rates.
 func (er ExchangeRates) ChangeBaseCurrency(targetCurrency Currency) ExchangeRates {
 	if er.baseCurrency == targetCurrency {
 		return er
@@ -61,8 +67,7 @@ func (er ExchangeRates) ChangeBaseCurrency(targetCurrency Currency) ExchangeRate
 		if currency == targetCurrency {
 			continue
 		}
-		rate := rate.Div(baseRate)
-		newRate.rates[currency] = rate
+		newRate.rates[currency] = rate.Div(baseRate)
 	}
 
 	if currencyRate, ok := er.rates[targetCurrency]; ok {

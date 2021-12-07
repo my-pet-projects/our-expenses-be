@@ -31,7 +31,7 @@ type AppCrypto struct {
 }
 
 // NewAppCrypto instantinates AppCrypto.
-func NewAppCrypto(config config.Security) AppCryptoInterface {
+func NewAppCrypto(config config.Security) AppCrypto {
 	return AppCrypto{
 		config: config,
 	}
@@ -45,6 +45,7 @@ func (c AppCrypto) HashPassword(password string) (string, error) {
 
 // VerifyPassword checks the input password while verifying it with the passward in the DB.
 func (c AppCrypto) VerifyPassword(hashedPassword string, providedPassword string) error {
+	// nolint:wrapcheck
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(providedPassword))
 }
 

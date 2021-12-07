@@ -30,10 +30,9 @@ func (rw *responseWriter) WriteHeader(code int) {
 	rw.status = code
 	rw.ResponseWriter.WriteHeader(code)
 	rw.wroteHeader = true
-
-	return
 }
 
+// LoggingMiddleware logs HTTP requests.
 func LoggingMiddleware(log logger.LogInterface) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {

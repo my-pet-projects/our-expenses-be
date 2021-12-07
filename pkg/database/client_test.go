@@ -11,6 +11,7 @@ import (
 )
 
 func TestNewMongoClient_InvalidConfig_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	config := config.Database{
 		Mongo: config.MongoDB{
@@ -32,6 +33,7 @@ func TestNewMongoClient_InvalidConfig_ThrowsError(t *testing.T) {
 }
 
 func TestNewMongoClient_ReturnsMongoClient(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	config := config.Database{
 		Mongo: config.MongoDB{

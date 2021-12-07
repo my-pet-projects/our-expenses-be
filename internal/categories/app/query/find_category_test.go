@@ -16,6 +16,7 @@ import (
 )
 
 func TestNewFindCategoryHandler_ReturnsHandler(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -28,20 +29,21 @@ func TestNewFindCategoryHandler_ReturnsHandler(t *testing.T) {
 }
 
 func TestFindCategoryHandle_RepoError_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId"
+	categoryID := "categoryId"
 	findQuery := query.FindCategoryQuery{
-		CategoryID: categoryId,
+		CategoryID: categoryID,
 	}
 
-	matchIdFn := func(id string) bool {
-		return id == categoryId
+	matchIDFn := func(id string) bool {
+		return id == categoryID
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(nil, errors.New("error"))
+		mock.MatchedBy(matchIDFn)).Return(nil, errors.New("error"))
 
 	// SUT
 	sut := query.NewFindCategoryHandler(repo, log)
@@ -56,24 +58,25 @@ func TestFindCategoryHandle_RepoError_ThrowsError(t *testing.T) {
 }
 
 func TestFindCategoryHandle_RepoSuccess_CategoryHasNoPath_ReturnsCategory(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId"
-	parentId1 := "parentId1"
+	categoryID := "categoryId"
+	parentID1 := "parentId1"
 	path := ""
 	icon := "icon"
-	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, &icon, 1)
+	category, _ := domain.NewCategory(categoryID, "name", &parentID1, path, &icon, 1)
 	findQuery := query.FindCategoryQuery{
-		CategoryID: categoryId,
+		CategoryID: categoryID,
 	}
 
-	matchIdFn := func(id string) bool {
-		return id == categoryId
+	matchIDFn := func(id string) bool {
+		return id == categoryID
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(category, nil)
+		mock.MatchedBy(matchIDFn)).Return(category, nil)
 
 	// SUT
 	sut := query.NewFindCategoryHandler(repo, log)
@@ -89,29 +92,30 @@ func TestFindCategoryHandle_RepoSuccess_CategoryHasNoPath_ReturnsCategory(t *tes
 }
 
 func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoSuccess_ReturnsCategoryWithParents(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId"
-	parentId1 := "parentId1"
-	parentId2 := "parentId2"
+	categoryID := "categoryId"
+	parentID1 := "parentId1"
+	parentID2 := "parentId2"
 	icon := "icon"
-	path := fmt.Sprintf("|%s|%s", parentId1, parentId2)
-	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, &icon, 1)
-	parentCategory1, _ := domain.NewCategory(parentId1, "name1", nil, path, &icon, 1)
-	parentCategory2, _ := domain.NewCategory(parentId2, "name1", nil, path, &icon, 1)
+	path := fmt.Sprintf("|%s|%s", parentID1, parentID2)
+	category, _ := domain.NewCategory(categoryID, "name", &parentID1, path, &icon, 1)
+	parentCategory1, _ := domain.NewCategory(parentID1, "name1", nil, path, &icon, 1)
+	parentCategory2, _ := domain.NewCategory(parentID2, "name1", nil, path, &icon, 1)
 	parentCategories := []domain.Category{*parentCategory1, *parentCategory2}
-	parentFilter := domain.CategoryFilter{CategoryIDs: []string{parentId1, parentId2}}
+	parentFilter := domain.CategoryFilter{CategoryIDs: []string{parentID1, parentID2}}
 	findQuery := query.FindCategoryQuery{
-		CategoryID: categoryId,
+		CategoryID: categoryID,
 	}
 
-	matchIdFn := func(id string) bool {
-		return id == categoryId
+	matchIDFn := func(id string) bool {
+		return id == categoryID
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(category, nil)
+		mock.MatchedBy(matchIDFn)).Return(category, nil)
 	matchFilterFn := func(filter domain.CategoryFilter) bool {
 		return reflect.DeepEqual(filter, parentFilter)
 	}
@@ -133,26 +137,27 @@ func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoSuccess_Returns
 }
 
 func TestFindCategoryHandle_RepoSuccess_AndParentsCategories_RepoError_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
 	ctx := context.Background()
-	categoryId := "categoryId"
-	parentId1 := "parentId1"
-	parentId2 := "parentId2"
+	categoryID := "categoryId"
+	parentID1 := "parentId1"
+	parentID2 := "parentId2"
 	icon := "icon"
-	path := fmt.Sprintf("|%s|%s", parentId1, parentId2)
-	category, _ := domain.NewCategory(categoryId, "name", &parentId1, path, &icon, 1)
-	parentFilter := domain.CategoryFilter{CategoryIDs: []string{parentId1, parentId2}}
+	path := fmt.Sprintf("|%s|%s", parentID1, parentID2)
+	category, _ := domain.NewCategory(categoryID, "name", &parentID1, path, &icon, 1)
+	parentFilter := domain.CategoryFilter{CategoryIDs: []string{parentID1, parentID2}}
 	findQuery := query.FindCategoryQuery{
-		CategoryID: categoryId,
+		CategoryID: categoryID,
 	}
 
-	matchIdFn := func(id string) bool {
-		return id == categoryId
+	matchIDFn := func(id string) bool {
+		return id == categoryID
 	}
 	repo.On("GetOne", mock.Anything,
-		mock.MatchedBy(matchIdFn)).Return(category, nil)
+		mock.MatchedBy(matchIDFn)).Return(category, nil)
 	matchFilterFn := func(filter domain.CategoryFilter) bool {
 		return reflect.DeepEqual(filter, parentFilter)
 	}

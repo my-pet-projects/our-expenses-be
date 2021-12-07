@@ -31,7 +31,6 @@ func TestNewHTTPServer_ReturnsServer(t *testing.T) {
 	assert.NotNil(t, result, "Result result should not be nil.")
 }
 
-// nolint:dupl
 func TestSignUp_InvalidPayload_Returns400(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -45,7 +44,7 @@ func TestSignUp_InvalidPayload_Returns400(t *testing.T) {
 		Queries: app.Queries{},
 		Logger:  logger,
 	}
-	expenseJSON := fmt.Sprintf(`invalid json`)
+	expenseJSON := "invalid json"
 
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
@@ -111,7 +110,6 @@ func TestSignUp_CommandFails_Returns500(t *testing.T) {
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
 
-// nolint:dupl
 func TestSignUp_HappyPath_Returns200(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -159,7 +157,6 @@ func TestSignUp_HappyPath_Returns200(t *testing.T) {
 	assert.Contains(t, response.Body.String(), user.RefreshToken())
 }
 
-// nolint:dupl
 func TestLogin_InvalidPayload_Returns400(t *testing.T) {
 	t.Parallel()
 	// Arrange
@@ -173,7 +170,7 @@ func TestLogin_InvalidPayload_Returns400(t *testing.T) {
 		Queries: app.Queries{},
 		Logger:  logger,
 	}
-	expenseJSON := fmt.Sprintf(`invalid json`)
+	expenseJSON := "invalid json"
 
 	logger.On("Info", mock.Anything, mock.Anything, mock.Anything).Return()
 	logger.On("Error", mock.Anything, mock.Anything, mock.Anything).Return()
@@ -282,7 +279,6 @@ func TestLogin_CommandFailsWithWrongPassword_Returns401(t *testing.T) {
 	assert.NotEmpty(t, response.Body.String(), "Should not return empty body.")
 }
 
-// nolint:dupl
 func TestLogin_HappyPath_Returns200(t *testing.T) {
 	t.Parallel()
 	// Arrange

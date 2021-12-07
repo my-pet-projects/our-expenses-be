@@ -4,15 +4,12 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
 
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/adapters"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/internal/categories/domain"
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/logger"
+	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/pkg/tracer"
 )
-
-var moveCategoryTracer trace.Tracer
 
 // MoveCategoryCommand defines a category move command.
 type MoveCategoryCommand struct {
@@ -36,7 +33,6 @@ func NewMoveCategoryHandler(
 	repo adapters.CategoryRepoInterface,
 	logger logger.LogInterface,
 ) MoveCategoryHandler {
-	moveCategoryTracer = otel.Tracer("app.command.move_category")
 	return MoveCategoryHandler{
 		repo:   repo,
 		logger: logger,
@@ -45,7 +41,7 @@ func NewMoveCategoryHandler(
 
 // Handle handles move category command.
 func (h MoveCategoryHandler) Handle(ctx context.Context, cmd MoveCategoryCommand) (*domain.UpdateResult, error) {
-	ctx, span := moveCategoryTracer.Start(ctx, "execute move category command")
+	ctx, span := tracer.NewSpan(ctx, "execute move category command")
 	defer span.End()
 
 	targetCat, targetCatErr := h.repo.GetOne(ctx, cmd.CategoryID)

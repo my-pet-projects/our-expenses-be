@@ -22,14 +22,14 @@ const configPath = "config/config.yaml"
 // NewConfig provides application configuration based on yaml config file.
 func NewConfig() (*Config, error) {
 	workingDir, _ := getwdFn()
-	bytes, err := readFileFn(filepath.Join(workingDir, configPath))
-	if err != nil {
-		return nil, errors.Wrap(err, "read config file")
+	bytes, bytesErr := readFileFn(filepath.Join(workingDir, configPath))
+	if bytesErr != nil {
+		return nil, errors.Wrap(bytesErr, "read config file")
 	}
 
 	config := &Config{}
-	if err := yaml.Unmarshal(bytes, config); err != nil {
-		return nil, errors.Wrap(err, "decode yaml config file")
+	if unmarshallErr := yaml.Unmarshal(bytes, config); unmarshallErr != nil {
+		return nil, errors.Wrap(unmarshallErr, "decode yaml config file")
 	}
 
 	return config, nil

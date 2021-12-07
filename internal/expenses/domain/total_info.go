@@ -52,5 +52,6 @@ func (t TotalInfo) canCombineWith(t2 TotalInfo) bool {
 	if t.ExchangeRate.baseCurrency != t2.ExchangeRate.baseCurrency {
 		return false
 	}
+
 	return true
 }

@@ -1,5 +1,6 @@
 package domain
 
+// CategoryExpenses holds category expenses.
 type CategoryExpenses struct {
 	Category      Category
 	Expenses      *[]Expense
@@ -7,6 +8,7 @@ type CategoryExpenses struct {
 	GrandTotal    GrandTotal
 }
 
+// CalculateTotal calculates category expenses total.
 func (c *CategoryExpenses) CalculateTotal() GrandTotal {
 	var grandTotal GrandTotal
 	if c.Expenses != nil {

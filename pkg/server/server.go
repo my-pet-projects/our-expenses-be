@@ -95,7 +95,8 @@ func (srv Server) Start(ctx context.Context) error {
 		errChan <- srv.shutdown(ctx)
 	}()
 
-	if err := srv.httpServer.Start(fmt.Sprintf("%s:%d", srv.config.Host, srv.config.Port)); err != http.ErrServerClosed {
+	err := srv.httpServer.Start(fmt.Sprintf("%s:%d", srv.config.Host, srv.config.Port))
+	if !errors.Is(err, http.ErrServerClosed) {
 		return errors.Wrap(err, "failed to start http server")
 	}
 
@@ -113,7 +114,7 @@ func (srv Server) shutdown(ctx context.Context) error {
 	defer shutdownCancel()
 
 	err := srv.httpServer.Shutdown(shutdownCtx)
-	if err == context.DeadlineExceeded {
+	if errors.Is(err, context.DeadlineExceeded) {
 		srv.logger.Warn(ctx, "Some open connections were interrupted during shutdown timeout")
 		err = nil
 	} else if err != nil {

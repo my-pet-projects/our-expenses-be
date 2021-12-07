@@ -14,6 +14,7 @@ import (
 )
 
 func TestUpdateCategoryHandler_ReturnsHandler(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -26,6 +27,7 @@ func TestUpdateCategoryHandler_ReturnsHandler(t *testing.T) {
 }
 
 func TestUpdateCategoryHandler_CategoryError_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -46,6 +48,7 @@ func TestUpdateCategoryHandler_CategoryError_ThrowsError(t *testing.T) {
 }
 
 func TestUpdateCategoryHandler_RepoError_ThrowsError(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)
@@ -80,6 +83,7 @@ func TestUpdateCategoryHandler_RepoError_ThrowsError(t *testing.T) {
 }
 
 func TestUpdateCategoryHandler_RepoSuccess_ReturnsResult(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	repo := new(mocks.CategoryRepoInterface)
 	log := new(mocks.LogInterface)

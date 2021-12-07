@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// nolint:funlen
 func TestTotalInfoAdd_CombinesTwoStructs(t *testing.T) {
 	t.Parallel()
 	// Arrange

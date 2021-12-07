@@ -9,18 +9,19 @@ import (
 	"dev.azure.com/filimonovga/our-expenses/our-expenses-server/utils"
 )
 
+// CorrelationMiddleware puts correlation id into the context.
 func CorrelationMiddleware(log logger.LogInterface) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			correlationIDHeader := utils.CorrelationIDHeader
-			correlationId := r.Header.Get(correlationIDHeader)
-			if correlationId == "" {
+			correlationID := r.Header.Get(correlationIDHeader)
+			if correlationID == "" {
 				id := uuid.New()
-				correlationId = id.String()
-				r.Header.Set(correlationIDHeader, correlationId)
+				correlationID = id.String()
+				r.Header.Set(correlationIDHeader, correlationID)
 				log.Infof(r.Context(), "No %s HTTP header, using a new correlation id %s", correlationIDHeader, id.String())
 			}
-			ctx := utils.SetContextStringValue(r.Context(), utils.ContextKeyCorrelationID, correlationId)
+			ctx := utils.SetContextStringValue(r.Context(), utils.ContextKeyCorrelationID, correlationID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

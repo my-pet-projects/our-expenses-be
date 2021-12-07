@@ -36,7 +36,7 @@ func (u User) Username() string {
 	return u.username
 }
 
-// User returns user password.
+// Password returns user password.
 func (u User) Password() string {
 	return u.password
 }

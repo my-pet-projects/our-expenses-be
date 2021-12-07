@@ -6,10 +6,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Category represents a domain object.
+// Category represents category.
 type Category struct {
 	id       string
-	parentId *string
+	parentID *string
 	name     string
 	icon     *string
 	level    int
@@ -18,7 +18,7 @@ type Category struct {
 }
 
 // NewCategory creates a new category domain object.
-func NewCategory(id string, parentId *string, name string, icon *string, level int, path string) (*Category, error) {
+func NewCategory(id string, parentID *string, name string, icon *string, level int, path string) (*Category, error) {
 	if name == "" {
 		return nil, errors.New("empty name")
 	}
@@ -29,7 +29,7 @@ func NewCategory(id string, parentId *string, name string, icon *string, level i
 
 	return &Category{
 		id:       id,
-		parentId: parentId,
+		parentID: parentID,
 		name:     strings.TrimSpace(name),
 		icon:     icon,
 		level:    level,
@@ -74,5 +74,5 @@ func (c *Category) SetParents(parents *[]Category) {
 
 // IsRoot indicates if category has no parent and therefore is a root category.
 func (c Category) IsRoot() bool {
-	return c.parentId == nil || *c.parentId == ""
+	return c.parentID == nil || *c.parentID == ""
 }

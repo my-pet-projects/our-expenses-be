@@ -16,6 +16,7 @@ import (
 )
 
 func setupApp(t *testing.T) *Application {
+	t.Helper()
 	ctx, cancel := context.WithCancel(context.Background())
 	appConfig, appConfigErr := config.NewConfig()
 	if appConfigErr != nil {
@@ -34,7 +35,6 @@ func setupApp(t *testing.T) *Application {
 	mongoClient, mongoClientErr := database.NewMongoClient(appLogger, appConfig.Database)
 	if mongoClientErr != nil {
 		t.Fatalf("Failed to create MongoDB client: %v", mongoClientErr)
-
 	}
 	if mongoConErr := mongoClient.OpenConnection(ctx, cancel); mongoConErr != nil {
 		t.Fatalf("Failed to open MongoDB connection: %v", mongoConErr)
@@ -49,6 +49,7 @@ func setupApp(t *testing.T) *Application {
 }
 
 func TestNewServer_ReturnsServerInstanceWithSettingsFromConfig(t *testing.T) {
+	t.Parallel()
 	// Arrange
 	ctx := context.Background()
 	from := time.Date(2021, 8, 2, 0, 0, 0, 0, time.UTC)

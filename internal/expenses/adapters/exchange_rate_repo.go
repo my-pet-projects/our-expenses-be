@@ -131,5 +131,9 @@ func (r ExchangeRateRepository) marshalRate(exchangeRate domain.ExchangeRates) r
 }
 
 func (r ExchangeRateRepository) unmarshalRate(rateDbModel rateDbModel) (*domain.ExchangeRates, error) {
-	return domain.NewExchageRate(rateDbModel.Date, rateDbModel.Base, rateDbModel.Rates)
+	exchRate, exchRateErr := domain.NewExchageRate(rateDbModel.Date, rateDbModel.Base, rateDbModel.Rates)
+	if exchRateErr != nil {
+		return nil, errors.Wrap(exchRateErr, "new exchange rate")
+	}
+	return exchRate, nil
 }
