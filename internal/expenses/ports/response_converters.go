@@ -106,8 +106,8 @@ func totalInfoToResponse(domainObj domain.TotalInfo) TotalInfo {
 		Original:  *totalToResponse(&domainObj.OriginalTotal),
 	}
 	if domainObj.ExchangeRate != nil {
-		rates := exchangeRatesToResponse(*domainObj.ExchangeRate)
-		ti.Rates = &rates
+		rate := exchangeRateToResponse(*domainObj.ExchangeRate)
+		ti.Rate = &rate
 	}
 	return ti
 }
@@ -124,6 +124,16 @@ func exchangeRatesToResponse(domainObj domain.ExchangeRates) ExchangeRates {
 		Date:     domainObj.Date(),
 		Currency: string(domainObj.BaseCurrency()),
 		Rates:    rates,
+	}
+	return exchRate
+}
+
+func exchangeRateToResponse(domainObj domain.ExchangeRate) ExchangeRate {
+	exchRate := ExchangeRate{
+		Date:           domainObj.Date(),
+		BaseCurrency:   string(domainObj.BaseCurrency()),
+		Rate:           domainObj.Rate().Round(2).String(),
+		TargetCurrency: string(domainObj.TargetCurrency()),
 	}
 	return exchRate
 }

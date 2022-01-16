@@ -4,7 +4,7 @@ package domain
 type TotalInfo struct {
 	OriginalTotal  Total
 	ConvertedTotal *Total
-	ExchangeRate   *ExchangeRates
+	ExchangeRate   *ExchangeRate
 }
 
 // Add combines two total info structs together.
@@ -18,7 +18,7 @@ func (t TotalInfo) Add(t2 TotalInfo) TotalInfo {
 	}
 
 	convTotal := Total{}
-	exchRate := &ExchangeRates{}
+	exchRate := &ExchangeRate{}
 	if t.ConvertedTotal != nil {
 		convTotal = convTotal.Add(t.ConvertedTotal)
 		exchRate = t.ExchangeRate

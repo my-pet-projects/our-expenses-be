@@ -171,7 +171,12 @@ func (e *Expense) CalculateTotal(exchangeRate *ExchangeRates) TotalInfo {
 		return e.totalInfo
 	}
 
-	e.totalInfo.ExchangeRate = exchangeRate
+	e.totalInfo.ExchangeRate = &ExchangeRate{
+		date:           exchangeRate.date,
+		baseCurrency:   exchangeRate.baseCurrency,
+		targetCurrency: Currency(e.currency),
+		rate:           rate,
+	}
 	e.totalInfo.ConvertedTotal = &Total{
 		Currency: exchangeRate.baseCurrency,
 		Sum:      e.totalInfo.OriginalTotal.Sum.Div(rate),

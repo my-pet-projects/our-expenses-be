@@ -54,6 +54,14 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+// ExchangeRate defines model for ExchangeRate.
+type ExchangeRate struct {
+	BaseCurrency   string    `json:"baseCurrency"`
+	Date           time.Time `json:"date"`
+	Rate           string    `json:"rate"`
+	TargetCurrency string    `json:"targetCurrency"`
+}
+
 // ExchangeRates defines model for ExchangeRates.
 type ExchangeRates struct {
 	Currency string    `json:"currency"`
@@ -123,9 +131,9 @@ type Total struct {
 
 // TotalInfo defines model for TotalInfo.
 type TotalInfo struct {
-	Converted *Total         `json:"converted,omitempty"`
-	Original  Total          `json:"original"`
-	Rates     *ExchangeRates `json:"rates,omitempty"`
+	Converted *Total        `json:"converted,omitempty"`
+	Original  Total         `json:"original"`
+	Rate      *ExchangeRate `json:"rate,omitempty"`
 }
 
 // AddExpenseJSONBody defines parameters for AddExpense.

@@ -20,12 +20,12 @@ func TestTotalInfoAdd_CombinesTwoStructs(t *testing.T) {
 			t1: TotalInfo{
 				OriginalTotal:  Total{},
 				ConvertedTotal: nil,
-				ExchangeRate:   &ExchangeRates{},
+				ExchangeRate:   &ExchangeRate{},
 			},
 			t2: TotalInfo{
 				OriginalTotal:  Total{},
 				ConvertedTotal: nil,
-				ExchangeRate:   &ExchangeRates{},
+				ExchangeRate:   &ExchangeRate{},
 			},
 			sum: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(0)},
@@ -37,12 +37,12 @@ func TestTotalInfoAdd_CombinesTwoStructs(t *testing.T) {
 			t1: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(10)},
 				ConvertedTotal: &Total{},
-				ExchangeRate:   &ExchangeRates{baseCurrency: "EUR"},
+				ExchangeRate:   &ExchangeRate{baseCurrency: "EUR"},
 			},
 			t2: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(5)},
 				ConvertedTotal: &Total{},
-				ExchangeRate:   &ExchangeRates{baseCurrency: "USD"},
+				ExchangeRate:   &ExchangeRate{baseCurrency: "USD"},
 			},
 			sum: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(15)},
@@ -71,12 +71,12 @@ func TestTotalInfoAdd_CombinesTwoStructs(t *testing.T) {
 			t1: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(5)},
 				ConvertedTotal: &Total{},
-				ExchangeRate:   &ExchangeRates{baseCurrency: "EUR"},
+				ExchangeRate:   &ExchangeRate{baseCurrency: "EUR"},
 			},
 			t2: TotalInfo{
 				OriginalTotal:  Total{},
 				ConvertedTotal: &Total{},
-				ExchangeRate:   &ExchangeRates{baseCurrency: "USD"},
+				ExchangeRate:   &ExchangeRate{baseCurrency: "USD"},
 			},
 			sum: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(5)},
@@ -88,7 +88,7 @@ func TestTotalInfoAdd_CombinesTwoStructs(t *testing.T) {
 			t1: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(5)},
 				ConvertedTotal: &Total{Sum: decimal.NewFromInt(20)},
-				ExchangeRate:   &ExchangeRates{baseCurrency: "EUR"},
+				ExchangeRate:   &ExchangeRate{baseCurrency: "EUR"},
 			},
 			t2: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(10)},
@@ -98,7 +98,7 @@ func TestTotalInfoAdd_CombinesTwoStructs(t *testing.T) {
 			sum: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(15)},
 				ConvertedTotal: &Total{Sum: decimal.NewFromInt(20)},
-				ExchangeRate:   &ExchangeRates{baseCurrency: "EUR"},
+				ExchangeRate:   &ExchangeRate{baseCurrency: "EUR"},
 			},
 		},
 		{
@@ -109,29 +109,29 @@ func TestTotalInfoAdd_CombinesTwoStructs(t *testing.T) {
 			},
 			t2: TotalInfo{
 				ConvertedTotal: &Total{Sum: decimal.NewFromInt(20)},
-				ExchangeRate:   &ExchangeRates{baseCurrency: "EUR"},
+				ExchangeRate:   &ExchangeRate{baseCurrency: "EUR"},
 			},
 			sum: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(0)},
 				ConvertedTotal: &Total{Sum: decimal.NewFromInt(20)},
-				ExchangeRate:   &ExchangeRates{baseCurrency: "EUR"},
+				ExchangeRate:   &ExchangeRate{baseCurrency: "EUR"},
 			},
 		},
 		{
 			t1: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(5)},
 				ConvertedTotal: &Total{Sum: decimal.NewFromInt(50)},
-				ExchangeRate:   &ExchangeRates{baseCurrency: "EUR"},
+				ExchangeRate:   &ExchangeRate{baseCurrency: "EUR"},
 			},
 			t2: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(1)},
 				ConvertedTotal: &Total{Sum: decimal.NewFromInt(7)},
-				ExchangeRate:   &ExchangeRates{baseCurrency: "EUR"},
+				ExchangeRate:   &ExchangeRate{baseCurrency: "EUR"},
 			},
 			sum: TotalInfo{
 				OriginalTotal:  Total{Sum: decimal.NewFromInt(6)},
 				ConvertedTotal: &Total{Sum: decimal.NewFromInt(57)},
-				ExchangeRate:   &ExchangeRates{baseCurrency: "EUR"},
+				ExchangeRate:   &ExchangeRate{baseCurrency: "EUR"},
 			},
 		},
 	}

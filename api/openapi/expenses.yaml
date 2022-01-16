@@ -232,9 +232,9 @@ components:
         original:
           type: object
           $ref: "#/components/schemas/Total"
-        rates:
+        rate:
           type: object
-          $ref: "#/components/schemas/ExchangeRates"
+          $ref: "#/components/schemas/ExchangeRate"
         converted:
           type: object
           $ref: "#/components/schemas/Total"
@@ -255,13 +255,15 @@ components:
       type: object
       required:
         - date
-        - currency
+        - baseCurrency
+        - targetCurrency
         - rate
       properties:
         rate:
-          type: object
-          $ref: "#/components/schemas/Rate"
-        currency:
+          type: string
+        baseCurrency:
+          type: string
+        targetCurrency:
           type: string
         date:
           type: string
