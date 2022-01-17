@@ -241,14 +241,14 @@ components:
     GrandTotal:
       type: object
       required:
-        - totals
-        - converted
+        - subTotals
+        - total
       properties:
-        totals:
+        subTotals:
           type: array
           items:
             $ref: "#/components/schemas/TotalInfo"
-        converted:
+        total:
           type: object
           $ref: "#/components/schemas/Total"
     ExchangeRate:

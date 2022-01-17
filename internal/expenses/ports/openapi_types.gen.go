@@ -88,8 +88,8 @@ type ExpenseReport struct {
 
 // GrandTotal defines model for GrandTotal.
 type GrandTotal struct {
-	Converted Total       `json:"converted"`
-	Totals    []TotalInfo `json:"totals"`
+	SubTotals []TotalInfo `json:"subTotals"`
+	Total     Total       `json:"total"`
 }
 
 // Interval defines model for Interval.

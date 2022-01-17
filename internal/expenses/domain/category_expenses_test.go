@@ -50,6 +50,6 @@ func TestCategoryExpenses_CalculateTotal_ReturnsTotalAmountIncludingChildren(t *
 
 	// Assert
 	assert.NotNil(t, res)
-	assert.True(t, total.OriginalTotal.Equal(res.TotalInfos["EUR"].OriginalTotal))
-	assert.True(t, total.ConvertedTotal.Equal(res.ConvertedTotal))
+	assert.True(t, total.OriginalTotal.Equal(res.SubTotals["EUR"].OriginalTotal))
+	assert.True(t, total.ConvertedTotal.Equal(res.Total))
 }

@@ -197,7 +197,9 @@ func TestCalculateTotal_WithExchangeRate_ReturnOriginalAndConvertedTotal(t *test
 	assert.Equal(t, sut.TotalInfo(), res)
 	assert.Equal(t, decimal.NewFromFloat(price*quantity), res.OriginalTotal.Sum)
 	assert.Equal(t, Currency(currency), res.OriginalTotal.Currency)
-	assert.Equal(t, exchangeRates, res.ExchangeRate)
+	assert.Equal(t, exchangeRates.baseCurrency, res.ExchangeRate.baseCurrency)
+	assert.Equal(t, exchangeRates.date, res.ExchangeRate.date)
+	assert.Equal(t, exchangeRates.rates["USD"], res.ExchangeRate.rate)
 	assert.Equal(t, decimal.NewFromFloat((price * quantity)).Div(decimal.NewFromFloat(rate)),
 		res.ConvertedTotal.Sum)
 	assert.Equal(t, exchangeRates.baseCurrency, res.ConvertedTotal.Currency)

@@ -13,7 +13,7 @@ func TestCombine_CombinesGrandTotals(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	gt1 := domain.GrandTotal{
-		TotalInfos: map[domain.Currency]domain.TotalInfo{
+		SubTotals: map[domain.Currency]domain.TotalInfo{
 			domain.Currency("EUR"): {
 				OriginalTotal: domain.Total{
 					Sum: decimal.NewFromInt(10),
@@ -27,7 +27,7 @@ func TestCombine_CombinesGrandTotals(t *testing.T) {
 		},
 	}
 	gt2 := domain.GrandTotal{
-		TotalInfos: map[domain.Currency]domain.TotalInfo{
+		SubTotals: map[domain.Currency]domain.TotalInfo{
 			domain.Currency("EUR"): {
 				OriginalTotal: domain.Total{
 					Sum: decimal.NewFromInt(30),
@@ -46,7 +46,7 @@ func TestCombine_CombinesGrandTotals(t *testing.T) {
 		},
 	}
 	gt3 := domain.GrandTotal{
-		TotalInfos: map[domain.Currency]domain.TotalInfo{
+		SubTotals: map[domain.Currency]domain.TotalInfo{
 			domain.Currency("RUB"): {
 				OriginalTotal: domain.Total{
 					Sum: decimal.NewFromInt(100),
@@ -60,17 +60,17 @@ func TestCombine_CombinesGrandTotals(t *testing.T) {
 
 	// Assert
 	assert.NotNil(t, result)
-	assert.Equal(t, decimal.NewFromInt(40), result.TotalInfos["EUR"].OriginalTotal.Sum)
-	assert.Equal(t, decimal.NewFromInt(50), result.TotalInfos["USD"].OriginalTotal.Sum)
-	assert.Equal(t, decimal.NewFromInt(20), result.TotalInfos["SEK"].OriginalTotal.Sum)
-	assert.Equal(t, decimal.NewFromInt(100), result.TotalInfos["RUB"].OriginalTotal.Sum)
+	assert.Equal(t, decimal.NewFromInt(40), result.SubTotals["EUR"].OriginalTotal.Sum)
+	assert.Equal(t, decimal.NewFromInt(50), result.SubTotals["USD"].OriginalTotal.Sum)
+	assert.Equal(t, decimal.NewFromInt(20), result.SubTotals["SEK"].OriginalTotal.Sum)
+	assert.Equal(t, decimal.NewFromInt(100), result.SubTotals["RUB"].OriginalTotal.Sum)
 }
 
 func TestAdd_AddsTotalToGrandTotal(t *testing.T) {
 	t.Parallel()
 	// Arrange
 	grandTotal := domain.GrandTotal{
-		TotalInfos: map[domain.Currency]domain.TotalInfo{
+		SubTotals: map[domain.Currency]domain.TotalInfo{
 			domain.Currency("EUR"): {
 				OriginalTotal: domain.Total{
 					Sum: decimal.NewFromInt(10),
@@ -101,7 +101,7 @@ func TestAdd_AddsTotalToGrandTotal(t *testing.T) {
 
 	// Assert
 	assert.NotNil(t, result)
-	assert.Equal(t, decimal.NewFromInt(10), result.TotalInfos["EUR"].OriginalTotal.Sum)
-	assert.Equal(t, decimal.NewFromInt(75), result.TotalInfos["USD"].OriginalTotal.Sum)
-	assert.Equal(t, decimal.NewFromInt(100), result.TotalInfos["SEK"].OriginalTotal.Sum)
+	assert.Equal(t, decimal.NewFromInt(10), result.SubTotals["EUR"].OriginalTotal.Sum)
+	assert.Equal(t, decimal.NewFromInt(75), result.SubTotals["USD"].OriginalTotal.Sum)
+	assert.Equal(t, decimal.NewFromInt(100), result.SubTotals["SEK"].OriginalTotal.Sum)
 }

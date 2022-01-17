@@ -78,14 +78,14 @@ func expenseToResponse(domainObj domain.Expense) Expense {
 }
 
 func grandTotalToResponse(domainObj domain.GrandTotal) GrandTotal {
-	totalInfos := []TotalInfo{}
-	for _, totalInfo := range domainObj.TotalInfos {
-		totalInfos = append(totalInfos, totalInfoToResponse(totalInfo))
+	subTotals := []TotalInfo{}
+	for _, totalInfo := range domainObj.SubTotals {
+		subTotals = append(subTotals, totalInfoToResponse(totalInfo))
 	}
-	convertedTotal := &domainObj.ConvertedTotal
+	total := &domainObj.Total
 	return GrandTotal{
-		Totals:    totalInfos,
-		Converted: *totalToResponse(convertedTotal),
+		SubTotals: subTotals,
+		Total:     *totalToResponse(total),
 	}
 }
 
